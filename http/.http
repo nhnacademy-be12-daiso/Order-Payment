@@ -1,5 +1,25 @@
 
-### Post CartDetail 테스트
-POST localhost:8080/carts?bookId=1212&quantity=2
+### 비회원 장바구니 추가
+POST localhost:8080/guest/carts?bookId=2341&quantity=1
+Content-Type: application/x-www-form-urlencoded
+X-Guest-ID: uuid-1234
+
+### 비회원 장바구니 추가
+POST localhost:8080/guest/carts?bookId=6543&quantity=2
+Content-Type: application/x-www-form-urlencoded
+X-Guest-ID: uuid-1234
 
 
+### 비회원 장바구니 도서 수량 변경
+POST localhost:8080/guest/carts?bookId=2341&quantity=3
+Content-Type: application/x-www-form-urlencoded
+X-Guest-ID: uuid-1234
+
+### 비회원 장바구니 도서 삭제
+DELETE localhost:8080/guest/carts?bookId=2341
+X-Guest-ID: uuid-1234
+
+### 비회원 장바구니 목록 요청
+GET localhost:8080/guest/carts
+Content-Type: application/x-www-form-urlencoded
+X-Guest-ID: uuid-1234
