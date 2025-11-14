@@ -1,0 +1,5 @@
+
+### Post CartDetail 테스트
+POST localhost:8080/carts?bookId=1212&quantity=2
+
+
