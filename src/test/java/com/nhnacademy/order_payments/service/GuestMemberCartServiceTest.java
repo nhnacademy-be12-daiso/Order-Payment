@@ -22,7 +22,7 @@ import static org.mockito.Mockito.*;
 
 
 @ExtendWith(MockitoExtension.class)
-public class GuestCartServiceTest {
+public class GuestMemberCartServiceTest {
 
     @InjectMocks
     private GuestCartService guestCartService;

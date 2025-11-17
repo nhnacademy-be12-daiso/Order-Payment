@@ -1,21 +1,30 @@
 package com.nhnacademy.order_payments.entity;
 
 import jakarta.persistence.*;
+import lombok.Getter;
 import lombok.NoArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
+
+import java.util.ArrayList;
+import java.util.List;
 
 
+@Slf4j
 @Entity
 @Table(name = "Carts")
 @NoArgsConstructor
+@Getter
 public class Cart {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long cartId;
+    private Long userId; // JWT에서 파싱한 userId
 
-    @Column(unique = true)
-    private Long userCreatedId; // 회원에서 뽑아와야 함
-    private String cartName; // 이게 필요함?
+    @OneToMany(mappedBy = "cart",cascade = CascadeType.ALL)
+    private List<CartDetail> details = new ArrayList<>();
 
-    public Cart(Long ordererId) {
+    public Cart(Long userId) {
+        this.userId = userId;
+        log.info("장바구니가 생성되었습니다 : {}", userId);
     }
 }
