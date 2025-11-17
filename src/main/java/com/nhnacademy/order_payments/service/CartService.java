@@ -19,19 +19,19 @@ public class CartService {
     private final CartDetailRepository cartDetailRepository;
 
 
-    @Transactional
-    public void addCartItem(Long ordererId, long bookId, int quantity) {
-
-        Cart cart = cartRepository.findById(ordererId)
-                .orElseGet(() -> {
-                    Cart newCart = new Cart(ordererId);
-                    return cartRepository.save(newCart);
-                });
-
-        CartDetail cartDetail = new CartDetail(cart, bookId, quantity);
-        cartDetailRepository.save(cartDetail);
-        log.info("저장 완료");
-    }
+//    @Transactional
+//    public void addCartItem(Long ordererId, long bookId, int quantity) {
+//
+//        Cart cart = cartRepository.findById(ordererId)
+//                .orElseGet(() -> {
+//                    Cart newCart = new Cart(ordererId);
+//                    return cartRepository.save(newCart);
+//                });
+//
+//        CartDetail cartDetail = new CartDetail(cart, bookId, quantity);
+//        cartDetailRepository.save(cartDetail);
+//        log.info("저장 완료");
+//    }
 
 
 }

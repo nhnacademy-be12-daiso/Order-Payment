@@ -22,9 +22,15 @@ public class CartDetail {
     private Long bookId; // 도서에서 뽑아와야 함
     private Integer quantity;
 
-    public CartDetail(Cart cart, long bookId, int quantity) {
+    // 도서에서 받아와야하는 것
+    private String title;
+    private int price;
+
+    public CartDetail(Cart cart, long bookId, int quantity, String title, int price) {
         this.cart = cart;
         this.bookId = bookId;
         this.quantity = quantity;
+        this.title = title;
+        this.price = price;
     }
 }
