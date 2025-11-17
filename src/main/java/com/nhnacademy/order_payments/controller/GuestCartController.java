@@ -1,5 +1,6 @@
 package com.nhnacademy.order_payments.controller;
 
+import com.nhnacademy.order_payments.dto.GuestCartItem;
 import com.nhnacademy.order_payments.service.GuestCartService;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
@@ -31,9 +32,9 @@ public class GuestCartController {
 
     // 장바구니 전체 목록 조회
     @GetMapping
-    public ResponseEntity<Map<Long, Integer>> getCartItem(@RequestHeader("X-Guest-ID") String guestId) {
+    public ResponseEntity<Map<Long, GuestCartItem>> getCartItem(@RequestHeader("X-Guest-ID") String guestId) {
 
-        Map<Long, Integer> bookList = guestCartService.getBookList(guestId);
+        Map<Long, GuestCartItem> bookList = guestCartService.getBookList(guestId);
 
         return ResponseEntity.ok().body(bookList);
     }

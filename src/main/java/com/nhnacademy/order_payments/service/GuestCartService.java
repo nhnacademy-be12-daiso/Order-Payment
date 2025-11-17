@@ -1,5 +1,8 @@
 package com.nhnacademy.order_payments.service;
 
+import com.nhnacademy.order_payments.dto.BookDto;
+import com.nhnacademy.order_payments.dto.GuestCartItem;
+import com.nhnacademy.order_payments.infra.BookApiClient;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.data.redis.core.HashOperations;
 import org.springframework.data.redis.core.RedisTemplate;
@@ -15,31 +18,38 @@ import java.util.Map;
 public class GuestCartService {
 
     private final RedisTemplate<String, Object> redisTemplate;
-    private final HashOperations<String, String, String> hashOps;
-    public GuestCartService(RedisTemplate<String, Object> redisTemplate) {
+    private final HashOperations<String, Long, GuestCartItem> hashOps;
+    private final BookApiClient bookApiClient;
+    public GuestCartService(RedisTemplate<String, Object> redisTemplate, BookApiClient bookApiClient) {
         this.redisTemplate = redisTemplate;
+        this.bookApiClient = bookApiClient;
         this.hashOps = redisTemplate.opsForHash();
     }
 
     // 요청된 수량만큼 redis에 추가
     public void addBook(String guestId, Long bookId, int quantity) {
         isNull(guestId, bookId);
-        hashOps.put(guestId, bookId.toString(), String.valueOf(quantity));
+
+        BookDto bookDto = bookApiClient.getBookInfo(bookId);
+//        BookDto bookDto = new BookDto("TestBook", 20000); // 테스트 데이터
+
+        GuestCartItem guestCartItem = new GuestCartItem(bookId, bookDto.getTitle(), bookDto.getPrice(), quantity);
+
+        hashOps.put(guestId, bookId, guestCartItem);
         redisTemplate.expire(guestId, Duration.ofDays(1)); // TTL 설정
     }
 
     // 저장된 도서의 목록 반환
-    public Map<Long, Integer> getBookList(String guestId) {
+    public Map<Long, GuestCartItem> getBookList(String guestId) {
         isNull(guestId, 1000L); // bookId는 아무 값이나 넣은거
 
         Map<Object, Object> booksMap = redisTemplate.opsForHash().entries(guestId);
-        Map<Long, Integer> resMap = new HashMap<>();
+        Map<Long, GuestCartItem> resMap = new HashMap<>();
 
-        for(Map.Entry<Object, Object> entry : booksMap.entrySet()) {
-            String strBookId = (String) entry.getKey();
-            Long bookId = Long.parseLong(strBookId);
-            Integer quantity = Integer.parseInt(entry.getValue().toString());
-            resMap.put(bookId, quantity);
+        for(Object obj : booksMap.values()) {
+            GuestCartItem guestCartItem = (GuestCartItem) obj;
+            Long bookId = guestCartItem.bookId();
+            resMap.put(bookId, guestCartItem);
         }
 
         return resMap;
@@ -49,9 +59,7 @@ public class GuestCartService {
     public int getBookQuantity(String guestId, Long bookId) {
         isNull(guestId, bookId);
 
-        Integer quantity = Integer.valueOf(hashOps.get(guestId, bookId));
-
-        return quantity != null ? quantity : 0;
+        return hashOps.get(guestId, bookId).quantity(); // null 체크 안해줘도 되나?
     }
 
     // 특정 도서를 장바구니에서 삭제

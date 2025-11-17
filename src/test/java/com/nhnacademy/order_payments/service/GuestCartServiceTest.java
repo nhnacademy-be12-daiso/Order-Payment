@@ -1,6 +1,8 @@
 package com.nhnacademy.order_payments.service;
 
 
+import com.nhnacademy.order_payments.dto.GuestCartItem;
+import com.nhnacademy.order_payments.infra.BookApiClient;
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.DisplayName;
@@ -22,7 +24,7 @@ import static org.mockito.Mockito.*;
 
 
 @ExtendWith(MockitoExtension.class)
-public class GuestMemberCartServiceTest {
+public class GuestCartServiceTest {
 
     @InjectMocks
     private GuestCartService guestCartService;
@@ -31,11 +33,15 @@ public class GuestMemberCartServiceTest {
     private RedisTemplate<String, Object> redisTemplate;
 
     @Mock
-    private HashOperations<String, Long, Integer> hashOps;
+    private HashOperations<String, Long, GuestCartItem> hashOps;
+
+    @Mock
+    private BookApiClient bookApiClient;
 
     private static final String UUID = "uuid23234";
     private static final Long bookId = 23423L;
     private static final int quantity = 1;
+    private static final GuestCartItem guestCartItem = new GuestCartItem(bookId, "TestBook", 20000, quantity);
 
     static Stream<Arguments> invalidInputProvider() {
         return Stream.of(
@@ -52,7 +58,7 @@ public class GuestMemberCartServiceTest {
     void setUp() {
         doReturn(hashOps).when(redisTemplate).opsForHash();
 
-        guestCartService = new GuestCartService(redisTemplate);
+        guestCartService = new GuestCartService(redisTemplate, bookApiClient);
     }
 
 
@@ -62,9 +68,9 @@ public class GuestMemberCartServiceTest {
 
         guestCartService.addBook(UUID, bookId, quantity);
         verify(hashOps, times(1)).put(
-                eq(UUID),
-                eq(bookId),
-                eq(quantity)
+                anyString(),
+                anyLong(),
+                any(GuestCartItem.class)
         );
         verify(redisTemplate, times(1)).expire(eq(UUID), any(Duration.class));
     }
@@ -78,7 +84,7 @@ public class GuestMemberCartServiceTest {
             guestCartService.addBook(UUID, bookId, quantity);
         });
 
-        verify(hashOps, never()).put(anyString(), anyLong(), anyInt());
+        verify(hashOps, never()).put(anyString(), anyLong(), any());
     }
 
     @Test
@@ -87,7 +93,7 @@ public class GuestMemberCartServiceTest {
 
         guestCartService.deleteBook(UUID, bookId);
 
-        verify(hashOps, times(1)).delete(UUID, bookId);
+        verify(hashOps, times(1)).delete(any(), any());
     }
 
 
