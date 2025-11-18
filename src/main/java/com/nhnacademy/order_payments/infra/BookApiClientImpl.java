@@ -32,6 +32,6 @@ public class BookApiClientImpl implements BookApiClient {
                 .onStatus(HttpStatusCode::isError, clientResponse ->
                         Mono.error(new RuntimeException("책 API 통신 오류 : " + clientResponse)))
                 .bodyToMono(BookDto.class)
-                .block();
+                .block(); // 동기 통신 ----> 나중에 비동기로 바꿔야 함
     }
 }
