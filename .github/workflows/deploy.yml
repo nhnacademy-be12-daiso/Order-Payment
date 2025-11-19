@@ -77,7 +77,7 @@ jobs:
             # - 네트워크: team3-network
             echo "🚀 order_payments 실행 중..."
             docker run -d \
-              --name shop \
+              --name order_payments \
               --network team3-network \
               --restart unless-stopped \
               -e EUREKA_CLIENT_SERVICEURL_DEFAULTZONE="http://eureka:8761/eureka/" \
