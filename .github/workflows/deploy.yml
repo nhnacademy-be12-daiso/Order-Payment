@@ -1,4 +1,4 @@
-name: Order_payments - Build and Deploy
+name: Order-payment - Build and Deploy (Compose)
 
 on:
   push:
@@ -38,9 +38,9 @@ jobs:
           context: .
           file: ./Dockerfile
           push: true
-          tags: ${{ secrets.DOCKER_USERNAME }}/order_payments:latest
+          tags: ${{ secrets.DOCKER_USERNAME }}/team3-order-payment:latest
 
-      - name: Deploy to Server
+      - name: Deploy to Server (Docker Compose Orchestration)
         uses: appleboy/ssh-action@master
         with:
           host: ${{ secrets.SERVER_HOST }}
@@ -50,25 +50,17 @@ jobs:
           script: |
             set -e
             
-            echo "🔄 Order_payments 배포 시작..."
+            echo "team3-order-payment 배포 시작 (Compose Integration)..."
             
-            # 네트워크 확인 (에러 로그 방지용으로 개선)
-            docker network inspect team3-network >/dev/null 2>&1 || docker network create team3-network
+            export DOCKER_USERNAME="${{ secrets.DOCKER_USERNAME }}"
+            export DOCKER_PASSWORD="${{ secrets.DOCKER_PASSWORD }}"
             
-            # ★ 수정된 부분: 조건문 없이 무조건 삭제 시도
-            echo "🧹 기존 컨테이너 강제 삭제 (없으면 통과)"
-            docker rm -f order_payments || true
+            cd ~/infra
             
-            echo "⬇️ 이미지 Pull"
-            docker pull ${{ secrets.DOCKER_USERNAME }}/order_payments:latest
+            echo "$DOCKER_PASSWORD" | docker login -u "$DOCKER_USERNAME" --password-stdin
+
+            docker compose --env-file .env up -d --no-deps --force-recreate team3-order-payment
             
-            echo "🚀 order_payments 실행"
-            docker run -d \
-              --name order_payments \
-              --network team3-network \
-              --restart unless-stopped \
-              -e EUREKA_CLIENT_SERVICEURL_DEFAULTZONE="http://eureka:8761/eureka/" \
-              ${{ secrets.DOCKER_USERNAME }}/order_payments:latest
-            
+            echo "team3-order-payment 실행 완료!"
             sleep 5
-            docker logs --tail 20 order_payments
+            docker logs --tail 20 team3-order-payment
