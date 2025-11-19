@@ -17,5 +17,7 @@ public interface CartDetailRepository extends JpaRepository<CartDetail, Long> {
     void removeByCartUserId(Long userId);
 
     // 특정 사용자의 특정 책이 있는지 확인
-    boolean existsByBookIdAndCartUserId(Long bookId, Long userId);
+    boolean existsByBookIdAndCartUserId(Long userId, Long bookId);
+
+    CartDetail findByBookIdAndCartUserId(Long userId, Long bookId);
 }

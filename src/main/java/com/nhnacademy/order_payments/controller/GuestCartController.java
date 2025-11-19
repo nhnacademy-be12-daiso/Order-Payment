@@ -22,7 +22,7 @@ public class GuestCartController {
 
     // 장바구니 추가
     @PostMapping
-    public ResponseEntity<Void> addCartItem(@RequestParam Long bookId,
+    public ResponseEntity<Void> addCartBook(@RequestParam Long bookId,
                                             @RequestParam Integer quantity,
                                             @RequestHeader("X-Guest-ID") String guestId) {
         guestCartService.addBook(guestId, bookId, quantity);

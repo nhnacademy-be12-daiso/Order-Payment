@@ -26,7 +26,7 @@ public class MemberCartService {
 
     // 회원 장바구니 담는 로직 + 업데이트 로직?
     @Transactional
-    public void addCartItem(Long userId, long bookId, int quantity) {
+    public void addBook(Long userId, long bookId, int quantity) {
         Cart existCart = cartRepository.findById(userId).orElse(
                 new Cart(userId)
         );
@@ -40,13 +40,19 @@ public class MemberCartService {
     // -----> 필요하면 Update 로직 생성
 
     // 회원 장바구니 목록 반환
-    public List<CartDetail> getCartItemList(Long userId) {
+    public List<CartDetail> getCartBookList(Long userId) {
         Cart cart = cartRepository.findCartWithDetailsByUserId(userId);
         return cart.getDetails();
     }
 
+    // 회원 장바구니 특정 도서 반환
+    public CartDetail getCartBook(Long userId, Long bookId) {
+        return cartDetailRepository.findByBookIdAndCartUserId(userId, bookId);
+        // ----> 검증 로직 필요하지 않나?
+    }
+
     // 회원 장바구니 일괄 삭제
-    public void deleteAllCartItem(Long userId) {
+    public void deleteAllCartBook(Long userId) {
 
         if(!cartRepository.existsByCartId(userId)) {
             throw new NotFoundUserCartException(userId);
@@ -57,7 +63,7 @@ public class MemberCartService {
     }
 
     // 회원 장바구니 특정 도서 삭제
-    public void deleteCartItem(Long userId, long bookId) {
+    public void deleteCartBook(Long userId, long bookId) {
         if(!cartDetailRepository.existsByBookIdAndCartUserId(userId, bookId)) {
             throw new CartDetailNotFoundException(bookId);
         }
