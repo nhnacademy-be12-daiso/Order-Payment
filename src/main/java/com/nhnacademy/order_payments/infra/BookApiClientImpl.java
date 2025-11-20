@@ -2,6 +2,7 @@ package com.nhnacademy.order_payments.infra;
 
 import com.nhnacademy.order_payments.dto.BookDto;
 import jakarta.annotation.PostConstruct;
+import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.http.HttpStatusCode;
 import org.springframework.stereotype.Service;

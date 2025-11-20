@@ -1,7 +1,7 @@
 package com.nhnacademy.order_payments.service;
 
 import com.nhnacademy.order_payments.dto.BookDto;
-import com.nhnacademy.order_payments.dto.GuestCartItem;
+import com.nhnacademy.order_payments.dto.BookInfo;
 import com.nhnacademy.order_payments.infra.BookApiClient;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.data.redis.core.HashOperations;
@@ -18,7 +18,7 @@ import java.util.Map;
 public class GuestCartService {
 
     private final RedisTemplate<String, Object> redisTemplate;
-    private final HashOperations<String, Long, GuestCartItem> hashOps;
+    private final HashOperations<String, Long, BookInfo> hashOps;
     private final BookApiClient bookApiClient;
     public GuestCartService(RedisTemplate<String, Object> redisTemplate, BookApiClient bookApiClient) {
         this.redisTemplate = redisTemplate;
@@ -33,23 +33,23 @@ public class GuestCartService {
         BookDto bookDto = bookApiClient.getBookInfo(bookId);
 //        BookDto bookDto = new BookDto("TestBook", 20000); // 테스트 데이터
 
-        GuestCartItem guestCartItem = new GuestCartItem(bookId, bookDto.getTitle(), bookDto.getPrice(), quantity);
+        BookInfo bookInfo = new BookInfo(bookId, bookDto.getTitle(), bookDto.getPrice(), quantity);
 
-        hashOps.put(guestId, bookId, guestCartItem);
+        hashOps.put(guestId, bookId, bookInfo);
         redisTemplate.expire(guestId, Duration.ofDays(1)); // TTL 설정
     }
 
     // 저장된 도서의 목록 반환
-    public Map<Long, GuestCartItem> getBookList(String guestId) {
+    public Map<Long, BookInfo> getBookList(String guestId) {
         isNull(guestId, 1000L); // bookId는 아무 값이나 넣은거
 
         Map<Object, Object> booksMap = redisTemplate.opsForHash().entries(guestId);
-        Map<Long, GuestCartItem> resMap = new HashMap<>();
+        Map<Long, BookInfo> resMap = new HashMap<>();
 
         for(Object obj : booksMap.values()) {
-            GuestCartItem guestCartItem = (GuestCartItem) obj;
-            Long bookId = guestCartItem.bookId();
-            resMap.put(bookId, guestCartItem);
+            BookInfo bookInfo = (BookInfo) obj;
+            Long bookId = bookInfo.bookId();
+            resMap.put(bookId, bookInfo);
         }
 
         return resMap;

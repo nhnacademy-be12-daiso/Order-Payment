@@ -3,6 +3,9 @@ package com.nhnacademy.order_payments.repository;
 import com.nhnacademy.order_payments.entity.CartDetail;
 import jakarta.transaction.Transactional;
 import org.springframework.data.jpa.repository.JpaRepository;
+import org.springframework.data.jpa.repository.Modifying;
+import org.springframework.data.jpa.repository.Query;
+import org.springframework.data.repository.query.Param;
 import org.springframework.stereotype.Repository;
 
 @Repository
@@ -19,5 +22,13 @@ public interface CartDetailRepository extends JpaRepository<CartDetail, Long> {
     // 특정 사용자의 특정 책이 있는지 확인
     boolean existsByBookIdAndCartUserId(Long userId, Long bookId);
 
-    CartDetail findByBookIdAndCartUserId(Long userId, Long bookId);
+    CartDetail findByCartCartIdAndBookId(Long cartId, Long bookId);
+
+    @Modifying
+    @Transactional
+    @Query("update CartDetail cd set cd.quantity = :newQuantity " +
+            "where cd.cart.cartId = :cartId and cd.bookId = :bookId")
+    void updateQuantityByCartDetailId(@Param("cartId") Long cartId,
+                                     @Param("bookId") Long bookId,
+                                     @Param("newQuantity") int newQuantity);
 }

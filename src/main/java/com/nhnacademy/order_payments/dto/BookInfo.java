@@ -1,6 +1,6 @@
 package com.nhnacademy.order_payments.dto;
 
-public record GuestCartItem(
+public record BookInfo(
         Long bookId,
         String title,
         int price,

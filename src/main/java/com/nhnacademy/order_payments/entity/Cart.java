@@ -4,6 +4,7 @@ import jakarta.persistence.*;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.context.annotation.Configuration;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -11,13 +12,15 @@ import java.util.List;
 
 @Slf4j
 @Entity
-@Table(name = "Carts")
+@Table(name = "carts")
 @NoArgsConstructor
 @Getter
 public class Cart {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
+    @Column(name = "cart_id")
     private Long cartId;
+    @Column(name = "user_id")
     private Long userId; // JWT에서 파싱한 userId
 
     @OneToMany(mappedBy = "cart",cascade = CascadeType.ALL)

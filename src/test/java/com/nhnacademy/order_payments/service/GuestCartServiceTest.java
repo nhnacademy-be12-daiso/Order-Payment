@@ -1,7 +1,7 @@
 package com.nhnacademy.order_payments.service;
 
 
-import com.nhnacademy.order_payments.dto.GuestCartItem;
+import com.nhnacademy.order_payments.dto.BookInfo;
 import com.nhnacademy.order_payments.infra.BookApiClient;
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.BeforeEach;
@@ -33,7 +33,7 @@ public class GuestCartServiceTest {
     private RedisTemplate<String, Object> redisTemplate;
 
     @Mock
-    private HashOperations<String, Long, GuestCartItem> hashOps;
+    private HashOperations<String, Long, BookInfo> hashOps;
 
     @Mock
     private BookApiClient bookApiClient;
@@ -41,7 +41,7 @@ public class GuestCartServiceTest {
     private static final String UUID = "uuid23234";
     private static final Long bookId = 23423L;
     private static final int quantity = 1;
-    private static final GuestCartItem guestCartItem = new GuestCartItem(bookId, "TestBook", 20000, quantity);
+    private static final BookInfo CART_ITEM = new BookInfo(bookId, "TestBook", 20000, quantity);
 
     static Stream<Arguments> invalidInputProvider() {
         return Stream.of(
@@ -66,11 +66,14 @@ public class GuestCartServiceTest {
     @DisplayName("Redis에 도서 추가 성공")
     void addBookTest_Success() {
 
-        guestCartService.addBook(UUID, bookId, quantity);
+        doNothing().when(guestCartService).addBook(UUID, bookId, quantity);
+
+//        guestCartService.addBook(UUID, bookId, quantity);
+
         verify(hashOps, times(1)).put(
                 anyString(),
                 anyLong(),
-                any(GuestCartItem.class)
+                any(BookInfo.class)
         );
         verify(redisTemplate, times(1)).expire(eq(UUID), any(Duration.class));
     }

@@ -1,5 +1,6 @@
 package com.nhnacademy.order_payments.controller;
 
+import com.nhnacademy.order_payments.dto.BookInfo;
 import com.nhnacademy.order_payments.entity.CartDetail;
 import com.nhnacademy.order_payments.service.MemberCartService;
 import lombok.extern.slf4j.Slf4j;
@@ -37,15 +38,30 @@ public class MemberCartController {
     }
 
     // 장바구니 특정 책 조회
-    @GetMapping
-    public ResponseEntity<CartDetail> getCartBook(@RequestParam Long booKId,
+    @GetMapping("{bookId}")
+    public ResponseEntity<BookInfo> getCartBook(@PathVariable Long bookId,
                                                   @RequestHeader("X-Member-ID") Long userId) {
-        CartDetail book = memberCartService.getCartBook(userId, booKId);
+        BookInfo book = memberCartService.getCartBook(userId, bookId);
         return ResponseEntity.ok().body(book);
     }
 
-
     // 장바구니 업데이트
 
-    // 장바구니 삭제
+    // 장바구니 전체 삭제
+    @DeleteMapping("/{bookId}")
+    public ResponseEntity<Void> deleteCartBook(@PathVariable Long bookId,
+                                               @RequestHeader("X-Member-ID") Long userId) {
+
+        memberCartService.deleteCartBook(userId, bookId);
+        return ResponseEntity.ok().build();
+    }
+
+    @DeleteMapping("/all")
+    public ResponseEntity<Void> deleteCartAll(@RequestHeader("X-Member-ID") Long userId) {
+
+        memberCartService.deleteAllCartBook(userId);
+        return ResponseEntity.ok().build();
+    }
+
+
 }
