@@ -1,10 +1,8 @@
 package com.nhnacademy.order_payments.controller;
 
-import com.nhnacademy.order_payments.dto.GuestCartItem;
+import com.nhnacademy.order_payments.dto.BookInfo;
 import com.nhnacademy.order_payments.service.GuestCartService;
-import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
-import org.apache.coyote.Response;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
@@ -22,7 +20,7 @@ public class GuestCartController {
 
     // 장바구니 추가
     @PostMapping
-    public ResponseEntity<Void> addCartItem(@RequestParam Long bookId,
+    public ResponseEntity<Void> addCartBook(@RequestParam Long bookId,
                                             @RequestParam Integer quantity,
                                             @RequestHeader("X-Guest-ID") String guestId) {
         guestCartService.addBook(guestId, bookId, quantity);
@@ -32,9 +30,9 @@ public class GuestCartController {
 
     // 장바구니 전체 목록 조회
     @GetMapping
-    public ResponseEntity<Map<Long, GuestCartItem>> getCartItem(@RequestHeader("X-Guest-ID") String guestId) {
+    public ResponseEntity<Map<Long, BookInfo>> getCartItem(@RequestHeader("X-Guest-ID") String guestId) {
 
-        Map<Long, GuestCartItem> bookList = guestCartService.getBookList(guestId);
+        Map<Long, BookInfo> bookList = guestCartService.getBookList(guestId);
 
         return ResponseEntity.ok().body(bookList);
     }

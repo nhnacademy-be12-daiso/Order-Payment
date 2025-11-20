@@ -6,11 +6,21 @@ import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.repository.query.Param;
 import org.springframework.stereotype.Repository;
 
+import java.util.Optional;
+
 @Repository
 public interface CartRepository extends JpaRepository<Cart, Long> {
 
     // 특정 누군가의 장바구니 조회
     @Query("select c from Cart c join fetch c.details where c.userId = :userId")
-    Cart findCartWithDetailsByUserId(@Param("userId") Long userId);
+    Optional<Cart> findCartWithDetailsByUserId(@Param("userId") Long userId);
 
+    // 특정 사용자의 장바구니 존재 여부
+    boolean existsByUserId(Long userId);
+
+    // userId로 cart 가져옴
+    Optional<Cart> findByUserId(Long userId);
+
+//    Long findCartIdByUserId(Long userId);
+//    --> ?
 }

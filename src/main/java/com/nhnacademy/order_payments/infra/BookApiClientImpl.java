@@ -2,6 +2,7 @@ package com.nhnacademy.order_payments.infra;
 
 import com.nhnacademy.order_payments.dto.BookDto;
 import jakarta.annotation.PostConstruct;
+import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.http.HttpStatusCode;
 import org.springframework.stereotype.Service;
@@ -32,6 +33,6 @@ public class BookApiClientImpl implements BookApiClient {
                 .onStatus(HttpStatusCode::isError, clientResponse ->
                         Mono.error(new RuntimeException("책 API 통신 오류 : " + clientResponse)))
                 .bodyToMono(BookDto.class)
-                .block();
+                .block(); // 동기 통신 ----> 나중에 비동기로 바꿔야 함
     }
 }

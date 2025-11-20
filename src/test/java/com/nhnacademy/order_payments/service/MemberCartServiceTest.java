@@ -46,7 +46,7 @@ public class MemberCartServiceTest {
 
         when(bookApiClient.getBookInfo(bookId)).thenReturn(mockBook);
 
-        memberCartService.addCartItem(userId, bookId, 1);
+        memberCartService.addBook(userId, bookId, 1);
 
         verify(cartDetailRepository, times(1)).save(any(CartDetail.class));
 
