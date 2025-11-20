@@ -7,6 +7,7 @@ import lombok.extern.slf4j.Slf4j;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
+import java.awt.print.Book;
 import java.util.List;
 
 @Slf4j
@@ -24,15 +25,18 @@ public class MemberCartController {
     public ResponseEntity<Void> addCartBook(@RequestParam Long bookId,
                                             @RequestParam Integer quantity,
                                             @RequestHeader("X-Member-ID") Long userId) {
-        memberCartService.addBook(userId, bookId, quantity);
+        memberCartService.addCartItem(userId, bookId, quantity);
         return ResponseEntity.ok().build();
     }
 
-    // 장바구니 전체 조회
+//    // 장바구니 전체 조회
     @GetMapping
-    public ResponseEntity<List<CartDetail>> getCartBookList(@RequestHeader("X-Member-ID") Long userId) {
+    public ResponseEntity<List<BookInfo>> getCartBookList(@RequestHeader("X-Member-ID") Long userId) {
 
-        List<CartDetail> bookList = memberCartService.getCartBookList(userId);
+        List<BookInfo> bookList = memberCartService.getCartItemList(userId);
+        if(bookList.isEmpty()) {
+            log.info("장바구니가 비어있습니다.");
+        }
 
         return ResponseEntity.ok().body(bookList);
     }
@@ -40,26 +44,23 @@ public class MemberCartController {
     // 장바구니 특정 책 조회
     @GetMapping("{bookId}")
     public ResponseEntity<BookInfo> getCartBook(@PathVariable Long bookId,
-                                                  @RequestHeader("X-Member-ID") Long userId) {
-        BookInfo book = memberCartService.getCartBook(userId, bookId);
+                                                @RequestHeader("X-Member-ID") Long userId) {
+        BookInfo book = memberCartService.getCartItem(userId, bookId);
         return ResponseEntity.ok().body(book);
     }
 
-    // 장바구니 업데이트
-
-    // 장바구니 전체 삭제
+//     장바구니 일부 삭제
     @DeleteMapping("/{bookId}")
     public ResponseEntity<Void> deleteCartBook(@PathVariable Long bookId,
                                                @RequestHeader("X-Member-ID") Long userId) {
-
-        memberCartService.deleteCartBook(userId, bookId);
+        memberCartService.removeCartItem(userId, bookId);
         return ResponseEntity.ok().build();
     }
 
-    @DeleteMapping("/all")
+    // 장바구니 전체 삭제
+    @DeleteMapping
     public ResponseEntity<Void> deleteCartAll(@RequestHeader("X-Member-ID") Long userId) {
-
-        memberCartService.deleteAllCartBook(userId);
+        memberCartService.removeCartAllItems(userId);
         return ResponseEntity.ok().build();
     }
 

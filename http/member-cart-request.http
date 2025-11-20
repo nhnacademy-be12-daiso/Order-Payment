@@ -2,12 +2,17 @@
 
 
 ### 멤버 장바구니 추가
-POST localhost:8080/member/carts?bookId=1234&quantity=1
+POST localhost:8080/member/carts?bookId=1234&quantity=3
 Content-Type: application/x-www-form-urlencoded
 X-Member-ID: 23423123
 
 ### 멤버 장바구니 추가
 POST localhost:8080/member/carts?bookId=4321&quantity=2
+Content-Type: application/x-www-form-urlencoded
+X-Member-ID: 23423123
+
+### 멤버 장바구니 전체 조회
+GET localhost:8080/member/carts
 Content-Type: application/x-www-form-urlencoded
 X-Member-ID: 23423123
 
@@ -22,7 +27,7 @@ Content-Type: application/x-www-form-urlencoded
 X-Member-ID: 23423123
 
 ### 멤버 장바구니 전체 삭제
-DELETE localhost:8080/member/carts/all
+DELETE localhost:8080/member/carts
 Content-Type: application/x-www-form-urlencoded
 X-Member-ID: 23423123
 
