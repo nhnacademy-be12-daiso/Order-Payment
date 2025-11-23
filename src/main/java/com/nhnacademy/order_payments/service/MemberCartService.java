@@ -103,7 +103,6 @@ public class MemberCartService {
 
         return new BookInfo(cartDetail.getBookId(), bookDto.getTitle(), bookDto.getPrice(), cartDetail.getQuantity());
     }
-
     // 회원 장바구니 일괄 삭제
     @Transactional
     public void removeCartAllItems(Long userId) {
