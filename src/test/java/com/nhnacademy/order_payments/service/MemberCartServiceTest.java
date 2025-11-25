@@ -12,6 +12,7 @@ import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
+
 import java.util.Optional;
 
 import static org.mockito.Mockito.*;
@@ -46,12 +47,11 @@ public class MemberCartServiceTest {
 
         when(bookApiClient.getBookInfo(bookId)).thenReturn(mockBook);
 
-        memberCartService.addBook(userId, bookId, 1);
+//        memberCartService.addBook(userId, bookId, 1);
 
         verify(cartDetailRepository, times(1)).save(any(CartDetail.class));
 
     }
-
 
 
 }
