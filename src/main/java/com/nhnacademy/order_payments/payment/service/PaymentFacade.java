@@ -6,11 +6,14 @@ import com.nhnacademy.order_payments.dto.response.CancelResponse;
 import com.nhnacademy.order_payments.dto.response.ConfirmResponse;
 import com.nhnacademy.order_payments.entity.Order;
 import com.nhnacademy.order_payments.entity.Payment;
+import com.nhnacademy.order_payments.entity.PaymentHistory;
 import com.nhnacademy.order_payments.entity.PointHistory;
 import com.nhnacademy.order_payments.exception.BusinessException;
+import com.nhnacademy.order_payments.model.PaymentEventType;
 import com.nhnacademy.order_payments.model.PaymentMethod;
 import com.nhnacademy.order_payments.payment.provider.PaymentProvider;
 import com.nhnacademy.order_payments.repository.OrderRepository;
+import com.nhnacademy.order_payments.repository.PaymentHistoryRepository;
 import com.nhnacademy.order_payments.repository.PaymentRepository;
 import com.nhnacademy.order_payments.repository.PointHistoryRepository;
 import jakarta.transaction.Transactional;
@@ -24,12 +27,14 @@ public class PaymentFacade {
     private final OrderRepository orders;
     private final PaymentRepository payments;
     private final PointHistoryRepository points;
+    private final PaymentHistoryRepository paymentHistories;
     private final PaymentProvider provider;
 
-    public PaymentFacade(OrderRepository orders, PaymentRepository payments, PointHistoryRepository points, PaymentProvider provider) {
+    public PaymentFacade(OrderRepository orders, PaymentRepository payments, PointHistoryRepository points, PaymentHistoryRepository paymentHistories, PaymentProvider provider) {
         this.orders = orders;
         this.payments = payments;
         this.points = points;
+        this.paymentHistories = paymentHistories;
         this.provider = provider;
     }
 
@@ -73,6 +78,16 @@ public class PaymentFacade {
         if (result.approvedAtIso() != null) p.setApprovedAt(OffsetDateTime.parse(result.approvedAtIso()));
         payments.save(p);
 
+        // 5-1.결제 이력 저장
+        paymentHistories.save(PaymentHistory.builder()
+                .payment(p)
+                .paymentId(null)
+                .eventType(PaymentEventType.APPROVE)
+                .amount(req.amount())
+                .reason(null)
+                .paymentTime(LocalDateTime.now())
+                .build());
+
         // 6.포인트 사용 기록
         int usedPoint = req.usedPoint() == null ? 0 : req.usedPoint();
         if (usedPoint > 0) {
@@ -111,7 +126,19 @@ public class PaymentFacade {
                     .build());
         }
 
-        // 5.응답만 반환(취소 이력은 추후 생각)
+        // 5.결제 이력 저장(취소/부분취소)
+        PaymentEventType eventType = (cancelAmount == payment.getPaymentCost()) ? PaymentEventType.CANCEL : PaymentEventType.PARTIAL_CANCEL;
+
+        paymentHistories.save(PaymentHistory.builder()
+                .payment(payment)
+                .paymentId(null)
+                .eventType(eventType)
+                .amount(cancelAmount)
+                .reason(req.reason())
+                .paymentTime(LocalDateTime.now())
+                .build());
+
+        // 6.응답만 반환(취소 이력은 추후 생각)
         return new CancelResponse(
                 String.valueOf(order.getOrderNumber()),
                 "CANCELED",
