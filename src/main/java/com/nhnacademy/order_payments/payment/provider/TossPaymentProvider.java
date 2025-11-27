@@ -28,7 +28,7 @@ public class TossPaymentProvider implements PaymentProvider {
                 .bodyValue(body)
                 .retrieve()
                 .bodyToMono(TossConfirmResponse.class)
-                .block();   // 구조상 동기 호출이라 block() 사용
+                .block();   // 동기 호츌
 
         return new ApproveResult(
                 "TOSS",
