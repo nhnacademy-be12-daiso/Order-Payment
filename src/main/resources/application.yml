@@ -1,0 +1,14 @@
+
+
+spring:
+  application:
+    name: TEAM3-ORDER
+
+server:
+  port: 8082
+
+eureka:
+  client:
+    service-url:
+#      defaultZone: http://team3-eureka:8761/eureka/
+      defaultZone: http://localhost:8761/eureka/
