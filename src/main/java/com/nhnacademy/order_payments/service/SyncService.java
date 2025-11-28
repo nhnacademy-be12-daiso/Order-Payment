@@ -27,8 +27,6 @@ public class SyncService {
     @Transactional
     public void syncDB(SyncDto syncDto) {
 
-
-
         for(SyncInfo syncInfo : syncDto.getSyncInfos()) {
             Long userId = syncInfo.userId();
             Long bookId = syncInfo.bookId();
@@ -44,6 +42,20 @@ public class SyncService {
 
             Optional<CartDetail> existingDetailOpt = cartDetailRepository.findByBookIdAndCartUserId(bookId, userId);
 
+            if(bookId == -1) { // 전체 삭제 플래그
+                cartDetailRepository.removeByCartUserId(userId);
+                log.info("[{}] 장바구니 전체 비워짐", userId);
+                break; // 더 이상 순회를 돌 필요가 없음
+            }
+
+
+            if(quantity == 0) { // 삭제 요청 들어온 애들
+                cartDetailRepository.removeCartDetailByBookIdAndCartUserId(bookId, userId);
+                log.info("[{}] 도서 삭제됨 : {}", userId, bookId);
+                continue;
+            }
+
+
             if (existingDetailOpt.isPresent()) {
                 CartDetail existingDetail = existingDetailOpt.get();
 
@@ -58,9 +70,8 @@ public class SyncService {
                 log.info("[{}] 장바구니에 담겨있는 {} 도서의 수량이 {}로 변경되었습니다.", userId, bookId, quantity);
             } else { // 책이 담겨있지 않으면 새롭게 담음
                 CartDetail cartDetail = new CartDetail(existCart, bookId, quantity);
-
                 cartDetailRepository.save(cartDetail);
-                log.info("[{}] 동기화 완료 : {}", userId, bookId);
+                log.info("[{}] 장바구니에 도서 추가 : {}", userId, bookId);
             }
         }
     }
