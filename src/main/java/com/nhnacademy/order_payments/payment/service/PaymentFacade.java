@@ -81,6 +81,9 @@ public class PaymentFacade {
         log.info("[PAYMENT CONFIRM PG_SUCCESS] orderNumber={}, provider={}, method={}, approvedAtIso={}",
                 order.getOrderNumber(), result.provider(), result.method(), result.approvedAtIso());
 
+        //마지막에 추가한것
+        PaymentMethod payMethod = PaymentMethod.fromTossMethod(result.method());
+
         OffsetDateTime approvedAt = null;
         if (result.approvedAtIso() != null && !result.approvedAtIso().isBlank()) {
             try {
@@ -95,10 +98,11 @@ public class PaymentFacade {
                 .order(order)
                 .paymentCost(req.amount())
                 .paymentKey(req.paymentKey())
-                .paymentMethod(PaymentMethod.valueOf(result.method()))
+                .paymentMethod(payMethod)
                 .pgProvider(result.provider())
                 .cardIssuerCode(null)
                 .build();
+
 
         if (approvedAt != null) {
             p.setApprovedAt(approvedAt);
@@ -126,7 +130,7 @@ public class PaymentFacade {
                 String.valueOf(order.getOrderNumber()),
                 "PAID",
                 approvedAt,
-                result.method()
+                payMethod.name()
         );
 
         log.info("[PAYMENT CONFIRM END] orderNumber={}, status={}", order.getOrderNumber(), response.status());
