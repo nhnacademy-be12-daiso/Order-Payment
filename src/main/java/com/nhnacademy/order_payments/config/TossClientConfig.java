@@ -6,16 +6,15 @@ import org.springframework.context.annotation.Configuration;
 import org.springframework.context.annotation.Profile;
 import org.springframework.http.MediaType;
 import org.springframework.web.reactive.function.client.WebClient;
-import javax.crypto.SecretKey;
 
 @Configuration
 @Profile("dev-toss")
 public class TossClientConfig {
 
-    @Value("${payments.toss.base-url}")
+    @Value("${payment.base-url}")
     private String baseUrl;
 
-    @Value("${payments.toss.secret-key}")
+    @Value("${payment.secret-key}")
     private String secretKey;
 
     @Bean
@@ -23,6 +22,7 @@ public class TossClientConfig {
         return WebClient.builder()
                 .baseUrl(baseUrl)
                 .defaultHeaders(headers -> {
+                    //시크릿 키를 base64로 인코딩
                     headers.setBasicAuth(secretKey, "");
                     headers.setContentType(MediaType.APPLICATION_JSON);
                 })

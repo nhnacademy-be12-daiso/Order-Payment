@@ -10,9 +10,7 @@ public record ConfirmRequest(
         @Schema(description = "PG가 발급한 결제 키", example = "fake_key_001")
         String paymentKey,
         @Schema(description = "승인 금액(원)", example = "50000")
-        Integer amount,
-        @Schema(description = "사용 포인트(원)", example = "0")
-        Integer usedPoint
+        Integer amount
 ) {}
 
 
