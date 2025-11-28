@@ -17,18 +17,3 @@ public record ConfirmRequest(
 
 
 
-//package com.nhnacademy.order_payments.dto;
-//
-//import jakarta.validation.constraints.NotBlank;
-//import jakarta.validation.constraints.Positive;
-//import jakarta.validation.constraints.PositiveOrZero;
-//
-////결제 승인 요청 dto
-//public record ConfirmRequest(
-//        @NotBlank String provider, //"Fake" || "Toss"
-//        @NotBlank String orderId, //주문식별자
-//        @NotBlank String paymentKey, //PG에서 받은 키
-//        @Positive Integer amount, //실 결제금
-//        @PositiveOrZero Integer usedPoint //사용한 포인트 금액
-//) {
-//}
