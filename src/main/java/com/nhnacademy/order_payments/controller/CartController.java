@@ -1,7 +1,8 @@
 package com.nhnacademy.order_payments.controller;
 
 import com.nhnacademy.order_payments.dto.BookInfo;
-import com.nhnacademy.order_payments.service.MemberCartService;
+import com.nhnacademy.order_payments.dto.SyncDto;
+import com.nhnacademy.order_payments.service.CartService;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
@@ -13,25 +14,30 @@ import java.util.List;
 @RequestMapping("/carts")
 public class CartController {
 
-    private final MemberCartService memberCartService;
-    public CartController(MemberCartService memberCartService) {
-        this.memberCartService = memberCartService;
+    private final CartService cartService;
+    public CartController(CartService cartService) {
+        this.cartService = cartService;
     }
 
-    // 장바구니 추가
-    @PostMapping
-    public ResponseEntity<Void> addCartBook(@RequestParam Long bookId,
-                                            @RequestParam Integer quantity,
-                                            @RequestHeader("X-Member-ID") Long userId) {
-        memberCartService.addCartItem(userId, bookId, quantity);
-        return ResponseEntity.ok().build();
-    }
 
-    //    // 장바구니 전체 조회
+
+//    -------------------------------
+
+
+//     장바구니 추가
+//    @PostMapping
+//    public ResponseEntity<Void> addCartBook(@RequestParam Long bookId,
+//                                            @RequestParam Integer quantity,
+//                                            @RequestHeader("X-User-Id") Long userId) {
+//        cartService.addCartItem(userId, bookId, quantity);
+//        return ResponseEntity.ok().build();
+//    }
+
+    // 장바구니 전체 조회
     @GetMapping
-    public ResponseEntity<List<BookInfo>> getCartBookList(@RequestHeader("X-Member-ID") Long userId) {
+    public ResponseEntity<List<BookInfo>> getCartBookList(@RequestHeader("X-User-Id") Long userId) {
 
-        List<BookInfo> bookList = memberCartService.getCartItemList(userId);
+        List<BookInfo> bookList = cartService.getCartItemList(userId);
         if(bookList.isEmpty()) {
             log.info("장바구니가 비어있습니다.");
         }
@@ -42,24 +48,23 @@ public class CartController {
     // 장바구니 특정 책 조회
     @GetMapping("{bookId}")
     public ResponseEntity<BookInfo> getCartBook(@PathVariable Long bookId,
-                                                @RequestHeader("X-Member-ID") Long userId) {
-        BookInfo book = memberCartService.getCartItem(userId, bookId);
+                                                @RequestHeader("X-User-Id") Long userId) {
+        BookInfo book = cartService.getCartItem(userId, bookId);
         return ResponseEntity.ok().body(book);
     }
 
-    //     장바구니 일부 삭제
+    // 장바구니 일부 삭제
     @DeleteMapping("/{bookId}")
     public ResponseEntity<Void> deleteCartBook(@PathVariable Long bookId,
-                                               @RequestHeader("X-Member-ID") Long userId) {
-        memberCartService.removeCartItem(userId, bookId);
+                                               @RequestHeader("X-User-Id") Long userId) {
+        cartService.removeCartItem(userId, bookId);
         return ResponseEntity.ok().build();
     }
 
     // 장바구니 전체 삭제
     @DeleteMapping
-    public ResponseEntity<Void> deleteCartAll(@RequestHeader("X-Member-ID") Long userId) {
-        memberCartService.removeCartAllItems(userId);
+    public ResponseEntity<Void> deleteCartAll(@RequestHeader("X-User-Id") Long userId) {
+        cartService.removeCartAllItems(userId);
         return ResponseEntity.ok().build();
     }
-
 }

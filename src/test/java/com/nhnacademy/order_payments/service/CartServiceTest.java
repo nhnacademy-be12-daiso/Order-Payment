@@ -18,10 +18,10 @@ import static org.mockito.Mockito.*;
 
 
 @ExtendWith(MockitoExtension.class)
-public class MemberCartServiceTest {
+public class CartServiceTest {
 
     @InjectMocks
-    private MemberCartService memberCartService;
+    private CartService cartService;
 
     @Mock
     private CartRepository cartRepository;

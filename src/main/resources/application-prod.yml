@@ -1,0 +1,45 @@
+
+
+spring:
+  application:
+    name: team3-order-payment
+
+server:
+  port: 8082
+
+  # 1. 데이터베이스 접속 정보
+  datasource:
+    # 암호화 옵션과 PublicKeyRetrieval 옵션이 포함된 URL
+    url: jdbc:mysql://10.116.64.14:13306/nhn_academy_14?useSSL=false&serverTimezone=UTC&characterEncoding=UTF-8&allowPublicKeyRetrieval=true
+    username: nhn_academy_14
+    password: asdfasdf # 실제 비밀번호 사용
+
+  # 2. JPA/Hibernate 설정
+  jpa:
+    hibernate:
+      ddl-auto: create # 엔티티 기반으로 테이블 자동 생성 (개발용)
+    show-sql: true
+    properties:
+      hibernate:
+        format_sql: true # SQL 쿼리를 보기 좋게 정렬
+
+  # 3. Redis 접속 정보
+  data:
+    redis:
+      host: localhost
+      port: 6379
+
+# 4. 유레카 (Eureka) 설정 - 서비스 클라이언트
+eureka:
+  client:
+    service-url:
+      #      defaultZone: http://team3-eureka:8761/eureka/
+      defaultZone: http://localhost:8761/eureka/
+  instance:
+    # 인스턴스 ID 대신 IP 주소를 등록하여 사용 (MSA 환경에서 권장)
+    prefer-ip-address: true
+
+# 5. 외부 API 설정 (FeignClient/WebClient 사용 대상)
+book:
+  api:
+    url: http://localhost:8081

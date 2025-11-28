@@ -12,25 +12,23 @@ import com.nhnacademy.order_payments.repository.CartDetailRepository;
 import com.nhnacademy.order_payments.repository.CartRepository;
 import jakarta.transaction.Transactional;
 import lombok.extern.slf4j.Slf4j;
-import org.springframework.data.web.PageableDefault;
 import org.springframework.stereotype.Service;
 
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
-import java.util.Optional;
 
 @Slf4j
 @Service
-public class MemberCartService {
+public class CartService {
 
     private final CartRepository cartRepository;
     private final CartDetailRepository cartDetailRepository;
     private final BookApiClient bookApiClient;
 
-    public MemberCartService(CartRepository cartRepository,
-                             CartDetailRepository cartDetailRepository,
-                             BookApiClient bookApiClient // 임시
+    public CartService(CartRepository cartRepository,
+                       CartDetailRepository cartDetailRepository,
+                       BookApiClient bookApiClient // 임시
     ) {
         this.cartRepository = cartRepository;
         this.cartDetailRepository = cartDetailRepository;

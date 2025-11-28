@@ -8,6 +8,8 @@ import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.repository.query.Param;
 import org.springframework.stereotype.Repository;
 
+import java.util.Optional;
+
 @Repository
 public interface CartDetailRepository extends JpaRepository<CartDetail, Long> {
 
@@ -21,6 +23,8 @@ public interface CartDetailRepository extends JpaRepository<CartDetail, Long> {
     boolean existsByBookIdAndCartUserId(Long bookId, Long userId);
 
     CartDetail findByCartCartIdAndBookId(Long cartId, Long bookId);
+
+    Optional<CartDetail> findByBookIdAndCartUserId(Long bookId, Long userId);
 
     // 수량 변경
     @Modifying(clearAutomatically = true) // ---> 캐시 자동 비우기
