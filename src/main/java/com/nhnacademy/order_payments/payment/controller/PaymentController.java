@@ -1,15 +1,16 @@
-package  com.nhnacademy.order_payments.payment.controller;
+package com.nhnacademy.order_payments.payment.controller;
 
 import com.nhnacademy.order_payments.dto.request.CancelRequest;
 import com.nhnacademy.order_payments.dto.request.ConfirmRequest;
+import com.nhnacademy.order_payments.dto.request.FailRequest;
 import com.nhnacademy.order_payments.dto.response.CancelResponse;
 import com.nhnacademy.order_payments.dto.response.ConfirmResponse;
 import com.nhnacademy.order_payments.payment.service.PaymentFacade;
-import io.swagger.v3.oas.annotations.tags.Tag;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.media.Content;
 import io.swagger.v3.oas.annotations.media.Schema;
 import io.swagger.v3.oas.annotations.responses.ApiResponse;
+import io.swagger.v3.oas.annotations.tags.Tag;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import org.springframework.web.bind.annotation.PostMapping;
@@ -17,13 +18,12 @@ import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
-import java.awt.*;
-
 @RestController
 @RequestMapping("/api/payments")
 @RequiredArgsConstructor
-@Tag(name = "Payments", description = "결제 승인/취소 API")
+@Tag(name = "Payments", description = "결제 승인/취소/환불/실패 API")
 public class PaymentController {
+
     private final PaymentFacade facade;
 
     @Operation(
@@ -35,7 +35,6 @@ public class PaymentController {
                     @ApiResponse(responseCode = "400", description = "검증 실패(금액 불일치, 주문없음 등)")
             }
     )
-
     @PostMapping("/confirm")
     public ConfirmResponse confirm(@Valid @RequestBody ConfirmRequest req) {
         return facade.confirm(req);
@@ -50,36 +49,32 @@ public class PaymentController {
                     @ApiResponse(responseCode = "400", description = "검증 실패(취소 금액 오류, 결제내역 없음 등)")
             }
     )
-
     @PostMapping("/cancel")
     public CancelResponse cancel(@Valid @RequestBody CancelRequest req) {
         return facade.cancel(req);
     }
+
+    @Operation(
+            summary = "결제 환불",
+            description = "취소와 구분해서 환불 이력을 REFUND 상태로 기록합니다.",
+            responses = {
+                    @ApiResponse(responseCode = "200", description = "환불 완료",
+                            content = @Content(schema = @Schema(implementation = CancelResponse.class))),
+                    @ApiResponse(responseCode = "400", description = "검증 실패(환불 금액 오류, 결제내역 없음 등)")
+            }
+    )
+    @PostMapping("/refund")
+    public CancelResponse refund(@Valid @RequestBody CancelRequest req) {
+        return facade.refund(req);
+    }
+
+    @Operation(
+            summary = "결제 실패 기록",
+            description = "토스 위젯에서 실패한 결제 정보를 저장합니다(FAIL 로그)."
+    )
+    @PostMapping("/fail")
+    public void fail(@Valid @RequestBody FailRequest req) {
+        facade.fail(req);
+    }
+
 }
-
-
-
-
-//package com.nhnacademy.order_payments.payment.controller;
-//
-//
-//import com.nhnacademy.order_payments.dto.request.ConfirmRequest;
-//import com.nhnacademy.order_payments.dto.response.ConfirmResponse;
-//import com.nhnacademy.order_payments.payment.service.PaymentFacade;
-//import jakarta.validation.Valid;
-//import org.springframework.web.bind.annotation.PostMapping;
-//import org.springframework.web.bind.annotation.RequestBody;
-//import org.springframework.web.bind.annotation.RequestMapping;
-//import org.springframework.web.bind.annotation.RestController;
-//
-//@RestController
-//@RequestMapping("/api/payments")
-//public class PaymentController {
-//    private final PaymentFacade facade;
-//    public PaymentController(PaymentFacade facade) {this.facade = facade;}
-//
-//    @PostMapping("/confirm")
-//    public ConfirmResponse confirm(@Valid @RequestBody ConfirmRequest req) {
-//        return facade.confirm(req);
-//    }
-//}

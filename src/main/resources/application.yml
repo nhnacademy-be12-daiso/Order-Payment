@@ -3,7 +3,7 @@ server:
 
 spring:
   application:
-    name: order_payments
+    name: team3-payment
 
   profiles:
     active: dev-toss
@@ -34,6 +34,7 @@ spring:
 
 payment:
   base-url: https://api.tosspayments.com/v1/payments
+  # 나중엔 환경변수로 빼는 게 좋음 (예: ${TOSS_SECRET_KEY})
   secret-key: test_gsk_docs_OaPz8L5KdmQXkzRz3y47BMw6
 
 springdoc:
@@ -53,4 +54,19 @@ eureka:
     register-with-eureka: true
     fetch-registry: true
     service-url:
+      # 예시 코드처럼 환경 변수 사용
+      # 예: EUREKA_CLIENT_SERVICEURL_DEFAULTZONE=http://localhost:8761/eureka/
       defaultZone: http://localhost:8761/eureka/
+
+logging:
+  level:
+    org.springframework.web: DEBUG
+
+management:
+  endpoints:
+    web:
+      exposure:
+        include: health
+  endpoint:
+    health:
+      show-details: always

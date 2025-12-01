@@ -2,6 +2,7 @@ package com.nhnacademy.order_payments.payment.service;
 
 import com.nhnacademy.order_payments.dto.request.CancelRequest;
 import com.nhnacademy.order_payments.dto.request.ConfirmRequest;
+import com.nhnacademy.order_payments.dto.request.FailRequest;
 import com.nhnacademy.order_payments.dto.response.CancelResponse;
 import com.nhnacademy.order_payments.dto.response.ConfirmResponse;
 import com.nhnacademy.order_payments.entity.Order;
@@ -14,7 +15,6 @@ import com.nhnacademy.order_payments.payment.provider.PaymentProvider;
 import com.nhnacademy.order_payments.repository.OrderRepository;
 import com.nhnacademy.order_payments.repository.PaymentHistoryRepository;
 import com.nhnacademy.order_payments.repository.PaymentRepository;
-import com.nhnacademy.order_payments.repository.PointHistoryRepository;
 import jakarta.transaction.Transactional;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
@@ -25,6 +25,7 @@ import java.time.OffsetDateTime;
 @Slf4j
 @Service
 public class PaymentFacade {
+
     private final OrderRepository orders;
     private final PaymentRepository payments;
     private final PaymentHistoryRepository paymentHistories;
@@ -81,7 +82,7 @@ public class PaymentFacade {
         log.info("[PAYMENT CONFIRM PG_SUCCESS] orderNumber={}, provider={}, method={}, approvedAtIso={}",
                 order.getOrderNumber(), result.provider(), result.method(), result.approvedAtIso());
 
-        //마지막에 추가한것
+        // Toss method → 우리 enum 으로 매핑
         PaymentMethod payMethod = PaymentMethod.fromTossMethod(result.method());
 
         OffsetDateTime approvedAt = null;
@@ -103,7 +104,6 @@ public class PaymentFacade {
                 .cardIssuerCode(null)
                 .build();
 
-
         if (approvedAt != null) {
             p.setApprovedAt(approvedAt);
         }
@@ -112,7 +112,7 @@ public class PaymentFacade {
         log.info("[PAYMENT CONFIRM SAVED] orderNumber={}, paymentKey={}, method={}, approvedAt={}",
                 order.getOrderNumber(), p.getPaymentKey(), p.getPaymentMethod(), p.getApprovedAt());
 
-        // 5-1. 결제 이력 저장
+        // 5-1. 결제 이력 저장 (APPROVE)
         paymentHistories.save(PaymentHistory.builder()
                 .payment(p)
                 .paymentId(null)
@@ -168,7 +168,7 @@ public class PaymentFacade {
         log.info("[PAYMENT CANCEL PG_SUCCESS] orderNumber={}, provider={}, method={}, canceledAtIso={}",
                 order.getOrderNumber(), result.provider(), result.method(), result.canceledAtIso());
 
-        // 5. 결제 이력 저장(취소/부분취소)
+        // 4. 결제 이력 저장(취소/부분취소)
         PaymentEventType eventType =
                 (cancelAmount == payment.getPaymentCost())
                         ? PaymentEventType.CANCEL
@@ -186,7 +186,7 @@ public class PaymentFacade {
         log.info("[PAYMENT HISTORY SAVED] orderNumber={}, eventType={}, amount={}",
                 order.getOrderNumber(), eventType, cancelAmount);
 
-        // 6. 응답 반환
+        // 5. 응답 반환
         CancelResponse response = new CancelResponse(
                 String.valueOf(order.getOrderNumber()),
                 "CANCELED",
@@ -198,6 +198,81 @@ public class PaymentFacade {
         return response;
     }
 
+    /** 환불 처리 (REFUND 이력용) */
+    @Transactional
+    public CancelResponse refund(CancelRequest req) {
+        log.info("[PAYMENT REFUND START] orderId={}, paymentKey={}, cancelAmount={}, reason={}",
+                req.orderId(), req.paymentKey(), req.cancelAmount(), req.reason());
+
+        // 1. 주문 & 결제 조회
+        Order order = findOrder(req.orderId());
+        Payment payment = payments.findByOrder(order)
+                .orElseThrow(() -> new BusinessException("PAYMENT_NOT_FOUND", "해당 주문의 결제 내역이 없습니다."));
+
+        log.info("[PAYMENT REFUND] found order/payment, orderNumber={}, paymentKey={}, paidAmount={}",
+                order.getOrderNumber(), payment.getPaymentKey(), payment.getPaymentCost());
+
+        // 2. 환불 금액 결정(없으면 전액)
+        int cancelAmount = (req.cancelAmount() == null) ? payment.getPaymentCost() : req.cancelAmount();
+        if (cancelAmount <= 0 || cancelAmount > payment.getPaymentCost()) {
+            log.warn("[PAYMENT REFUND INVALID_AMOUNT] orderNumber={}, cancelAmount={}, paidAmount={}",
+                    order.getOrderNumber(), cancelAmount, payment.getPaymentCost());
+            throw new BusinessException("INVALID_CANCEL_AMOUNT", "환불 금액이 올바르지 않습니다.");
+        }
+
+        // 3. 토스 취소(환불) 호출
+        var result = provider.cancel(new PaymentProvider.CancelCommand(
+                req.orderId(), req.paymentKey(), cancelAmount, req.reason()
+        ));
+
+        log.info("[PAYMENT REFUND PG_SUCCESS] orderNumber={}, provider={}, method={}, canceledAtIso={}",
+                order.getOrderNumber(), result.provider(), result.method(), result.canceledAtIso());
+
+        // 4. 결제 이력 저장 – REFUND
+        paymentHistories.save(PaymentHistory.builder()
+                .payment(payment)
+                .paymentId(null)
+                .eventType(PaymentEventType.REFUND)
+                .amount(cancelAmount)
+                .reason(req.reason())
+                .paymentTime(LocalDateTime.now())
+                .build());
+
+        log.info("[PAYMENT HISTORY SAVED] orderNumber={}, eventType={}, amount={}",
+                order.getOrderNumber(), PaymentEventType.REFUND, cancelAmount);
+
+        // 5. 응답 반환 (status 이름은 프로젝트 규칙에 맞게 바꿔도 됨)
+        CancelResponse response = new CancelResponse(
+                String.valueOf(order.getOrderNumber()),
+                "REFUNDED",
+                result.canceledAtIso(),
+                result.method()
+        );
+
+        log.info("[PAYMENT REFUND END] orderNumber={}, status={}", order.getOrderNumber(), response.status());
+        return response;
+    }
+
+    /** 결제 실패 기록 (FAIL 이력용) */
+    @Transactional
+    public void fail(FailRequest req) {
+        log.info("[PAYMENT FAIL START] orderId={}, paymentKey={}, amount={}, errorCode={}, errorMessage={}",
+                req.getOrderId(), req.getPaymentKey(), req.getAmount(), req.getErrorCode(), req.getErrorMessage());
+
+        // 실패는 실제 Payment 엔티티가 없을 수 있어서 payment=null 로 저장
+        paymentHistories.save(PaymentHistory.builder()
+                .payment(null)
+                .paymentId(null)
+                .eventType(PaymentEventType.FAIL)
+                .amount(req.getAmount())
+                .reason("[" + req.getErrorCode() + "] " + req.getErrorMessage())
+                .paymentTime(LocalDateTime.now())
+                .build());
+
+        log.info("[PAYMENT FAIL HISTORY SAVED] orderId={}, amount={}", req.getOrderId(), req.getAmount());
+    }
+
+    /** 주문 조회 유틸 – 토스용 orderId(타임스탬프 붙은 형태)까지 처리 */
     private Order findOrder(String idOrNo) {
         // 1) 토스용 orderId + 타임스탬프가 붙어오면 타임스탬프를 떼고 줌("000001-1732..." -> "000001")
         String normalized = idOrNo;

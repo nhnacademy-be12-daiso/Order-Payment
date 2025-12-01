@@ -2,7 +2,10 @@ package com.nhnacademy.order_payments.entity;
 
 import com.nhnacademy.order_payments.model.PaymentEventType;
 import jakarta.persistence.*;
-import lombok.*;
+import lombok.AccessLevel;
+import lombok.Builder;
+import lombok.Getter;
+import lombok.NoArgsConstructor;
 
 import java.time.LocalDateTime;
 
@@ -17,19 +20,25 @@ public class PaymentHistory {
     private Long paymentHistoryId;
 
     @ManyToOne
+    @JoinColumn(name = "payment_id")
     private Payment payment;
 
-    private Long paymentId;
+    private Long paymentId;    // 결제 ID를 그대로 저장해두는 컬럼
 
     @Enumerated(EnumType.STRING)
-    private PaymentEventType eventType; //결제 상태(승인, 취소. 환불..)
+    private PaymentEventType eventType; // 결제 상태(승인, 취소, 환불 등)
 
-    private Integer amount;
-    private String reason;
-    private LocalDateTime paymentTime;
+    private Integer amount;           // 금액
+    private String reason;            // 사유(취소, 환불 등)
+    private LocalDateTime paymentTime; // 이력 남긴 시각
 
     @Builder
-    public PaymentHistory(Payment payment, Long paymentId, PaymentEventType eventType, Integer amount, String reason, LocalDateTime paymentTime) {
+    public PaymentHistory(Payment payment,
+                          Long paymentId,
+                          PaymentEventType eventType,
+                          Integer amount,
+                          String reason,
+                          LocalDateTime paymentTime) {
         this.payment = payment;
         this.paymentId = paymentId;
         this.eventType = eventType;
@@ -37,5 +46,4 @@ public class PaymentHistory {
         this.reason = reason;
         this.paymentTime = paymentTime;
     }
-
 }
