@@ -1,27 +1,15 @@
-
-server:
-  port: 8082
-
 spring:
   application:
     name: team3-order-payment
-  h2:
-    console:
-      enabled: true
-      path: /h2-console
-      settings:
-        web-allow-others: true
-
   datasource:
-    # H2 인메모리 DB 사용 (애플리케이션 종료 시 데이터 삭제)
-    url: jdbc:h2:mem:testdb;MODE=MySQL;
-    driver-class-name: org.h2.Driver
-    username: sa
-    password:
+    url: ${SPRING_DATASOURCE_URL}
+    username: ${SPRING_DATASOURCE_USERNAME}
+    password: ${SPRING_DATASOURCE_PASSWORD}
+    driver-class-name: com.mysql.cj.jdbc.Driver
 
   jpa:
     hibernate:
-      ddl-auto: create-drop
+      ddl-auto: update
       naming:
         physical-strategy: org.hibernate.boot.model.naming.PhysicalNamingStrategyStandardImpl
     show-sql: true
@@ -30,11 +18,11 @@ spring:
         format_sql: true
         dialect: org.hibernate.dialect.MySQLDialect
 
-#  rabbitmq:
-#    host: ${SPRING_RABBITMQ_HOST}
-#    port: ${SPRING_RABBITMQ_PORT}
-#    username: ${SPRING_RABBITMQ_USERNAME}
-#    password: ${SPRING_RABBITMQ_PASSWORD}
+  rabbitmq:
+    host: ${SPRING_RABBITMQ_HOST}
+    port: ${SPRING_RABBITMQ_PORT}
+    username: ${SPRING_RABBITMQ_USERNAME}
+    password: ${SPRING_RABBITMQ_PASSWORD}
 
 eureka:
   instance:
@@ -43,7 +31,7 @@ eureka:
     register-with-eureka: true
     fetch-registry: true
     service-url:
-      defaultZone: http://localhost:8761/eureka/
+      defaultZone: ${EUREKA_CLIENT_SERVICEURL_DEFAULTZONE}
 
 logging:
   level:
@@ -59,6 +47,7 @@ management:
     health:
       show-details: always
 
-#payment:
-#  base-url: ${TOSS_URL}
-#  secret-key: ${TOSS_SECRET_KEY}
+
+payment:
+  base-url: ${TOSS_URL}
+  secret-key: ${TOSS_SECRET_KEY}
