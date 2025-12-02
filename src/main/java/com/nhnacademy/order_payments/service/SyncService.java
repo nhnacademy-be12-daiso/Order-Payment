@@ -4,7 +4,6 @@ import com.nhnacademy.order_payments.dto.SyncDto;
 import com.nhnacademy.order_payments.dto.SyncInfo;
 import com.nhnacademy.order_payments.entity.Cart;
 import com.nhnacademy.order_payments.entity.CartDetail;
-import com.nhnacademy.order_payments.infra.BookApiClient;
 import com.nhnacademy.order_payments.repository.CartDetailRepository;
 import com.nhnacademy.order_payments.repository.CartRepository;
 import jakarta.transaction.Transactional;

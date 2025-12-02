@@ -10,9 +10,9 @@ server:
   # 1. 데이터베이스 접속 정보
   datasource:
     # 암호화 옵션과 PublicKeyRetrieval 옵션이 포함된 URL
-    url: jdbc:mysql://10.116.64.14:13306/nhn_academy_14?useSSL=false&serverTimezone=UTC&characterEncoding=UTF-8&allowPublicKeyRetrieval=true
-    username: nhn_academy_14
-    password: asdfasdf # 실제 비밀번호 사용
+    url: jdbc:mysql://s4.java21.net:13306/project_be12_team3?useSSL=false&serverTimezone=UTC&characterEncoding=UTF-8&allowPublicKeyRetrieval=true
+    username: project_be12_team3
+    password: Vu52gc0i(mNxDJyI
 
   # 2. JPA/Hibernate 설정
   jpa:
