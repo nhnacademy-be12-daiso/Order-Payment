@@ -1,9 +1,7 @@
 package com.nhnacademy.order_payments.dto;
 
-public record BookInfo(
+public record SyncInfo(
+        Long userId,
         Long bookId,
-        String title,
-        int price,
         int quantity
-) {
-}
+) {}

@@ -8,19 +8,26 @@ import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.repository.query.Param;
 import org.springframework.stereotype.Repository;
 
+import java.util.List;
+import java.util.Optional;
+
 @Repository
 public interface CartDetailRepository extends JpaRepository<CartDetail, Long> {
 
     // 특정 사용자의 장바구니에서 특정 책을 삭제
-    void removeCartDetailByBookIdAndCartUserId(Long bookId, Long userId);
+    void removeByBookIdInAndCartUserId(List<Long> bookId, Long userId);
 
     // 특정 사용자의 장바구니에서 모든 책을 삭제
     void removeByCartUserId(Long userId);
+
+    List<CartDetail> findAllByCartCartIdAndBookIdIn(Long cartId, List<Long> bookIds);
 
     // 특정 사용자의 특정 책이 있는지 확인
     boolean existsByBookIdAndCartUserId(Long bookId, Long userId);
 
     CartDetail findByCartCartIdAndBookId(Long cartId, Long bookId);
+
+    Optional<CartDetail> findByBookIdAndCartUserId(Long bookId, Long userId);
 
     // 수량 변경
     @Modifying(clearAutomatically = true) // ---> 캐시 자동 비우기
