@@ -31,3 +31,8 @@ build/
 
 ### VS Code ###
 .vscode/
+
+
+# 로컬 개발 환경 설정을 Git 추적 대상에서 제외
+application-dev.yml
+application-prod.yml
