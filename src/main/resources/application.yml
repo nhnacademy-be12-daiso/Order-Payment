@@ -49,6 +49,5 @@ management:
 
 
 payment:
-  toss:
-    base-url: ${TOSS_URL}
-    secret-key: ${TOSS_SECRET_KEY}
+  base-url: ${TOSS_URL}
+  secret-key: ${TOSS_SECRET_KEY}

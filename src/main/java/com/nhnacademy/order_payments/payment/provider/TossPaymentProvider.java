@@ -3,7 +3,6 @@ package com.nhnacademy.order_payments.payment.provider;
 import com.nhnacademy.order_payments.exception.BusinessException;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
-import org.springframework.context.annotation.Profile;
 import org.springframework.http.HttpStatusCode;
 import org.springframework.stereotype.Component;
 import org.springframework.web.reactive.function.client.WebClient;
@@ -11,7 +10,6 @@ import reactor.core.publisher.Mono;
 
 import java.util.Map;
 
-@Profile("dev-toss")
 @Component
 @RequiredArgsConstructor
 @Slf4j
@@ -103,15 +101,25 @@ public class TossPaymentProvider implements PaymentProvider {
         private String method;
         private String approvedAt;
 
-        public String getMethod() { return method; }
-        public String getApprovedAt() { return approvedAt; }
+        public String getMethod() {
+            return method;
+        }
+
+        public String getApprovedAt() {
+            return approvedAt;
+        }
     }
 
     public static class TossCancelResponse {
         private String method;
         private String canceledAt;
 
-        public String getMethod() { return method; }
-        public String getCanceledAt() { return canceledAt; }
+        public String getMethod() {
+            return method;
+        }
+
+        public String getCanceledAt() {
+            return canceledAt;
+        }
     }
 }
