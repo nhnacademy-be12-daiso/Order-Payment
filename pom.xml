@@ -23,9 +23,6 @@
 
         <!-- Spring Cloud 2025.0.x 는 Spring Boot 3.5.x 와 호환 -->
         <spring-cloud.version>2025.0.0</spring-cloud.version>
-
-        <!-- Lombok 버전 통일 -->
-        <lombok.version>1.18.34</lombok.version>
     </properties>
 
     <!-- Spring Cloud BOM (Eureka 등 버전 관리용) -->
@@ -133,9 +130,10 @@
             <plugin>
                 <groupId>org.apache.maven.plugins</groupId>
                 <artifactId>maven-compiler-plugin</artifactId>
-                <version>3.14.1</version>
+                <version>3.13.0</version>
                 <configuration>
                     <release>${java.version}</release>
+                    <forceJavacCompilerUse>true</forceJavacCompilerUse>
                     <annotationProcessorPaths>
                         <path>
                             <groupId>org.projectlombok</groupId>
