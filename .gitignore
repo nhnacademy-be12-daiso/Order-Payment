@@ -31,3 +31,7 @@ build/
 
 ### VS Code ###
 .vscode/
+
+# 이건 필요 없음
+src/main/resources/application-dev.yml
+src/main/resources/application-prod.yml
