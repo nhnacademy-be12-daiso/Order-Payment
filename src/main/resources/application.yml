@@ -1,28 +1,70 @@
 spring:
   application:
     name: team3-order-payment
+
   datasource:
-    url: ${SPRING_DATASOURCE_URL}
-    username: ${SPRING_DATASOURCE_USERNAME}
-    password: ${SPRING_DATASOURCE_PASSWORD}
+    url: jdbc:mysql://s4.java21.net:13306/project_be12_team3?useSSL=false&serverTimezone=Asia/Seoul&allowPublicKeyRetrieval=true
+    username: project_be12_team3
+    password: 'Vu52gc0i(mNxDJyI'
     driver-class-name: com.mysql.cj.jdbc.Driver
 
   jpa:
     hibernate:
-      ddl-auto: update # \uAC1C\uBC1C\uC6A9
+      ddl-auto: update
       naming:
         physical-strategy: org.hibernate.boot.model.naming.PhysicalNamingStrategyStandardImpl
-    show-sql: true     # SQL \uB85C\uADF8 \uBCF4\uAE30
+    show-sql: true
     properties:
       hibernate:
         format_sql: true
         dialect: org.hibernate.dialect.MySQLDialect
 
   rabbitmq:
-    host: ${SPRING_RABBITMQ_HOST}
-    port: ${SPRING_RABBITMQ_PORT}
-    username: ${SPRING_RABBITMQ_USERNAME}
-    password: ${SPRING_RABBITMQ_PASSWORD}
+    host: s4.java21.net
+    port: 5672
+    username: admin
+    password: 'nhnacademy123!'
+
+  data:
+    redis:                             # [payment 추가] 필요 시 Redis 사용
+      host: s4.java21.net
+      port: 6379
+      password: '*N2vya7H@muDTwdNMR!'
+      database: 375
+
+  profiles:
+    active: dev-toss                   # [payment 추가] 토스 테스트용 프로필 이름
+
+  sql:
+    init:
+      mode: always                     # [payment 추가] data.sql 등 초기 SQL 실행이 필요하면 유지
+
+  h2:
+    console:                           # [payment 추가] H2 콘솔이 필요하면 유지, MySQL만 쓰면 삭제 가능
+      enabled: true
+      path: /h2-console
+
+server:
+  port: 8082
+
+# -------------- 여기부터 payment 전용 설정 --------------
+
+payment:                               # [payment 추가] Toss 결제 API 설정
+  base-url: https://api.tosspayments.com/v1/payments
+  # 나중엔 환경변수로 빼는 게 좋음 (예: ${TOSS_SECRET_KEY})
+  secret-key: test_gsk_docs_OaPz8L5KdmQXkzRz3y47BMw6
+
+springdoc:                             # [payment 추가] Swagger/OpenAPI 설정
+  swagger-ui:
+    path: /swagger-ui.html
+    enabled: true
+    url: /v3/api-docs
+  api-docs:
+    enabled: true
+  packages-to-scan: com.nhnacademy.order_payments.payment.controller
+  paths-to-match: /api/**
+
+# -------------- 공통(eureka, logging, health) --------------
 
 eureka:
   instance:
@@ -31,7 +73,7 @@ eureka:
     register-with-eureka: true
     fetch-registry: true
     service-url:
-      defaultZone: ${EUREKA_CLIENT_SERVICEURL_DEFAULTZONE}
+      defaultZone: http://team3-eureka:8761/eureka/
 
 logging:
   level:

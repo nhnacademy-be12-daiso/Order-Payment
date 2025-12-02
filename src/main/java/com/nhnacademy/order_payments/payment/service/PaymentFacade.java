@@ -43,10 +43,10 @@ public class PaymentFacade {
 
     /** 결제 승인 */
     @Transactional
-    public ConfirmResponse confirm(ConfirmRequest req) {
-        // 결제 요청 로그
-        log.info("[PAYMENT CONFIRM START] orderId={}, paymentKey={}, amount={}",
-                req.orderId(), req.paymentKey(), req.amount());
+    public ConfirmResponse confirm(Long userId, ConfirmRequest req) {
+        log.info("[PAYMENT CONFIRM START] userId={}, orderId={}, paymentKey={}, amount={}",
+                userId, req.orderId(), req.paymentKey(), req.amount());
+        // userId 로 포인트 적립/차감, 주문 검증 등에 활용
 
         // 1. 주문 조회(문자만 오면 주문번호로 찾음)
         Order order = findOrder(req.orderId());
@@ -139,10 +139,10 @@ public class PaymentFacade {
 
     /** 결제 취소(전액/부분 취소) */
     @Transactional
-    public CancelResponse cancel(CancelRequest req) {
+    public CancelResponse cancel(Long userId, CancelRequest req) {
         // 결제 요청 로그
-        log.info("[PAYMENT CANCEL START] orderId={}, paymentKey={}, cancelAmount={}, reason={}",
-                req.orderId(), req.paymentKey(), req.cancelAmount(), req.reason());
+        log.info("[PAYMENT CANCEL START] userId={}, orderId={}, paymentKey={}, cancelAmount={}, reason={}",
+                userId, req.orderId(), req.paymentKey(), req.cancelAmount(), req.reason());
 
         // 1. 주문 & 결제 조회
         Order order = findOrder(req.orderId());
@@ -200,9 +200,9 @@ public class PaymentFacade {
 
     /** 환불 처리 (REFUND 이력용) */
     @Transactional
-    public CancelResponse refund(CancelRequest req) {
-        log.info("[PAYMENT REFUND START] orderId={}, paymentKey={}, cancelAmount={}, reason={}",
-                req.orderId(), req.paymentKey(), req.cancelAmount(), req.reason());
+    public CancelResponse refund(Long userId, CancelRequest req) {
+        log.info("[PAYMENT REFUND START] userId={}, orderId={}, paymentKey={}, cancelAmount={}, reason={}",
+                userId, req.orderId(), req.paymentKey(), req.cancelAmount(), req.reason());
 
         // 1. 주문 & 결제 조회
         Order order = findOrder(req.orderId());

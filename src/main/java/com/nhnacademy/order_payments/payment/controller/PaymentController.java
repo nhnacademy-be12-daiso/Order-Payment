@@ -17,6 +17,7 @@ import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
+import org.springframework.web.bind.annotation.RequestHeader;
 
 @RestController
 @RequestMapping("/api/payments")
@@ -36,8 +37,8 @@ public class PaymentController {
             }
     )
     @PostMapping("/confirm")
-    public ConfirmResponse confirm(@Valid @RequestBody ConfirmRequest req) {
-        return facade.confirm(req);
+    public ConfirmResponse confirm(@RequestHeader("X-User-Id") Long userId, @Valid @RequestBody ConfirmRequest req) {
+        return facade.confirm(userId, req);
     }
 
     @Operation(
@@ -50,8 +51,8 @@ public class PaymentController {
             }
     )
     @PostMapping("/cancel")
-    public CancelResponse cancel(@Valid @RequestBody CancelRequest req) {
-        return facade.cancel(req);
+    public CancelResponse cancel(@RequestHeader("X-User-Id") Long userId, @Valid @RequestBody CancelRequest req) {
+        return facade.cancel(userId, req);
     }
 
     @Operation(
@@ -64,8 +65,8 @@ public class PaymentController {
             }
     )
     @PostMapping("/refund")
-    public CancelResponse refund(@Valid @RequestBody CancelRequest req) {
-        return facade.refund(req);
+    public CancelResponse refund(@RequestHeader("X-User-Id") Long userId, @Valid @RequestBody CancelRequest req) {
+        return facade.refund(userId, req);
     }
 
     @Operation(
