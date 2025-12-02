@@ -1,4 +1,4 @@
-INSERT INTO Orders (
+INSERT INTO orders (
     orderId,          -- PK (camelCase)
     orderNumber,      -- camelCase
     orderStatus,      -- ENUM 문자열 (PENDING 등)

@@ -4,6 +4,12 @@ server:
 spring:
   application:
     name: team3-payment
+  data:
+    redis:
+      host: s4.java21.net
+      port: 6379
+      password: '*N2vya7H@muDTwdNMR!'
+      database: 375
 
   profiles:
     active: dev-toss
@@ -70,3 +76,5 @@ management:
   endpoint:
     health:
       show-details: always
+
+
