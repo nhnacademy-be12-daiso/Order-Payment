@@ -9,10 +9,10 @@ spring:
 
   jpa:
     hibernate:
-      ddl-auto: update # \uAC1C\uBC1C\uC6A9
+      ddl-auto: update
       naming:
         physical-strategy: org.hibernate.boot.model.naming.PhysicalNamingStrategyStandardImpl
-    show-sql: true     # SQL \uB85C\uADF8 \uBCF4\uAE30
+    show-sql: true
     properties:
       hibernate:
         format_sql: true
@@ -46,3 +46,9 @@ management:
   endpoint:
     health:
       show-details: always
+
+
+payment:
+  toss:
+    base-url: ${TOSS_URL}
+    secret-key: ${TOSS_SECRET_KEY}
