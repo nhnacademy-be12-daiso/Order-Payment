@@ -1,80 +1,80 @@
-server:
-  port: 8082
-
-spring:
-  application:
-    name: team3-payment
-  data:
-    redis:
-      host: s4.java21.net
-      port: 6379
-      password: '*N2vya7H@muDTwdNMR!'
-      database: 375
-
-  profiles:
-    active: dev-toss
-
-  datasource:
-    url: jdbc:h2:mem:shop;MODE=MySQL;DB_CLOSE_DELAY=-1;DB_CLOSE_ON_EXIT=FALSE
-    driver-class-name: org.h2.Driver
-    username: sa
-    password: ""
-
-  jpa:
-    hibernate:
-      ddl-auto: create
-      naming:
-        physical-strategy: org.hibernate.boot.model.naming.PhysicalNamingStrategyStandardImpl
-        implicit-strategy: org.hibernate.boot.model.naming.ImplicitNamingStrategyLegacyJpaImpl
-    show-sql: true
-    defer-datasource-initialization: true
-
-  sql:
-    init:
-      mode: always
-
-  h2:
-    console:
-      enabled: true
-      path: /h2-console
-
-payment:
-  base-url: https://api.tosspayments.com/v1/payments
-  # 나중엔 환경변수로 빼는 게 좋음 (예: ${TOSS_SECRET_KEY})
-  secret-key: test_gsk_docs_OaPz8L5KdmQXkzRz3y47BMw6
-
-springdoc:
-  swagger-ui:
-    path: /swagger-ui.html
-    enabled: true
-    url: /v3/api-docs
-  api-docs:
-    enabled: true
-  packages-to-scan: com.nhnacademy.order_payments.payment.controller
-  paths-to-match: /api/**
-
-eureka:
-  instance:
-    prefer-ip-address: true
-  client:
-    register-with-eureka: true
-    fetch-registry: true
-    service-url:
-      # 예시 코드처럼 환경 변수 사용
-      # 예: EUREKA_CLIENT_SERVICEURL_DEFAULTZONE=http://localhost:8761/eureka/
-      defaultZone: http://localhost:8761/eureka/
-
-logging:
-  level:
-    org.springframework.web: DEBUG
-
-management:
-  endpoints:
-    web:
-      exposure:
-        include: health
-  endpoint:
-    health:
-      show-details: always
-
-
+#server:
+#  port: 8082
+#
+#spring:
+#  application:
+#    name: team3-payment
+#  data:
+#    redis:
+#      host: s4.java21.net
+#      port: 6379
+#      password: '*N2vya7H@muDTwdNMR!'
+#      database: 375
+#
+#  profiles:
+#    active: dev-toss
+#
+#  datasource:
+#    url: jdbc:h2:mem:shop;MODE=MySQL;DB_CLOSE_DELAY=-1;DB_CLOSE_ON_EXIT=FALSE
+#    driver-class-name: org.h2.Driver
+#    username: sa
+#    password: ""
+#
+#  jpa:
+#    hibernate:
+#      ddl-auto: create
+#      naming:
+#        physical-strategy: org.hibernate.boot.model.naming.PhysicalNamingStrategyStandardImpl
+#        implicit-strategy: org.hibernate.boot.model.naming.ImplicitNamingStrategyLegacyJpaImpl
+#    show-sql: true
+#    defer-datasource-initialization: true
+#
+#  sql:
+#    init:
+#      mode: always
+#
+#  h2:
+#    console:
+#      enabled: true
+#      path: /h2-console
+#
+#payment:
+#  base-url: https://api.tosspayments.com/v1/payments
+#  # 나중엔 환경변수로 빼는 게 좋음 (예: ${TOSS_SECRET_KEY})
+#  secret-key: test_gsk_docs_OaPz8L5KdmQXkzRz3y47BMw6
+#
+#springdoc:
+#  swagger-ui:
+#    path: /swagger-ui.html
+#    enabled: true
+#    url: /v3/api-docs
+#  api-docs:
+#    enabled: true
+#  packages-to-scan: com.nhnacademy.order_payments.payment.controller
+#  paths-to-match: /api/**
+#
+#eureka:
+#  instance:
+#    prefer-ip-address: true
+#  client:
+#    register-with-eureka: true
+#    fetch-registry: true
+#    service-url:
+#      # 예시 코드처럼 환경 변수 사용
+#      # 예: EUREKA_CLIENT_SERVICEURL_DEFAULTZONE=http://localhost:8761/eureka/
+#      defaultZone: http://localhost:8761/eureka/
+#
+#logging:
+#  level:
+#    org.springframework.web: DEBUG
+#
+#management:
+#  endpoints:
+#    web:
+#      exposure:
+#        include: health
+#  endpoint:
+#    health:
+#      show-details: always
+#
+#
