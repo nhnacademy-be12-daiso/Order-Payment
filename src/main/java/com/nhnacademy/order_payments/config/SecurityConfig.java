@@ -17,6 +17,9 @@ public class SecurityConfig {
                 .authorizeHttpRequests(auth -> auth
                         .anyRequest().permitAll()   // 모든 요청 허용
                 )
+                .headers(headers -> headers
+                        .frameOptions(frameOptions -> frameOptions.sameOrigin()) // 동일 출처에서 프레임 허용
+                )
                 .httpBasic(basic -> basic.disable())
                 .formLogin(form -> form.disable());
 
