@@ -45,7 +45,7 @@ public class Order {
     private String ordererName;
 
     @Column(name = "total_price")
-    private int totalPrice;
+    private Integer totalPrice;
 
     @Column(name = "phone_number", nullable = false)
     private String phoneNumber;
