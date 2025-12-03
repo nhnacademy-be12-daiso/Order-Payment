@@ -67,7 +67,7 @@ public class Order {
     }
 
     @Setter
-    @OneToMany(mappedBy = "oder")
+    @OneToMany(mappedBy = "order")
     private List<OrderDetail> detailList;
 
     @Setter
