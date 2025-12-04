@@ -1,4 +1,4 @@
-package com.nhnacademy.order_payments.service;
+package com.nhnacademy.order_payments.service.cart;
 
 import com.nhnacademy.order_payments.dto.BookApiRequest;
 import com.nhnacademy.order_payments.dto.BookApiResponse;

@@ -2,8 +2,8 @@ package com.nhnacademy.order_payments.controller;
 
 import com.nhnacademy.order_payments.dto.BookItem;
 import com.nhnacademy.order_payments.dto.SyncDto;
-import com.nhnacademy.order_payments.service.CartService;
-import com.nhnacademy.order_payments.service.SyncService;
+import com.nhnacademy.order_payments.service.cart.CartService;
+import com.nhnacademy.order_payments.service.cart.SyncService;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.web.bind.annotation.*;

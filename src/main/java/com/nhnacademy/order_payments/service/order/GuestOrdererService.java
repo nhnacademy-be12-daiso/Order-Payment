@@ -1,4 +1,4 @@
-package com.nhnacademy.order_payments.service;
+package com.nhnacademy.order_payments.service.order;
 
 import com.nhnacademy.order_payments.entity.GuestOrderer;
 import com.nhnacademy.order_payments.repository.GuestOrdererRepository;
