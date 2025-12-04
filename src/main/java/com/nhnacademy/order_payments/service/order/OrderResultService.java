@@ -1,4 +1,4 @@
-package com.nhnacademy.order_payments.service;
+package com.nhnacademy.order_payments.service.order;
 
 import com.nhnacademy.order_payments.entity.GuestOrderer;
 import com.nhnacademy.order_payments.repository.OrderRepository;
@@ -9,7 +9,7 @@ import java.util.List;
 
 @RequiredArgsConstructor
 @Service
-public class OderService {
+public class OrderResultService {
     private final OrderRepository orderRepository;
 
     private final GuestOrdererService guestOrdererService;

@@ -1,4 +1,4 @@
-package com.nhnacademy.order_payments.service;
+package com.nhnacademy.order_payments.service.cart;
 
 import com.nhnacademy.order_payments.dto.SyncDto;
 import com.nhnacademy.order_payments.dto.SyncInfo;
@@ -14,7 +14,6 @@ import org.springframework.stereotype.Service;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
-import java.util.Optional;
 import java.util.stream.Collectors;
 
 @Slf4j
