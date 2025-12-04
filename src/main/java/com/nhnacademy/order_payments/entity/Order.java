@@ -36,6 +36,7 @@ public class Order {
 
     @Setter
     @Enumerated(EnumType.STRING)
+    @Column(name = "order_status")
     private OrderStatus orderStatus;// enum으로 독립
 
     @Column(name = "order_date")
@@ -68,7 +69,7 @@ public class Order {
 
     @Setter
     @OneToMany(mappedBy = "order")
-    private List<OrderDetail> detailList;
+    private List<OrderDetail> orderDetailList;
 
     @Setter
     @OneToOne(mappedBy = "order")
