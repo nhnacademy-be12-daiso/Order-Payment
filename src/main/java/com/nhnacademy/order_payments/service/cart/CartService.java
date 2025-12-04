@@ -1,8 +1,8 @@
 package com.nhnacademy.order_payments.service.cart;
 
-import com.nhnacademy.order_payments.dto.BookApiRequest;
-import com.nhnacademy.order_payments.dto.BookApiResponse;
-import com.nhnacademy.order_payments.dto.BookItem;
+import com.nhnacademy.order_payments.dto.cart.BookApiRequest;
+import com.nhnacademy.order_payments.dto.cart.BookApiResponse;
+import com.nhnacademy.order_payments.dto.cart.BookItem;
 import com.nhnacademy.order_payments.entity.Cart;
 import com.nhnacademy.order_payments.entity.CartDetail;
 import com.nhnacademy.order_payments.exception.NotFoundUserCartException;
