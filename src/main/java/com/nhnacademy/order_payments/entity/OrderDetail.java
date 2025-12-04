@@ -1,9 +1,12 @@
 package com.nhnacademy.order_payments.entity;
 
+import com.nhnacademy.order_payments.model.OrderDetailStatus;
 import jakarta.persistence.*;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.Setter;
+
+import java.util.List;
 
 @NoArgsConstructor
 @Getter
@@ -31,16 +34,25 @@ public class OrderDetail {
     @Column(name = "packaging_id")
     private Long packagingId; // 저장만 함
 
+    @Setter
+    @Column(name = "order_detail_status")
+    private OrderDetailStatus orderDetailStatus;
+
     public OrderDetail(long bookId, int price, int quantity, Long packagingId){
         this.bookId = bookId;
         this.price = price;
         this.quantity = quantity;
         this.packagingId = packagingId;
+        this.orderDetailStatus = OrderDetailStatus.PENDING;
     }
 
+//    @Setter
+//    @ManyToOne
+//    @JoinColumn(name = "deliver_detail_id")
+//    private DeliveryDetail deliveryDetail;
+
     @Setter
-    @ManyToOne
-    @JoinColumn(name = "deliver_detail_id")
-    private DeliveryDetail deliveryDetail;
+    @OneToMany(mappedBy = "orderDetail")
+    private List<DeliveryOrderDetail> deliveryOrderDetails;
 
 }

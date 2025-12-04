@@ -11,6 +11,6 @@ public class GuestOrdererService {
     private final GuestOrdererRepository guestOrdererRepository;
 
     public GuestOrderer getOrderer(long userId){
-        return null;
+        return guestOrdererRepository.findGuestOrdererById(userId);
     }
 }

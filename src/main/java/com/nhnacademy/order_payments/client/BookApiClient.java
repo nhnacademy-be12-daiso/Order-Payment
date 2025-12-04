@@ -1,10 +1,10 @@
 package com.nhnacademy.order_payments.client;
 
 
-import com.nhnacademy.order_payments.dto.BookApiResponse;
-import com.nhnacademy.order_payments.dto.BookApiRequest;
+import com.nhnacademy.order_payments.dto.*;
+import com.nhnacademy.order_payments.dto.review.BookReviewRequest;
+import com.nhnacademy.order_payments.dto.review.BookReviewResponse;
 import org.springframework.cloud.openfeign.FeignClient;
-import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 
@@ -15,4 +15,7 @@ public interface BookApiClient {
 
     @PostMapping("/list")
     List<BookApiResponse> getBookList(@RequestBody BookApiRequest bookApiRequest);
+
+    @PostMapping("/list/book-review")
+    List<BookReviewResponse> getBookReviewList(@RequestBody BookReviewRequest bookReviewRequest);
 }
