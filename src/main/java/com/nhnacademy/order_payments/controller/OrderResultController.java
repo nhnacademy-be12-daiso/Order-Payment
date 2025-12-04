@@ -1,7 +1,7 @@
 package com.nhnacademy.order_payments.controller;
 
 import com.nhnacademy.order_payments.dto.response.order.OrderListResponse;
-import com.nhnacademy.order_payments.service.OrderResultService;
+import com.nhnacademy.order_payments.service.order.OrderResultService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.RequestHeader;
