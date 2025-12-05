@@ -5,7 +5,6 @@ import com.nhnacademy.order_payments.dto.cart.BookApiResponse;
 import com.nhnacademy.order_payments.dto.cart.BookItem;
 import com.nhnacademy.order_payments.entity.Cart;
 import com.nhnacademy.order_payments.entity.CartDetail;
-import com.nhnacademy.order_payments.exception.NotFoundUserCartException;
 import com.nhnacademy.order_payments.client.BookApiClient;
 import com.nhnacademy.order_payments.repository.CartRepository;
 import lombok.RequiredArgsConstructor;
@@ -14,7 +13,6 @@ import org.springframework.stereotype.Service;
 
 import java.util.ArrayList;
 import java.util.List;
-import java.util.Optional;
 
 @Slf4j
 @Service
