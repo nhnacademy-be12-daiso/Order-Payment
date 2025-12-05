@@ -8,7 +8,7 @@ import org.springframework.web.bind.annotation.PathVariable;
 @FeignClient(name = "TEAM3-USER", path = "/api/users")
 public interface UserApiClient {
 
-    @GetMapping("/{userId}")
-    UserInfoResponse getUserInfo(@PathVariable Long userId);
+    @GetMapping("/api/internal/users/{userCreatedId}/info")
+    UserInfoResponse getUserInfo(@PathVariable Long userCreatedId);
 
 }

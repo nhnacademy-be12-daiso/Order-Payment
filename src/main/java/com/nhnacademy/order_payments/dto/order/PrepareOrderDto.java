@@ -1,5 +1,7 @@
 package com.nhnacademy.order_payments.dto.order;
 
+import com.nhnacademy.order_payments.entity.DeliveryPolicy;
+
 import java.util.List;
 
 /**
@@ -9,6 +11,7 @@ import java.util.List;
 public record PrepareOrderDto(
         BookInfoResponse bookInfoResponses,
         UserInfoResponse userInfoResponse,
-        CouponResponse couponResponse
-        // 추가될듯
+        CouponResponse couponResponse,
+        List<PackagingDto> packagingList,
+        DeliveryPolicyDto deliveryPolicyDto
 ) {}

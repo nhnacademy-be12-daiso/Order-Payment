@@ -9,15 +9,17 @@ import org.springframework.web.bind.annotation.RestController;
 
 import java.util.List;
 
-@RestController("/api/orders") // -----> API 네이밍 좀 에바임
+/**
+ * 주문서 작성에 관련된 요청을 받아들임
+ */
+@RestController("/api/orders/prepare")
 @RequiredArgsConstructor
 public class PrepareOrderController {
 
     private final PrepareOrderService prepareOrderService;
 
-    @GetMapping("/prepare")
+    @GetMapping
     public ResponseEntity<PrepareOrderDto> prepareOrderData(Long userId, List<Long> bookIdList) {
-
         PrepareOrderDto dto = prepareOrderService.prepareOrderData(userId, bookIdList);
 
         return ResponseEntity.ok().body(dto);

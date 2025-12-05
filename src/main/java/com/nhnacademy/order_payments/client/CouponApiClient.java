@@ -7,7 +7,6 @@ import org.springframework.web.bind.annotation.PathVariable;
 
 @FeignClient(name = "TEAM3-COUPON")
 public interface CouponApiClient {
-
     @GetMapping("/{userId}")
     CouponResponse getAvailableCoupons(@PathVariable Long userId);
 }

@@ -5,7 +5,12 @@ import com.nhnacademy.order_payments.client.CouponApiClient;
 import com.nhnacademy.order_payments.client.UserApiClient;
 import com.nhnacademy.order_payments.dto.cart.BookApiRequest;
 import com.nhnacademy.order_payments.dto.order.*;
+import com.nhnacademy.order_payments.entity.DeliveryPolicy;
+import com.nhnacademy.order_payments.entity.Packaging;
+import com.nhnacademy.order_payments.repository.DeliveryPolicyRepository;
+import com.nhnacademy.order_payments.repository.PackagingRepository;
 import lombok.RequiredArgsConstructor;
+import org.springframework.data.repository.core.support.RepositoryMethodInvocationListener;
 import org.springframework.stereotype.Service;
 
 import java.util.List;
@@ -33,9 +38,13 @@ public class PrepareOrderService {
     private final BookApiClient bookApiClient;
     private final UserApiClient userApiClient;
     private final CouponApiClient couponApiClient;
+    private final PackagingRepository packagingRepository;
+    private final DeliveryPolicyRepository deliveryPolicyRepository;
 
     // 주문서 작성을 위한 데이터를 넘겨주는 메서드
-    public  PrepareOrderDto prepareOrderData(Long userId, List<Long> bookIdList) {
+    public PrepareOrderDto prepareOrderData(Long userId, List<Long> bookIdList) {
+
+        // >>>>> 예외처리 or 트랜잭션 돌려야함 <<<<<<
 
         // 도서 정보
         BookInfoResponse bookInfoResponse = bookApiClient.getBookInfos(new BookApiRequest(bookIdList));
@@ -46,11 +55,25 @@ public class PrepareOrderService {
         // 쿠폰 정보
         CouponResponse couponResponse = couponApiClient.getAvailableCoupons(userId);
 
-        // >>>>>> 배송비, 포장지 정책 추가해야함 <<<<<<<<
+        // 지금 있는 포장지 다 긁어옴
+        List<Packaging> rawPackagings = packagingRepository.findAll();
+        List<PackagingDto> packagingList = rawPackagings.stream()
+                .map(PackagingDto::new)
+                .toList();
+
+        // 배송 정책
+        DeliveryPolicy deliveryPolicy = deliveryPolicyRepository.findByDeliveryPolicyName("DEFAULT");
+        // --> 일단 기본 3000원 가져옴
+        DeliveryPolicyDto deliveryDto = new DeliveryPolicyDto(deliveryPolicy);
+        // 여기 있는게 맞는지는 모르겠음
 
         // 모든 데이터 수합한 dto
-        PrepareOrderDto dto = new PrepareOrderDto(bookInfoResponse, userInfoResponse, couponResponse); // 추가될지도
-
+        PrepareOrderDto dto = new PrepareOrderDto(bookInfoResponse,
+                userInfoResponse,
+                couponResponse,
+                packagingList,
+                deliveryDto
+        );
 
         return dto;
     }
