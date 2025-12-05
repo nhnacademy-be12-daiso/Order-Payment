@@ -5,7 +5,11 @@ import com.nhnacademy.order_payments.dto.cart.BookApiResponse;
 import com.nhnacademy.order_payments.dto.cart.BookApiRequest;
 import com.nhnacademy.order_payments.dto.order.BookInfo;
 import com.nhnacademy.order_payments.dto.order.BookInfoResponse;
+import com.nhnacademy.order_payments.dto.*;
+import com.nhnacademy.order_payments.dto.review.BookReviewRequest;
+import com.nhnacademy.order_payments.dto.review.BookReviewResponse;
 import org.springframework.cloud.openfeign.FeignClient;
+import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 
@@ -25,4 +29,7 @@ public interface BookApiClient {
     @PostMapping("/info")
     BookInfoResponse getBookInfos(@RequestBody BookApiRequest bookApiRequest);
     // -----> response dto 재탕해도 상관 없겠지?
+
+    @PostMapping("/list/book-review")
+    List<BookReviewResponse> getBookReviewList(@RequestBody BookReviewRequest bookReviewRequest);
 }

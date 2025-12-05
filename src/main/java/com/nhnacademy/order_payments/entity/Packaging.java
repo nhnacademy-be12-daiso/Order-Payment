@@ -1,18 +1,20 @@
 package com.nhnacademy.order_payments.entity;
 
 import jakarta.persistence.*;
-import lombok.NoArgsConstructor;
+import lombok.Getter;
 
+@Getter
 @Entity
-@Table(name = "Packagings")
-@NoArgsConstructor
+@Table(name = "Packaging")
 public class Packaging {
     @Id
-    @GeneratedValue(strategy = GenerationType.IDENTITY) // 이걸 그냥 Auto로 박아놓는게 맞나?
-    @Column(name = "wrapping_paper_id")
-    private Long wrappingPaperId;
+    @GeneratedValue(strategy = GenerationType.IDENTITY)
+    @Column(name = "packaging_id")
+    private long id;
+
     @Column(name = "wrapping_paper_name")
-    private String wrappingPaperName;
+    private String name;
+
     @Column(name = "wrapping_paper_price")
-    private String wrappingPaperPrice;
+    private int price;
 }

@@ -1,5 +1,6 @@
 package com.nhnacademy.order_payments.entity;
 
+import com.nhnacademy.order_payments.model.DeliveryStatus;
 import jakarta.persistence.*;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
@@ -41,6 +42,14 @@ public class DeliveryDetail {
     private ZonedDateTime completeAt; //실제 도착한것이기에 시간까지
 
     @Setter
+    @Column(name = "delivery_status")
+    private DeliveryStatus deliveryStatus;
+
+//    @Setter
+//    @OneToMany(mappedBy = "deliveryDetail")
+//    private List<OrderDetail> orderDetailList;
+
+    @Setter
     @OneToMany(mappedBy = "deliveryDetail")
-    private List<OrderDetail> orderDetailList;
+    private List<DeliveryOrderDetail> deliveryOrderDetails;
 }
