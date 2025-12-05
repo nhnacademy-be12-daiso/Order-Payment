@@ -14,6 +14,7 @@ import org.springframework.stereotype.Service;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Optional;
 
 @Slf4j
 @Service
@@ -32,7 +33,13 @@ public class CartService { // 네이밍이 썩 맘에 들지 않음;
          * 4. 그거 답장해주면 됨
          */
         // 사용자의 장바구니 뽑아옴
-        Cart cart = cartRepository.findCartWithDetailsByUserId(userId).orElseThrow(() -> new NotFoundUserCartException(userId));
+        Cart cart = cartRepository.findCartWithDetailsByUserId(userId).orElseGet(
+                () -> {
+                    Cart newCart = new Cart(userId);
+                    log.info("장바구니 생성 : {}", userId);
+                    return cartRepository.save(newCart);
+                }
+        );
 
         // 항목들 분리
         List<CartDetail> cartDetails = cart.getDetails();
