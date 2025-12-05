@@ -1,7 +1,7 @@
 package com.nhnacademy.order_payments.controller;
 
-import com.nhnacademy.order_payments.dto.BookItem;
-import com.nhnacademy.order_payments.dto.SyncDto;
+import com.nhnacademy.order_payments.dto.cart.BookItem;
+import com.nhnacademy.order_payments.dto.cart.SyncDto;
 import com.nhnacademy.order_payments.service.cart.CartService;
 import com.nhnacademy.order_payments.service.cart.SyncService;
 import lombok.RequiredArgsConstructor;
