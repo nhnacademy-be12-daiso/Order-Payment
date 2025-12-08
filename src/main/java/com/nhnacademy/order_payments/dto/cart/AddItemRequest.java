@@ -1,4 +1,4 @@
-package com.nhnacademy.order_payments.dto;
+package com.nhnacademy.order_payments.dto.cart;
 
 
 import lombok.NoArgsConstructor;

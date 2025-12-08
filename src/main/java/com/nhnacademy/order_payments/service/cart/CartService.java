@@ -1,11 +1,10 @@
 package com.nhnacademy.order_payments.service.cart;
 
-import com.nhnacademy.order_payments.dto.BookApiRequest;
-import com.nhnacademy.order_payments.dto.BookApiResponse;
-import com.nhnacademy.order_payments.dto.BookItem;
+import com.nhnacademy.order_payments.dto.cart.BookApiRequest;
+import com.nhnacademy.order_payments.dto.cart.BookApiResponse;
+import com.nhnacademy.order_payments.dto.cart.BookItem;
 import com.nhnacademy.order_payments.entity.Cart;
 import com.nhnacademy.order_payments.entity.CartDetail;
-import com.nhnacademy.order_payments.exception.NotFoundUserCartException;
 import com.nhnacademy.order_payments.client.BookApiClient;
 import com.nhnacademy.order_payments.repository.CartRepository;
 import lombok.RequiredArgsConstructor;
@@ -32,7 +31,13 @@ public class CartService { // 네이밍이 썩 맘에 들지 않음;
          * 4. 그거 답장해주면 됨
          */
         // 사용자의 장바구니 뽑아옴
-        Cart cart = cartRepository.findCartWithDetailsByUserId(userId).orElseThrow(() -> new NotFoundUserCartException(userId));
+        Cart cart = cartRepository.findCartWithDetailsByUserId(userId).orElseGet(
+                () -> {
+                    Cart newCart = new Cart(userId);
+                    log.info("장바구니 생성 : {}", userId);
+                    return cartRepository.save(newCart);
+                }
+        );
 
         // 항목들 분리
         List<CartDetail> cartDetails = cart.getDetails();

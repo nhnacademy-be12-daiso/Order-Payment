@@ -1,7 +1,7 @@
 package com.nhnacademy.order_payments.service.cart;
 
-import com.nhnacademy.order_payments.dto.SyncDto;
-import com.nhnacademy.order_payments.dto.SyncInfo;
+import com.nhnacademy.order_payments.dto.cart.SyncDto;
+import com.nhnacademy.order_payments.dto.cart.SyncInfo;
 import com.nhnacademy.order_payments.entity.Cart;
 import com.nhnacademy.order_payments.entity.CartDetail;
 import com.nhnacademy.order_payments.repository.CartDetailRepository;
