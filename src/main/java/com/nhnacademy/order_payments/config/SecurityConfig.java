@@ -1,4 +1,4 @@
-package com.nhnacademy.order_payments.config; // 패키지는 프로젝트에 맞춰서!
+package com.nhnacademy.order_payments.config;
 
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;

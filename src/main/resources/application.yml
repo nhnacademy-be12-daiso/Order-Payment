@@ -1,6 +1,12 @@
+server:
+  port: 8082
+
 spring:
   application:
     name: team3-order-payment
+
+  profiles:
+    active: dev-toss          # dev-toss 프로필로 실행
 
   datasource:
     url: jdbc:mysql://s4.java21.net:13306/project_be12_team3?useSSL=false&serverTimezone=Asia/Seoul&allowPublicKeyRetrieval=true
@@ -26,35 +32,27 @@ spring:
     password: 'nhnacademy123!'
 
   data:
-    redis:                             # [payment 추가] 필요 시 Redis 사용
+    redis:
       host: s4.java21.net
       port: 6379
       password: '*N2vya7H@muDTwdNMR!'
       database: 375
 
-  profiles:
-    active: dev-toss                   # [payment 추가] 토스 테스트용 프로필 이름
-
   sql:
     init:
-      mode: always                     # [payment 추가] data.sql 등 초기 SQL 실행이 필요하면 유지
+      mode: always
 
   h2:
-    console:                           # [payment 추가] H2 콘솔이 필요하면 유지, MySQL만 쓰면 삭제 가능
+    console:
       enabled: true
       path: /h2-console
 
-server:
-  port: 8082
-
-# -------------- 여기부터 payment 전용 설정 --------------
-
-payment:                               # [payment 추가] Toss 결제 API 설정
+# -------------- payment 전용 설정 --------------
+payment:
   base-url: https://api.tosspayments.com/v1/payments
-  # 나중엔 환경변수로 빼는 게 좋음 (예: ${TOSS_SECRET_KEY})
   secret-key: test_gsk_docs_OaPz8L5KdmQXkzRz3y47BMw6
 
-springdoc:                             # [payment 추가] Swagger/OpenAPI 설정
+springdoc:
   swagger-ui:
     path: /swagger-ui.html
     enabled: true
@@ -64,8 +62,7 @@ springdoc:                             # [payment 추가] Swagger/OpenAPI 설정
   packages-to-scan: com.nhnacademy.order_payments.payment.controller
   paths-to-match: /api/**
 
-# -------------- 공통(eureka, logging, health) --------------
-
+# -------------- Eureka 설정 (여기가 핵심) --------------
 eureka:
   instance:
     prefer-ip-address: true
@@ -73,7 +70,8 @@ eureka:
     register-with-eureka: true
     fetch-registry: true
     service-url:
-      defaultZone: http://team3-eureka:8761/eureka/
+      # 로컬에서 유레카 서버를 8761로 띄울 때 주소
+      defaultZone: http://localhost:8761/eureka/
 
 logging:
   level:
