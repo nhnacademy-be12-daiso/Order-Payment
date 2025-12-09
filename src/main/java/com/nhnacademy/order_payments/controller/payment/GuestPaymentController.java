@@ -1,4 +1,4 @@
-package com.nhnacademy.order_payments.payment.controller;
+package com.nhnacademy.order_payments.controller.payment;
 
 import com.nhnacademy.order_payments.dto.request.CancelRequest;
 import com.nhnacademy.order_payments.dto.request.ConfirmRequest;
@@ -6,8 +6,9 @@ import com.nhnacademy.order_payments.dto.request.FailRequest;
 import com.nhnacademy.order_payments.dto.request.RefundRequest;
 import com.nhnacademy.order_payments.dto.response.CancelResponse;
 import com.nhnacademy.order_payments.dto.response.ConfirmResponse;
+import com.nhnacademy.order_payments.dto.response.PaymentHistoryResponse;
 import com.nhnacademy.order_payments.dto.response.RefundResponse;
-import com.nhnacademy.order_payments.payment.service.PaymentFacade;
+import com.nhnacademy.order_payments.service.payment.PaymentFacade;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.media.Content;
 import io.swagger.v3.oas.annotations.media.Schema;
@@ -16,6 +17,8 @@ import io.swagger.v3.oas.annotations.tags.Tag;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import org.springframework.web.bind.annotation.*;
+
+import java.util.List;
 
 @RestController
 @RequestMapping("/api/guest/payments")
@@ -75,5 +78,13 @@ public class GuestPaymentController {
     @PostMapping("/fail")
     public void fail(@Valid @RequestBody FailRequest req) {
         facade.fail(req);
+    }
+
+    @GetMapping("/history/{orderIdOrNumber}")
+    public List<PaymentHistoryResponse> getGuestHistory(
+            @PathVariable("orderIdOrNumber") String orderIdOrNumber
+    ) {
+        // 게스트는 userId 없긔
+        return facade.getHistory(null, orderIdOrNumber);
     }
 }

@@ -35,8 +35,7 @@ public class Payment {
     private String cardIssuerCode;
 
     @Setter
-    @Transient
-    private OffsetDateTime approvedAt; //결제가 승인된 시각(저장은 X, 응답만 O)
+    private OffsetDateTime approvedAt; //결제가 승인된 시각
 
     @Builder
     public Payment(Order order, Integer paymentCost, String paymentKey,

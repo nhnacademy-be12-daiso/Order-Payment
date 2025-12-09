@@ -1,4 +1,4 @@
-package com.nhnacademy.order_payments.payment.provider;
+package com.nhnacademy.order_payments.provider;
 
 public interface PaymentProvider {
     record ApproveCommand(String orderId, String paymentKey, int amount) {} //승인요청

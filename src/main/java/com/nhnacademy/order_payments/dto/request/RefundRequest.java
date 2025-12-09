@@ -7,5 +7,5 @@ public record RefundRequest (
         @NotBlank String orderId,
         @NotBlank String paymentKey,
         String reason,
-        @NotNull Integer cancelAmount
+        Integer cancelAmount
 ) {}

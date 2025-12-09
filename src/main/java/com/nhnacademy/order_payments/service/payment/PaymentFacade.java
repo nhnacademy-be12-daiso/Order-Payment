@@ -1,4 +1,4 @@
-package com.nhnacademy.order_payments.payment.service;
+package com.nhnacademy.order_payments.service.payment;
 
 import com.nhnacademy.order_payments.dto.request.CancelRequest;
 import com.nhnacademy.order_payments.dto.request.ConfirmRequest;
@@ -6,6 +6,7 @@ import com.nhnacademy.order_payments.dto.request.FailRequest;
 import com.nhnacademy.order_payments.dto.request.RefundRequest;
 import com.nhnacademy.order_payments.dto.response.CancelResponse;
 import com.nhnacademy.order_payments.dto.response.ConfirmResponse;
+import com.nhnacademy.order_payments.dto.response.PaymentHistoryResponse;
 import com.nhnacademy.order_payments.dto.response.RefundResponse;   // ✅ 추가
 import com.nhnacademy.order_payments.entity.Order;
 import com.nhnacademy.order_payments.entity.Payment;
@@ -13,7 +14,7 @@ import com.nhnacademy.order_payments.entity.PaymentHistory;
 import com.nhnacademy.order_payments.exception.BusinessException;
 import com.nhnacademy.order_payments.model.PaymentEventType;
 import com.nhnacademy.order_payments.model.PaymentMethod;
-import com.nhnacademy.order_payments.payment.provider.PaymentProvider;
+import com.nhnacademy.order_payments.provider.PaymentProvider;
 import com.nhnacademy.order_payments.repository.OrderRepository;
 import com.nhnacademy.order_payments.repository.PaymentHistoryRepository;
 import com.nhnacademy.order_payments.repository.PaymentRepository;
@@ -24,6 +25,7 @@ import org.springframework.stereotype.Service;
 
 import java.time.LocalDateTime;
 import java.time.OffsetDateTime;
+import java.util.List;
 
 @Slf4j
 @Service
@@ -291,5 +293,33 @@ public class PaymentFacade {
         return orders.findById(n)
                 .or(() -> orders.findByOrderNumber(n))
                 .orElseThrow(() -> new BusinessException("ORDER_NOT_FOUND", "주문 없음"));
+    }
+    /** 주문에 대한 결제 히스토리를 조회 */
+    @Transactional
+    public List<PaymentHistoryResponse> getHistory(Long userId, String orderIdOrNumber) {
+        // 1. 주문 찾기 (001001-타임스탬프 형태도 처리해주는 기존 findOrder 재사용)
+        Order order = findOrder(orderIdOrNumber);
+
+        // (옵션) 멤버일 경우, 해당 주문의 소유자인지 체크하는 로직을 나중에 추가할 수 있음
+        // TODO: userId와 order의 사용자 매핑 검사 (팀과 상의해서)
+
+        Long orderNumber = order.getOrderNumber();
+
+        // 2. 해당 주문의 PaymentHistory 목록 조회
+        List<PaymentHistory> histories =
+                paymentHistories.findByPaymentOrderOrderNumberOrderByPaymentTimeAsc(orderNumber);
+
+        // 3. 엔티티 -> DTO 변환
+        return histories.stream()
+                .map(h -> new PaymentHistoryResponse(
+                        h.getEventType(),
+                        h.getAmount(),
+                        h.getReason(),
+                        h.getPaymentTime(),
+                        h.getPayment() != null && h.getPayment().getPaymentMethod() != null
+                                ? h.getPayment().getPaymentMethod().name()
+                                : null
+                ))
+                .toList();
     }
 }
