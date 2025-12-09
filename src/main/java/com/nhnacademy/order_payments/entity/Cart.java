@@ -12,7 +12,7 @@ import java.util.List;
 
 @Slf4j
 @Entity
-@Table(name = "carts")
+@Table(name = "Carts")
 @NoArgsConstructor
 @Getter
 public class Cart {

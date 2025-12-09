@@ -20,7 +20,4 @@ public interface CartRepository extends JpaRepository<Cart, Long> {
 
     // userId로 cart 가져옴
     Optional<Cart> findByUserId(Long userId);
-
-//    Long findCartIdByUserId(Long userId);
-//    --> ?
 }
