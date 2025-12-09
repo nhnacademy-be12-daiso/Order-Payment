@@ -1,9 +1,6 @@
 package com.nhnacademy.order_payments.config;
 
-import com.nhnacademy.order_payments.exception.BusinessException;
-import com.nhnacademy.order_payments.exception.CartDetailNotFoundException;
-import com.nhnacademy.order_payments.exception.ExternalServiceException;
-import com.nhnacademy.order_payments.exception.NotFoundUserCartException;
+import com.nhnacademy.order_payments.exception.*;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.ExceptionHandler;
@@ -21,7 +18,7 @@ public class GlobalExceptionHandler {
         return ResponseEntity.badRequest().build();
     }
 
-    @ExceptionHandler({CartDetailNotFoundException.class, NotFoundUserCartException.class})
+    @ExceptionHandler({CartDetailNotFoundException.class, NotFoundUserCartException.class, NotFoundOrderException.class})
     public ResponseEntity<Void> handleBookNotFoundCartException(Exception e) {
         return ResponseEntity.notFound().build();
     }

@@ -6,8 +6,8 @@ import com.nhnacademy.order_payments.dto.review.BookReviewRequest;
 import com.nhnacademy.order_payments.dto.review.BookReviewResponse;
 import com.nhnacademy.order_payments.dto.response.order.*;
 import com.nhnacademy.order_payments.entity.*;
-import com.nhnacademy.order_payments.exception.NotFoundDelivery;
-import com.nhnacademy.order_payments.exception.NotFoundOrder;
+import com.nhnacademy.order_payments.exception.NotFoundDeliveryException;
+import com.nhnacademy.order_payments.exception.NotFoundOrderException;
 import com.nhnacademy.order_payments.repository.OrderDetailRepository;
 import com.nhnacademy.order_payments.repository.OrderRepository;
 import com.nhnacademy.order_payments.service.PackagingService;
@@ -56,7 +56,7 @@ public class OrderResultService {
 
         if(orderDetailList == null || orderDetailList.isEmpty()){
             log.error("해당 주문의 주문상세가 존재하지 않습니다 - 주문 번호:{}", order.getOrderNumber());
-            throw new NotFoundOrder("주문상세가 존재하지 않습니다");
+            throw new NotFoundOrderException("주문상세가 존재하지 않습니다");
         }
 
         Map<Long, BookReviewResponse> bookList = bookApiClient.getBookReviewList(new BookReviewRequest(order.getUserId(), orderDetailList.stream()
@@ -67,7 +67,7 @@ public class OrderResultService {
         Delivery delivery = order.getDelivery();
         if(delivery == null){
             log.error("배송정보가 존재하지 않습니다 - 주문 번호:{}", order.getOrderNumber());
-            throw new NotFoundDelivery("배송정보가 존재하지 않습니다.");
+            throw new NotFoundDeliveryException("배송정보가 존재하지 않습니다.");
         }
 
 
