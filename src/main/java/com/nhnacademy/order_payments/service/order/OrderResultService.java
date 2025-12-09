@@ -78,7 +78,7 @@ public class OrderResultService {
             deliveryDetailResponses.add(new DeliveryDetailResponse(null, "출고 대기", null, null, null, null,
                     orderDetailList.stream()
                             .map(od ->
-                                    new OrderDetailResponse(od.getId(), bookList.get(od.getId()).book().title(),
+                                    new OrderDetailResponse(od.getId(), od.getBookId(), bookList.get(od.getId()).book().title(),
                                             !bookList.get(od.getId()).book().imageList().isEmpty() ? bookList.get(od.getId()).book().imageList().getFirst().path() : null,
                                             od.getPrice(), od.getQuantity(), packagingService.getPackagingName(od.getPackagingId()), od.getOrderDetailStatus(), bookList.get(od.getId()).reviewId()))
                             .toList()));
@@ -111,7 +111,7 @@ public class OrderResultService {
                                     OrderDetail orderDetail = orderDetailMap.get(dod.getOrderDetail().getId());
                                     BookReviewResponse br = bookList.get(orderDetail.getId());
 
-                                    return new OrderDetailResponse(orderDetail.getId(), br.book().title(),
+                                    return new OrderDetailResponse(orderDetail.getId(), orderDetail.getBookId(), br.book().title(),
                                             !br.book().imageList().isEmpty() ? br.book().imageList().getFirst().path() : null,
                                             orderDetail.getPrice(), dod.getQuantity(),
                                             orderDetail.getPackagingId() != null ? packagingService.getPackagingName(orderDetail.getPackagingId()) : null,
