@@ -32,7 +32,7 @@ public class DeliveryOrderDetail {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     @Column(name = "delovery_order_detail_id")  // 오타
-    private long id;
+    private Long id;
 
     @Setter
     @ManyToOne
@@ -45,13 +45,13 @@ public class DeliveryOrderDetail {
     private OrderDetail orderDetail;
 
     @Setter
-    private int quantity;
+    private Integer quantity;
 
-    public DeliveryOrderDetail(int quantity) {
+    public DeliveryOrderDetail(Integer quantity) {
         this(null, null, quantity);
     }
 
-    public DeliveryOrderDetail(DeliveryDetail deliveryDetail, OrderDetail orderDetail, int quantity) {
+    public DeliveryOrderDetail(DeliveryDetail deliveryDetail, OrderDetail orderDetail, Integer quantity) {
         this.deliveryDetail = deliveryDetail;
         this.orderDetail = orderDetail;
         this.quantity = quantity;

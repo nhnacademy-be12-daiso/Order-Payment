@@ -19,10 +19,10 @@ package com.nhnacademy.order_payments.dto.order;
  */
 public record BookInfo(Long bookId,
                        String title,
-                       int price,
+                       Long price,
                        Integer quantity,
                        Long totalPrice // price * quantity
-                       // int stock
+                       // Integer stock
                        // 재고는 결제할때 '직접' 호출하는게 나을 듯
                        // --> 결제 당시의 수량을 정확히 알아야하므로
 

@@ -35,7 +35,7 @@ public class Delivery {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     @Column(name = "delivery_id")
-    private long id;
+    private Long id;
 
     @Setter
     @OneToOne
@@ -63,9 +63,9 @@ public class Delivery {
     private String receiverPhoneNumber;
 
     @Column(name = "delivary_fee")  // 오타
-    private int fee;
+    private Integer fee;
 
-    public Delivery(String address, String postalCode, String receiverName, String receiverPhoneNumber, int fee) {
+    public Delivery(String address, String postalCode, String receiverName, String receiverPhoneNumber, Integer fee) {
         this.address = address;
         this.postalCode = postalCode;
         this.receiverName = receiverName;
