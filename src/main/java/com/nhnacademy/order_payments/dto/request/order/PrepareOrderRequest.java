@@ -10,26 +10,9 @@
  * +++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
  */
 
-package com.nhnacademy.order_payments.service;
+package com.nhnacademy.order_payments.dto.request.order;
 
-import com.nhnacademy.order_payments.entity.Packaging;
-import com.nhnacademy.order_payments.repository.PackagingRepository;
-import lombok.RequiredArgsConstructor;
-import org.springframework.stereotype.Service;
-import org.springframework.transaction.annotation.Transactional;
-
-@RequiredArgsConstructor
-@Service
-public class PackagingService {
-
-    private final PackagingRepository packagingRepository;
-
-    @Transactional
-    public String getPackagingName(Long id) {
-        Packaging packaging = packagingRepository.findPackagingById(id);
-        if (packaging == null) {
-            return null;
-        }
-        return packaging.getName();
-    }
+public record PrepareOrderRequest(Long bookId,
+                                  Integer quantity) {
+    // 주문서 작성 요청 - 도서 PK, 수량
 }

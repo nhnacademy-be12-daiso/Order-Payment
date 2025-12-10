@@ -1,15 +1,36 @@
+/*
+ * +++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
+ * + Copyright 2025. NHN Academy Corp. All rights reserved.
+ * + * While every precaution has been taken in the preparation of this resource,  assumes no
+ * + responsibility for errors or omissions, or for damages resulting from the use of the information
+ * + contained herein
+ * + No part of this resource may be reproduced, stored in a retrieval system, or transmitted, in any
+ * + form or by any means, electronic, mechanical, photocopying, recording, or otherwise, without the
+ * + prior written permission.
+ * +++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
+ */
+
 package com.nhnacademy.order_payments.entity;
 
 import com.nhnacademy.order_payments.model.Grade;
 import com.nhnacademy.order_payments.model.OrderStatus;
-import jakarta.persistence.*;
+import jakarta.persistence.Column;
+import jakarta.persistence.Entity;
+import jakarta.persistence.EnumType;
+import jakarta.persistence.Enumerated;
+import jakarta.persistence.GeneratedValue;
+import jakarta.persistence.GenerationType;
+import jakarta.persistence.Id;
+import jakarta.persistence.JoinColumn;
+import jakarta.persistence.ManyToOne;
+import jakarta.persistence.OneToMany;
+import jakarta.persistence.OneToOne;
+import jakarta.persistence.Table;
+import java.time.ZonedDateTime;
+import java.util.List;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.Setter;
-
-import java.time.LocalDateTime;
-import java.time.ZonedDateTime;
-import java.util.List;
 
 @NoArgsConstructor
 @Getter
@@ -20,7 +41,7 @@ public class Order {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     @Column(name = "order_id")
-    private long id;
+    private Long id;
 
     @Setter
     @ManyToOne
@@ -32,7 +53,7 @@ public class Order {
     private Long userId;
 
     @Column(name = "order_number", unique = true)
-    private long orderNumber; // pk랑 무슨 차이가 있는지?
+    private Long orderNumber; // pk랑 무슨 차이가 있는지?
 
     @Setter
     @Enumerated(EnumType.STRING)
@@ -57,7 +78,8 @@ public class Order {
     @Column(name = "grade_name")
     private Grade grade;
 
-    public Order(long orderNumber, String ordererName, int totalPrice, String phoneNumber, String email, Grade grade){
+    public Order(Long orderNumber, String ordererName, Integer totalPrice, String phoneNumber, String email,
+                 Grade grade) {
         this.orderNumber = orderNumber;
         this.ordererName = ordererName;
         this.totalPrice = totalPrice;
