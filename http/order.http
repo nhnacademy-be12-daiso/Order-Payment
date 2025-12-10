@@ -1,0 +1,12 @@
+
+### Order Prepare TEST
+POST http://localhost:8082/api/orders/prepare
+X-User-Id: 61
+Content-Type: application/json
+
+[
+  101,
+  102,
+  103,
+  104
+]
