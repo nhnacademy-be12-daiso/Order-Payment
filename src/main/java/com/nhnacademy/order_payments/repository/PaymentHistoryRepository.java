@@ -9,6 +9,5 @@ public interface PaymentHistoryRepository extends JpaRepository<PaymentHistory, 
     // 결제에 대한 히스토리 전체 조회
     List<PaymentHistory> findByPaymentOrderOrderNumberOrderByPaymentTimeAsc(Long orderNumber);
 
-    // payment 기준
-    List<PaymentHistory> findByPaymentOrderOrderIdOrderByPaymentTimeAsc(Long orderId);
+    List<PaymentHistory> findByPaymentOrderIdOrderByPaymentTimeAsc(Long orderId);
 }

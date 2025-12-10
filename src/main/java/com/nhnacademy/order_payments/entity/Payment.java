@@ -14,6 +14,7 @@ public class Payment {
 
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
+    @Column(name = "payment_id") // payment_id 아닌가?
     private Long paymentId;
 
     @OneToOne
@@ -21,20 +22,26 @@ public class Payment {
     private Order order;
 
     @Setter
+    @Column(name = "payment_cost")
     private Integer paymentCost;
 
+    @Column(name = "payment_key")
     private String paymentKey;
 
     @Setter
     @Enumerated(EnumType.STRING)
+    @Column(name = "payment_method")
     private PaymentMethod paymentMethod;
 
+    @Column(name = "pg_provider")
     private String pgProvider;
 
     @Setter
+    @Column(name = "card_issuer_code")
     private String cardIssuerCode;
 
     @Setter
+    @Column(name = "approvedAt")
     private OffsetDateTime approvedAt; //결제가 승인된 시각
 
     @Builder

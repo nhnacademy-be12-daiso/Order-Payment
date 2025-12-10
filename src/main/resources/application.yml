@@ -3,9 +3,9 @@ spring:
     name: team3-order-payment
 
   datasource:
-    url: ${SPRING_DATASOURCE_URL}
-    username: ${SPRING_DATASOURCE_USERNAME}
-    password: ${SPRING_DATASOURCE_PASSWORD}
+    url: jdbc:mysql://s4.java21.net:13306/project_be12_team3?useSSL=false&serverTimezone=Asia/Seoul&allowPublicKeyRetrieval=true
+    username: project_be12_team3
+    password: 'Vu52gc0i(mNxDJyI'
     driver-class-name: com.mysql.cj.jdbc.Driver
 
   jpa:
@@ -20,10 +20,10 @@ spring:
         dialect: org.hibernate.dialect.MySQLDialect
 
   rabbitmq:
-    host: ${SPRING_RABBITMQ_HOST}
-    port: ${SPRING_RABBITMQ_PORT}
-    username: ${SPRING_RABBITMQ_USERNAME}
-    password: ${SPRING_RABBITMQ_PASSWORD}
+    host: s4.java21.net
+    port: 5672
+    username: admin
+    password: 'nhnacademy123!'
 
 eureka:
   instance:
@@ -32,7 +32,7 @@ eureka:
     register-with-eureka: true
     fetch-registry: true
     service-url:
-      defaultZone: ${EUREKA_CLIENT_SERVICEURL_DEFAULTZONE}
+      defaultZone: http://localhost:8761/eureka/
 
 logging:
   level:
@@ -49,8 +49,8 @@ management:
       show-details: always
 
 payment:
-  base-url: ${TOSS_URL}
-  secret-key: ${TOSS_SECRET_KEY}
+  base-url: https://api.tosspayments.com/v1/payments
+  secret-key: test_gsk_docs_OaPz8L5KdmQXkzRz3y47BMw6
 
 springdoc:
   swagger-ui:
@@ -61,3 +61,6 @@ springdoc:
     enabled: true
   packages-to-scan: com.nhnacademy.order_payments.payment.controller
   paths-to-match: /api/**
+
+server:
+  port: 8082
