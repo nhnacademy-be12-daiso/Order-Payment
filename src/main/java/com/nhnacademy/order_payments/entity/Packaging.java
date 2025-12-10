@@ -16,5 +16,5 @@ public class Packaging {
     private String name;
 
     @Column(name = "wrapping_paper_price")
-    private int price;
+    private Long price;
 }

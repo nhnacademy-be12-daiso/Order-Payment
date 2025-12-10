@@ -6,12 +6,12 @@ import com.nhnacademy.order_payments.model.OrderStatus;
 import java.time.ZonedDateTime;
 
 public record OrderResponse(
-        long orderId,
-        long orderNumber,
+        Long orderId,
+        Long orderNumber,
         OrderStatus orderStatus,
         ZonedDateTime orderDate,
         String ordererName,
-        int totalPrice,
+        Long totalPrice,
         String ordererPhoneNumber,
         String ordererEmail,
         Grade grade,

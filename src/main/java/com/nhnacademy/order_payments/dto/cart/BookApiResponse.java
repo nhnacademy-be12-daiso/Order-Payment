@@ -1,7 +1,7 @@
 package com.nhnacademy.order_payments.dto.cart;
 
 public record BookApiResponse (
-        long bookId,
+        Long bookId,
         String title,
-        int price
+        Long price
 ) {}
