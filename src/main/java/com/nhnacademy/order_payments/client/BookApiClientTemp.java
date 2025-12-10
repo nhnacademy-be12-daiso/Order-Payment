@@ -42,7 +42,7 @@ public class BookApiClientTemp {
 
         for (Long bookId : bookApiRequest.bookIdList()) {
             int randomOffset = (int) (Math.random() * range);
-            int finalRandomValue = (randomOffset + minHundreds) * 100;
+            Long finalRandomValue = (randomOffset + minHundreds) * 100L;
             bookInfos.add(new BookInfo(bookId, "title:" + bookId.toString(), finalRandomValue, null, null));
         }
 
