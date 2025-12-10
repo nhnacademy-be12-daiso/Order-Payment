@@ -17,7 +17,7 @@ import java.util.List;
 import org.springframework.cloud.openfeign.FeignClient;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.GetMapping;
-import org.springframework.web.bind.annotation.PathVariable;
+import org.springframework.web.bind.annotation.RequestHeader;
 
 @FeignClient(name = "TEAM3-COUPON")
 public interface CouponApiClient {
@@ -27,7 +27,7 @@ public interface CouponApiClient {
      * 2. CouponResponse 리스트 응답
      */
     // 주문서 작성 시 사용자가 사용할 수 있는 쿠폰 정보
-    @GetMapping("/api/coupons/users/{userId}/available")
-    ResponseEntity<List<CouponResponse>> getAvailableCoupons(@PathVariable Long userId);
+    @GetMapping("/api/coupons/available")
+    ResponseEntity<List<CouponResponse>> getAvailableCoupons(@RequestHeader("X-User-Id") Long userId);
 
 }
