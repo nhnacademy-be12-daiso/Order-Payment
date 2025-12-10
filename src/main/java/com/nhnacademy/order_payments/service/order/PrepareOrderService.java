@@ -36,6 +36,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.stream.Collectors;
 import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
 
 /**
@@ -62,6 +63,7 @@ import org.springframework.stereotype.Service;
  * 2. 중복 코드 간소화
  */
 
+@Slf4j
 @Service
 @RequiredArgsConstructor
 public class PrepareOrderService {
@@ -145,6 +147,7 @@ public class PrepareOrderService {
             // 여기 있는게 맞는지는 모르겠음
 
         } catch (FeignException e) {
+            log.error("외부 API 통신 간 오류 발생: {}", e.getMessage());
             throw new ExternalServiceException("외부 API 통신 간 오류 발생");
         }
 
@@ -223,6 +226,7 @@ public class PrepareOrderService {
             // 여기 있는게 맞는지는 모르겠음
 
         } catch (FeignException e) {
+            log.error("외부 API 통신 간 오류 발생: {}", e.getMessage());
             throw new ExternalServiceException("외부 API 통신 간 오류 발생");
         }
 

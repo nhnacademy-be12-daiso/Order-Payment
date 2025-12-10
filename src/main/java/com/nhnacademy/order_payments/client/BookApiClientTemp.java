@@ -15,6 +15,7 @@ package com.nhnacademy.order_payments.client;
 import com.nhnacademy.order_payments.dto.cart.BookApiRequest;
 import com.nhnacademy.order_payments.dto.order.BookInfo;
 import com.nhnacademy.order_payments.dto.order.BookInfoResponse;
+import java.math.BigDecimal;
 import java.util.ArrayList;
 import java.util.List;
 import org.springframework.stereotype.Component;
@@ -43,8 +44,14 @@ public class BookApiClientTemp {
         for (Long bookId : bookApiRequest.bookIdList()) {
             int randomOffset = (int) (Math.random() * range);
             Long finalRandomValue = (randomOffset + minHundreds) * 100L;
-            bookInfos.add(new BookInfo(bookId, "title:" + bookId.toString(), finalRandomValue,
-                    null, null, null, null));
+            bookInfos.add(new BookInfo(
+                    bookId,
+                    "title:" + bookId.toString(),
+                    finalRandomValue,
+                    null,
+                    BigDecimal.ZERO,
+                    finalRandomValue,
+                    0L));
         }
 
         return new BookInfoResponse(bookInfos);
