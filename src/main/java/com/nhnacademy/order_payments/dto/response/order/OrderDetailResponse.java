@@ -4,6 +4,7 @@ import com.nhnacademy.order_payments.model.OrderDetailStatus;
 
 public record OrderDetailResponse(
         long orderDetailId,
+        long bookId,
         String bookTitle,
         String bookCoverImage,
         int price, //구매당시 금액
