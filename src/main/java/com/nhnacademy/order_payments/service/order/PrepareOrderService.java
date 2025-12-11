@@ -1,15 +1,3 @@
-/*
- * +++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
- * + Copyright 2025. NHN Academy Corp. All rights reserved.
- * + * While every precaution has been taken in the preparation of this resource,  assumes no
- * + responsibility for errors or omissions, or for damages resulting from the use of the information
- * + contained herein
- * + No part of this resource may be reproduced, stored in a retrieval system, or transmitted, in any
- * + form or by any means, electronic, mechanical, photocopying, recording, or otherwise, without the
- * + prior written permission.
- * +++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
- */
-
 package com.nhnacademy.order_payments.service.order;
 
 import com.nhnacademy.order_payments.client.BookApiClient;
@@ -141,7 +129,8 @@ public class PrepareOrderService {
                     .toList();
 
             // 배송 정책
-            DeliveryPolicy deliveryPolicy = deliveryPolicyRepository.findByDeliveryPolicyName("DEFAULT");
+            DeliveryPolicy deliveryPolicy = deliveryPolicyRepository.findTopByOrderByDeliveryPolicyIdDesc()
+                    .orElseThrow(() -> new NotFoundOrderException("배송 정책을 찾을 수 없습니다."));
             // --> 일단 기본 3000원 가져옴
             deliveryDto = new DeliveryPolicyDto(deliveryPolicy);
             // 여기 있는게 맞는지는 모르겠음
@@ -220,7 +209,8 @@ public class PrepareOrderService {
                     .toList();
 
             // 배송 정책
-            DeliveryPolicy deliveryPolicy = deliveryPolicyRepository.findByDeliveryPolicyName("DEFAULT");
+            DeliveryPolicy deliveryPolicy = deliveryPolicyRepository.findTopByOrderByDeliveryPolicyIdDesc()
+                    .orElseThrow(() -> new NotFoundOrderException("배송 정책을 찾을 수 없습니다."));
             // --> 일단 기본 3000원 가져옴
             deliveryDto = new DeliveryPolicyDto(deliveryPolicy);
             // 여기 있는게 맞는지는 모르겠음

@@ -1,11 +1,14 @@
-package com.nhnacademy.order_payments.payment.controller;
+package com.nhnacademy.order_payments.controller.payment;
 
 import com.nhnacademy.order_payments.dto.request.CancelRequest;
 import com.nhnacademy.order_payments.dto.request.ConfirmRequest;
 import com.nhnacademy.order_payments.dto.request.FailRequest;
+import com.nhnacademy.order_payments.dto.request.RefundRequest;
 import com.nhnacademy.order_payments.dto.response.CancelResponse;
 import com.nhnacademy.order_payments.dto.response.ConfirmResponse;
-import com.nhnacademy.order_payments.payment.service.PaymentFacade;
+import com.nhnacademy.order_payments.dto.response.PaymentHistoryResponse;
+import com.nhnacademy.order_payments.dto.response.RefundResponse;
+import com.nhnacademy.order_payments.service.payment.PaymentFacade;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.media.Content;
 import io.swagger.v3.oas.annotations.media.Schema;
@@ -13,10 +16,9 @@ import io.swagger.v3.oas.annotations.responses.ApiResponse;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
-import org.springframework.web.bind.annotation.PostMapping;
-import org.springframework.web.bind.annotation.RequestBody;
-import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RestController;
+import org.springframework.web.bind.annotation.*;
+
+import java.util.List;
 
 @RestController
 @RequestMapping("/api/payments")
@@ -36,8 +38,9 @@ public class PaymentController {
             }
     )
     @PostMapping("/confirm")
-    public ConfirmResponse confirm(@Valid @RequestBody ConfirmRequest req) {
-        return facade.confirm(req);
+    public ConfirmResponse confirm(@RequestHeader("X-User-Id") Long userId, @Valid @RequestBody ConfirmRequest req) {
+
+        return facade.confirm(userId, req);
     }
 
     @Operation(
@@ -50,8 +53,8 @@ public class PaymentController {
             }
     )
     @PostMapping("/cancel")
-    public CancelResponse cancel(@Valid @RequestBody CancelRequest req) {
-        return facade.cancel(req);
+    public CancelResponse cancel(@RequestHeader("X-User-Id") Long userId, @Valid @RequestBody CancelRequest req) {
+        return facade.cancel(userId, req);
     }
 
     @Operation(
@@ -59,14 +62,15 @@ public class PaymentController {
             description = "취소와 구분해서 환불 이력을 REFUND 상태로 기록합니다.",
             responses = {
                     @ApiResponse(responseCode = "200", description = "환불 완료",
-                            content = @Content(schema = @Schema(implementation = CancelResponse.class))),
+                            content = @Content(schema = @Schema(implementation = RefundResponse.class))),
                     @ApiResponse(responseCode = "400", description = "검증 실패(환불 금액 오류, 결제내역 없음 등)")
             }
     )
     @PostMapping("/refund")
-    public CancelResponse refund(@Valid @RequestBody CancelRequest req) {
-        return facade.refund(req);
+    public RefundResponse refund(@RequestHeader("X-User-Id") Long userId, @Valid @RequestBody RefundRequest req) {
+        return facade.refund(userId, req);
     }
+
 
     @Operation(
             summary = "결제 실패 기록",
@@ -77,4 +81,15 @@ public class PaymentController {
         facade.fail(req);
     }
 
+    @Operation(
+            summary = "결제 히스토리 조회",
+            description = "특정 주문에 대한 APPROVE / CANCEL / REFUND / FAIL 등의 이력을 조회합니다."
+    )
+    @GetMapping("/history/{orderIdOrNumber}")
+    public List<PaymentHistoryResponse> getHistory(
+            @RequestHeader("X-User-Id") Long userId,
+            @PathVariable("orderIdOrNumber") String orderIdOrNumber
+    ) {
+        return facade.getHistory(userId, orderIdOrNumber);
+    }
 }

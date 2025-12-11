@@ -1,4 +1,4 @@
-package com.nhnacademy.order_payments.service;
+package com.nhnacademy.order_payments.service.delivery;
 
 import com.nhnacademy.order_payments.repository.DeliveryDetailRepository;
 import com.nhnacademy.order_payments.repository.DeliveryOrderDetailRepository;
