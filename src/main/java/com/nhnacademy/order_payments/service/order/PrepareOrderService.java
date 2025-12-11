@@ -5,6 +5,7 @@ import com.nhnacademy.order_payments.client.CouponApiClient;
 import com.nhnacademy.order_payments.client.UserApiClient;
 import com.nhnacademy.order_payments.dto.cart.BookApiRequest;
 import com.nhnacademy.order_payments.dto.order.*;
+import com.nhnacademy.order_payments.service.delivery.DeliveryPolicyService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 
@@ -33,6 +34,7 @@ public class PrepareOrderService {
     private final BookApiClient bookApiClient;
     private final UserApiClient userApiClient;
     private final CouponApiClient couponApiClient;
+    private final DeliveryPolicyService deliveryPolicyService; //배송비 정책..
 
     // 주문서 작성을 위한 데이터를 넘겨주는 메서드
     public  PrepareOrderDto prepareOrderData(Long userId, List<Long> bookIdList) {
@@ -48,8 +50,11 @@ public class PrepareOrderService {
 
         // >>>>>> 배송비, 포장지 정책 추가해야함 <<<<<<<<
 
+        // 배송비 정책
+        var deliveryPolicy = deliveryPolicyService.getCurrentPolicy();
+
         // 모든 데이터 수합한 dto
-        PrepareOrderDto dto = new PrepareOrderDto(bookInfoResponse, userInfoResponse, couponResponse); // 추가될지도
+        PrepareOrderDto dto = new PrepareOrderDto(bookInfoResponse, userInfoResponse, couponResponse, deliveryPolicy); // 추가될지도
 
 
         return dto;
