@@ -12,22 +12,18 @@
 
 package com.nhnacademy.order_payments.entity;
 
+import com.nhnacademy.order_payments.dto.order.OrderSummaryDto;
 import com.nhnacademy.order_payments.model.Grade;
 import com.nhnacademy.order_payments.model.OrderStatus;
-import jakarta.persistence.Column;
-import jakarta.persistence.Entity;
-import jakarta.persistence.EnumType;
-import jakarta.persistence.Enumerated;
-import jakarta.persistence.GeneratedValue;
-import jakarta.persistence.GenerationType;
-import jakarta.persistence.Id;
-import jakarta.persistence.JoinColumn;
-import jakarta.persistence.ManyToOne;
-import jakarta.persistence.OneToMany;
-import jakarta.persistence.OneToOne;
-import jakarta.persistence.Table;
+import jakarta.persistence.*;
+
+import java.time.Instant;
+import java.time.LocalDateTime;
 import java.time.ZonedDateTime;
+import java.util.ArrayList;
 import java.util.List;
+import java.util.concurrent.ThreadLocalRandom;
+
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.Setter;
@@ -67,7 +63,7 @@ public class Order {
     private String ordererName;
 
     @Column(name = "total_price")
-    private Integer totalPrice;
+    private Long totalPrice;
 
     @Column(name = "phone_number", nullable = false)
     private String phoneNumber;
@@ -75,23 +71,46 @@ public class Order {
     @Column(name = "email")
     private String email;
 
-    @Column(name = "grade_name")
-    private Grade grade;
+//    @Column(name = "grade_name")
+//    private Grade grade;
 
-    public Order(Long orderNumber, String ordererName, Integer totalPrice, String phoneNumber, String email,
-                 Grade grade) {
-        this.orderNumber = orderNumber;
+    public Order(String ordererName, Long totalPrice, String phoneNumber, String email) {
         this.ordererName = ordererName;
-        this.totalPrice = totalPrice;
+        this.orderNumber = generateOrderNumber();
+        this.orderDate = ZonedDateTime.now();
         this.phoneNumber = phoneNumber;
         this.email = email;
-        this.grade = grade;
-        this.orderDate = ZonedDateTime.now();
+        this.totalPrice = totalPrice;
+        this.orderStatus = OrderStatus.PENDING;
+//        this.grade = grade;
+    }
+
+    public Order(OrderSummaryDto dto) {
+        this.ordererName = dto.ordererSummaryDto().ordererName();
+        this.orderNumber = generateOrderNumber();
+        this.orderDate = ZonedDateTime.from(LocalDateTime.now());
+        this.phoneNumber = dto.ordererSummaryDto().ordererPhoneNumber();
+        this.email = dto.ordererSummaryDto().ordererEmail();
+        this.totalPrice = dto.totalPrice();
+        this.orderStatus = OrderStatus.PENDING;
+//        this.grade =
+    }
+
+    public Long generateOrderNumber() {
+        long timestamp = Instant.now().toEpochMilli();
+        long randomPart = ThreadLocalRandom.current().nextLong(100000L);
+        long orderNumber = timestamp * 100000L + randomPart;
+        return Math.abs(orderNumber); // 음수 방지
     }
 
     @Setter
-    @OneToMany(mappedBy = "order")
-    private List<OrderDetail> orderDetailList;
+    @OneToMany(mappedBy = "order", cascade = CascadeType.PERSIST, orphanRemoval = true)
+    private List<OrderDetail> orderDetailList = new ArrayList<>();
+
+    public void addOrderDetail(OrderDetail orderDetail) {
+        this.orderDetailList.add(orderDetail);
+        orderDetail.setOrder(this);
+    }
 
     @Setter
     @OneToOne(mappedBy = "order")

@@ -12,16 +12,10 @@
 
 package com.nhnacademy.order_payments.entity;
 
+import com.nhnacademy.order_payments.dto.order.BookSummaryDto;
 import com.nhnacademy.order_payments.model.OrderDetailStatus;
-import jakarta.persistence.Column;
-import jakarta.persistence.Entity;
-import jakarta.persistence.GeneratedValue;
-import jakarta.persistence.GenerationType;
-import jakarta.persistence.Id;
-import jakarta.persistence.JoinColumn;
-import jakarta.persistence.ManyToOne;
-import jakarta.persistence.OneToMany;
-import jakarta.persistence.Table;
+import jakarta.persistence.*;
+
 import java.util.List;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
@@ -39,7 +33,7 @@ public class OrderDetail {
     private Long id;
 
     @Setter
-    @ManyToOne
+    @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "order_id")
     private Order order; // 관계매핑 필요
 
@@ -53,6 +47,9 @@ public class OrderDetail {
     @Column(name = "packaging_id")
     private Long packagingId; // 저장만 함
 
+    @Column(name = "coupon_id")
+    private Long couponId;
+
     @Setter
     @Column(name = "order_detail_status")
     private OrderDetailStatus orderDetailStatus;
@@ -62,6 +59,15 @@ public class OrderDetail {
         this.price = price;
         this.quantity = quantity;
         this.packagingId = packagingId;
+        this.orderDetailStatus = OrderDetailStatus.PENDING;
+    }
+
+    public OrderDetail(BookSummaryDto dto) {
+        this.bookId = dto.bookId();
+        this.price = dto.discountPrice(); // 할인 금액을 넣는걸로
+        this.quantity = dto.quantity();
+        this.packagingId = dto.packagingId();
+        this.couponId = dto.couponId();
         this.orderDetailStatus = OrderDetailStatus.PENDING;
     }
 

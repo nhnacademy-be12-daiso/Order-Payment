@@ -4,6 +4,8 @@ import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.amqp.core.AmqpTemplate;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.event.TransactionPhase;
+import org.springframework.transaction.event.TransactionalEventListener;
 
 @Slf4j
 @RequiredArgsConstructor
@@ -17,6 +19,9 @@ public class OrderEventPublisher {
     private static final String ROUTING_KEY_CONFIRMED = "order.confirmed";
 
     // saga 시작
+    @TransactionalEventListener(phase = TransactionPhase.AFTER_COMMIT)
+    // ----> OrderService의 트랜잭션이 커밋된 후에만 실행됨
+    // >>>>>>> 이 부분 조금 더 공부해봐야 할듯 <<<<<<<<
     public void publishOrderConfirmedEvent(OrderConfirmedEvent event) {
         try {
             rabbitTemplate.convertAndSend(
