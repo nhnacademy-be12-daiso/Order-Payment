@@ -129,7 +129,8 @@ public class PrepareOrderService {
                     .toList();
 
             // 배송 정책
-            DeliveryPolicy deliveryPolicy = deliveryPolicyRepository.findByDeliveryPolicyName("DEFAULT");
+            DeliveryPolicy deliveryPolicy = deliveryPolicyRepository.findTopByOrderByDeliveryPolicyIdDesc()
+                    .orElseThrow(() -> new NotFoundOrderException("배송 정책을 찾을 수 없습니다."));
             // --> 일단 기본 3000원 가져옴
             deliveryDto = new DeliveryPolicyDto(deliveryPolicy);
             // 여기 있는게 맞는지는 모르겠음
@@ -208,7 +209,8 @@ public class PrepareOrderService {
                     .toList();
 
             // 배송 정책
-            DeliveryPolicy deliveryPolicy = deliveryPolicyRepository.findByDeliveryPolicyName("DEFAULT");
+            DeliveryPolicy deliveryPolicy = deliveryPolicyRepository.findTopByOrderByDeliveryPolicyIdDesc()
+                    .orElseThrow(() -> new NotFoundOrderException("배송 정책을 찾을 수 없습니다."));
             // --> 일단 기본 3000원 가져옴
             deliveryDto = new DeliveryPolicyDto(deliveryPolicy);
             // 여기 있는게 맞는지는 모르겠음
