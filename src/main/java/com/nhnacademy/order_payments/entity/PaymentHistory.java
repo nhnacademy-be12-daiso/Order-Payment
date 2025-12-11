@@ -31,7 +31,7 @@ public class PaymentHistory {
     private PaymentEventType eventType; // 결제 상태(승인, 취소, 환불 등)
 
     @Column(name = "amount")
-    private Integer amount;
+    private Long amount;
 
     @Column(name = "reason")// 금액
     private String reason;
@@ -43,7 +43,7 @@ public class PaymentHistory {
     public PaymentHistory(Payment payment,
                           Long paymentId,
                           PaymentEventType eventType,
-                          Integer amount,
+                          Long amount,
                           String reason,
                           LocalDateTime paymentTime) {
         this.payment = payment;

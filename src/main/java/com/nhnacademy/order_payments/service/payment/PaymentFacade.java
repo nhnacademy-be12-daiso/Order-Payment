@@ -156,7 +156,7 @@ public class PaymentFacade {
                 order.getOrderNumber(), payment.getPaymentKey(), payment.getPaymentCost());
 
         // 2. 취소 금액 결정(기본 = 전액)
-        int cancelAmount = (req.cancelAmount() == null) ? payment.getPaymentCost() : req.cancelAmount();
+        Long cancelAmount = (req.cancelAmount() == null) ? payment.getPaymentCost() : req.cancelAmount();
         if (cancelAmount <= 0 || cancelAmount > payment.getPaymentCost()) {
             log.warn("[PAYMENT CANCEL INVALID_AMOUNT] orderNumber={}, cancelAmount={}, paidAmount={}",
                     order.getOrderNumber(), cancelAmount, payment.getPaymentCost());
@@ -216,7 +216,7 @@ public class PaymentFacade {
                 order.getOrderNumber(), payment.getPaymentKey(), payment.getPaymentCost());
 
         // 2. 환불 금액 결정(없으면 전액)
-        int cancelAmount = (req.cancelAmount() == null) ? payment.getPaymentCost() : req.cancelAmount();
+        Long cancelAmount = (req.cancelAmount() == null) ? payment.getPaymentCost() : req.cancelAmount();
         if (cancelAmount <= 0 || cancelAmount > payment.getPaymentCost()) {
             log.warn("[PAYMENT REFUND INVALID_AMOUNT] orderNumber={}, cancelAmount={}, paidAmount={}",
                     order.getOrderNumber(), cancelAmount, payment.getPaymentCost());

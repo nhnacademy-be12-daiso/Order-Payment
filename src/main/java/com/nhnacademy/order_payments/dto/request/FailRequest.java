@@ -5,7 +5,7 @@ import jakarta.validation.constraints.NotNull;
 
 public record FailRequest (
         @NotBlank String orderId,     // 주문번호
-        @NotNull Integer amount,      // 결제 시도 금액
+        @NotNull Long amount,      // 결제 시도 금액
         @NotBlank String paymentKey,
         @NotBlank String errorCode,
         @NotBlank String errorMessage

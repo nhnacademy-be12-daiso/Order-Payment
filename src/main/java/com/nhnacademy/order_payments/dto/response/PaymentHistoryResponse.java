@@ -11,7 +11,7 @@ public record PaymentHistoryResponse(
         PaymentEventType eventType,
 
         @Schema(description = "금액", example = "50000")
-        Integer amount,
+        Long amount,
 
         @Schema(description = "사유", example = "단순 변심 / 품절 등")
         String reason,

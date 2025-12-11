@@ -311,7 +311,7 @@ public class PaymentFacadeTest {
         // given
         FailRequest request = new FailRequest(
                 "4001",
-                10_000,
+                10_000L,
                 "NO_KEY",
                 "ERROR_CODE",
                 "에러 메시지"
