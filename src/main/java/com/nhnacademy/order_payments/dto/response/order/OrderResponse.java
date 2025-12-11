@@ -26,7 +26,6 @@ public record OrderResponse(
         Long totalPrice,
         String ordererPhoneNumber,
         String ordererEmail,
-        Grade grade,
 
         DeliveryResponse delivery) {
 }
