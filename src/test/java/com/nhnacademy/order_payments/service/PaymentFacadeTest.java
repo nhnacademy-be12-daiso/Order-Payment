@@ -65,7 +65,7 @@ public class PaymentFacadeTest {
         // given
         Long userId = 1L;
         String orderIdStr = "1001";
-        int amount = 50_000;
+        Long amount = 50_000L;
         String paymentKey = "payment_key_123";
 
         Order order = mock(Order.class);
@@ -115,7 +115,7 @@ public class PaymentFacadeTest {
 
         Order order = mock(Order.class);
         when(order.getOrderNumber()).thenReturn(1001L);
-        when(order.getTotalPrice()).thenReturn(30_000); // 주문 금액
+        when(order.getTotalPrice()).thenReturn(30_000L); // 주문 금액
 
         when(orderRepository.findById(1001L))
                 .thenReturn(Optional.of(order));
@@ -127,7 +127,7 @@ public class PaymentFacadeTest {
                 "TOSS",
                 orderIdStr,
                 "payment_key_123",
-                50_000 // 요청 금액이 다름
+                50_000L // 요청 금액이 다름
         );
 
         // when
@@ -148,7 +148,7 @@ public class PaymentFacadeTest {
         // given
         Long userId = 1L;
         String orderIdStr = "1002";
-        int amount = 70_000;
+        Long amount = 70_000L;
         String paymentKey = "existing_key";
 
         Order order = mock(Order.class);
@@ -198,7 +198,7 @@ public class PaymentFacadeTest {
         // given
         Long userId = 1L;
         String orderIdStr = "2001";
-        int paidAmount = 40_000;
+        Long paidAmount = 40_000L;
         String paymentKey = "pay_key_cancel";
 
         Order order = mock(Order.class);
@@ -254,7 +254,7 @@ public class PaymentFacadeTest {
         // given
         Long userId = 1L;
         String orderIdStr = "3001";
-        int paidAmount = 60_000;
+        Long paidAmount = 60_000L;
         String paymentKey = "pay_key_refund";
 
         Order order = mock(Order.class);

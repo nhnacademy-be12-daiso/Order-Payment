@@ -23,7 +23,7 @@ public class Payment {
 
     @Setter
     @Column(name = "payment_cost")
-    private Integer paymentCost;
+    private Long paymentCost;
 
     @Column(name = "payment_key")
     private String paymentKey;
@@ -45,7 +45,7 @@ public class Payment {
     private OffsetDateTime approvedAt; //결제가 승인된 시각
 
     @Builder
-    public Payment(Order order, Integer paymentCost, String paymentKey,
+    public Payment(Order order, Long paymentCost, String paymentKey,
                    PaymentMethod paymentMethod, String pgProvider, String cardIssuerCode) {
         this.order = order;
         this.paymentCost = paymentCost;
