@@ -14,6 +14,7 @@ package com.nhnacademy.order_payments.dto.response.order;
 
 import com.nhnacademy.order_payments.model.Grade;
 import com.nhnacademy.order_payments.model.OrderStatus;
+
 import java.time.ZonedDateTime;
 
 public record OrderResponse(
@@ -22,10 +23,9 @@ public record OrderResponse(
         OrderStatus orderStatus,
         ZonedDateTime orderDate,
         String ordererName,
-        Integer totalPrice,
+        Long totalPrice,
         String ordererPhoneNumber,
         String ordererEmail,
-        Grade grade,
 
         DeliveryResponse delivery) {
 }

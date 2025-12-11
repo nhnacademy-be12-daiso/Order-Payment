@@ -166,7 +166,6 @@ public class OrderResultService {
 
         return new OrderResponse(order.getId(), order.getOrderNumber(), order.getOrderStatus(), order.getOrderDate(),
                 order.getOrdererName(), order.getTotalPrice(), order.getPhoneNumber(), order.getEmail(),
-                order.getGrade(),
                 deliveryResponse);
     }
 
