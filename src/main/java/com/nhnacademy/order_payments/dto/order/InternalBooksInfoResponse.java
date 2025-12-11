@@ -14,28 +14,7 @@ package com.nhnacademy.order_payments.dto.order;
 
 import java.util.List;
 
-/**
- * FrontServer로 보내주는 종합 선물세트
- *
- */
-public record PrepareOrderDto(
-        InternalBooksInfoResponse booksInfoResponse,
-        UserInfoResponse userInfoResponse,
-        List<CouponResponse> couponResponseList,
-        List<PackagingDto> packagingList,
-        DeliveryPolicyDto deliveryPolicyDto
+public record InternalBooksInfoResponse(
+        List<InternalBookInfoResponse> orderBookInfoRespDTOList
 ) {
-    public PrepareOrderDto(
-            InternalBooksInfoResponse booksInfoResponse,
-            List<PackagingDto> packagingList,
-            DeliveryPolicyDto deliveryPolicyDto) {
-
-        this(
-                booksInfoResponse,
-                null, // 비회원이므로 userInfoResponse는 null
-                null, // 비회원이므로 couponResponse는 null
-                packagingList,
-                deliveryPolicyDto
-        );
-    }
 }
