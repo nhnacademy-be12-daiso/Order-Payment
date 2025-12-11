@@ -1,9 +1,15 @@
 package com.nhnacademy.order_payments.config;
 
+import com.fasterxml.jackson.databind.ObjectMapper;
+import com.fasterxml.jackson.datatype.jsr310.JavaTimeModule;
 import org.springframework.amqp.core.Binding;
 import org.springframework.amqp.core.BindingBuilder;
 import org.springframework.amqp.core.Queue;
 import org.springframework.amqp.core.TopicExchange;
+import org.springframework.amqp.rabbit.connection.ConnectionFactory;
+import org.springframework.amqp.rabbit.core.RabbitTemplate;
+import org.springframework.amqp.support.converter.Jackson2JsonMessageConverter;
+import org.springframework.amqp.support.converter.MessageConverter;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 
@@ -45,5 +51,22 @@ public class RabbitMqConfig {
     @Bean
     public TopicExchange orderExchange() { // Topic은 패턴으로 바인딩하는거라 유연성 조음
         return new TopicExchange(ORDER_EXCHANGE);
+    }
+
+
+    @Bean
+// 🌟 2. 메소드 이름을 Spring이 찾는 관례적인 이름으로 변경
+    public MessageConverter messageConverter() {
+        ObjectMapper objectMapper = new ObjectMapper();
+        objectMapper.registerModule(new JavaTimeModule());
+        return new Jackson2JsonMessageConverter(objectMapper);
+    }
+
+    @Bean
+// 이 경우, Spring은 자동으로 이 messageConverter 빈을 RabbitTemplate에 주입함
+    public RabbitTemplate rabbitTemplate(ConnectionFactory connectionFactory, MessageConverter messageConverter) {
+        RabbitTemplate rabbitTemplate = new RabbitTemplate(connectionFactory);
+        rabbitTemplate.setMessageConverter(messageConverter);
+        return rabbitTemplate;
     }
 }

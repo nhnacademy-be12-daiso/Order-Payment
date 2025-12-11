@@ -5,10 +5,8 @@ import com.nhnacademy.order_payments.exception.NotFoundOrderException;
 import com.nhnacademy.order_payments.service.order.OrderService;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
-import org.springframework.web.bind.annotation.PostMapping;
-import org.springframework.web.bind.annotation.RequestHeader;
-import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RestController;
+import org.springframework.http.ResponseEntity;
+import org.springframework.web.bind.annotation.*;
 
 @Slf4j
 @RequiredArgsConstructor
@@ -23,7 +21,7 @@ public class OrderController {
      */
 
     @PostMapping
-    public void order(@RequestHeader("X-User-Id") Long userId, OrderSummaryDto dto) {
+    public ResponseEntity<Void> order(@RequestHeader("X-User-Id") Long userId, @RequestBody OrderSummaryDto dto) {
         // TODO : 반환 DTO 정하기
 
         if(dto == null) {
@@ -31,6 +29,8 @@ public class OrderController {
         }
 
         orderService.precessOrderPayment(userId, dto);
+
+        return ResponseEntity.ok().build();
     }
 
 

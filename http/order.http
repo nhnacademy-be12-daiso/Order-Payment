@@ -10,3 +10,49 @@ Content-Type: application/json
   103,
   104
 ]
+
+
+### 도서 주문 요청 (Saga 시작)
+
+POST http://localhost:8080/api/orders
+Content-Type: application/json
+X-User-Id: 1004
+
+{
+  "bookList": [
+    {
+      "bookId": 101,
+      "couponId": 5001,
+      "price": 25000,
+      "discountPercentage": 0.1,
+      "discountPrice": 2500,
+      "quantity": 1,
+      "packagingId": 1
+    },
+    {
+      "bookId": 102,
+      "couponId": null,
+      "price": 18000,
+      "discountPercentage": 0.0,
+      "discountPrice": 0,
+      "quantity": 2,
+      "packagingId": 2
+    }
+  ],
+  "ordererSummaryDto": {
+    "ordererName": "김철수",
+    "ordererPhoneNumber": "010-1234-5678",
+    "ordererEmail": "chulsoo.kim@example.com"
+  },
+  "deliverySummaryDto": {
+    "receiverName": "김영희",
+    "deliveryAddress": "서울특별시 강남구 테헤란로 123",
+    "deliveryAddressDetail": "엔에이치엔 빌딩 10층",
+    "postalCode": "06130",
+    "receiverPhoneNumber": "010-9876-5432",
+    "deliveryFee": 3000
+  },
+  "usedPoint": 1500,
+  "savedPoint": 300,
+  "totalPrice": 46000
+}
