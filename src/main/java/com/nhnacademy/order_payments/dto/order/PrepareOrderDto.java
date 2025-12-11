@@ -1,6 +1,6 @@
 package com.nhnacademy.order_payments.dto.order;
 
-import com.nhnacademy.order_payments.dto.response.DeliveryPolicyResponse;
+import com.nhnacademy.order_payments.entity.DeliveryPolicy;
 
 import java.util.List;
 
@@ -11,7 +11,21 @@ import java.util.List;
 public record PrepareOrderDto(
         BookInfoResponse bookInfoResponses,
         UserInfoResponse userInfoResponse,
-        CouponResponse couponResponse,
-        // 추가될듯
-        DeliveryPolicyResponse deliveryPolicy
-) {}
+        List<CouponResponse> couponResponseList,
+        List<PackagingDto> packagingList,
+        DeliveryPolicyDto deliveryPolicyDto
+) {
+    public PrepareOrderDto(
+            BookInfoResponse bookInfoResponses,
+            List<PackagingDto> packagingList,
+            DeliveryPolicyDto deliveryPolicyDto) {
+
+        this(
+                bookInfoResponses,
+                null, // 비회원이므로 userInfoResponse는 null
+                null, // 비회원이므로 couponResponse는 null
+                packagingList,
+                deliveryPolicyDto
+        );
+    }
+}
