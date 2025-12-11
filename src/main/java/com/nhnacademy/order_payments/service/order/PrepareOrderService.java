@@ -36,6 +36,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.stream.Collectors;
 import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
 
 /**
@@ -62,6 +63,7 @@ import org.springframework.stereotype.Service;
  * 2. 중복 코드 간소화
  */
 
+@Slf4j
 @Service
 @RequiredArgsConstructor
 public class PrepareOrderService {
@@ -107,13 +109,21 @@ public class PrepareOrderService {
 
             // 받아온 도서 정보에 수량과 합계 주입
             List<BookInfo> updateBookInfos = bookInfoResponse.bookInfos().stream()
-                    .map(book -> new BookInfo(
-                            book.bookId(),
-                            book.title(),
-                            book.price(),
-                            quantityMap.getOrDefault(book.bookId(), 1),
-                            (long) book.price() * quantityMap.getOrDefault(book.bookId(), 1)
-                    )).toList();
+                    .map(book -> {
+                        Integer quantity = quantityMap.getOrDefault(book.bookId(), 1);
+                        // 총 가격 = 할인가 * 수량
+                        Long finalPrice = book.discountPrice() * quantity;
+
+                        return new BookInfo(
+                                book.bookId(),
+                                book.title(),
+                                book.price(),
+                                quantity,
+                                book.discountPercentage(),
+                                book.discountPrice(),
+                                finalPrice
+                        );
+                    }).toList();
 
             // 값을 채운 리스트로 다시 덮어씌움
             bookInfoResponse = new BookInfoResponse(updateBookInfos);
@@ -137,6 +147,7 @@ public class PrepareOrderService {
             // 여기 있는게 맞는지는 모르겠음
 
         } catch (FeignException e) {
+            log.error("외부 API 통신 간 오류 발생: {}", e.getMessage());
             throw new ExternalServiceException("외부 API 통신 간 오류 발생");
         }
 
@@ -183,13 +194,21 @@ public class PrepareOrderService {
 
             // 받아온 도서 정보에 수량과 합계 주입
             List<BookInfo> updateBookInfos = bookInfoResponse.bookInfos().stream()
-                    .map(book -> new BookInfo(
-                            book.bookId(),
-                            book.title(),
-                            book.price(),
-                            quantityMap.getOrDefault(book.bookId(), 1),
-                            (long) book.price() * quantityMap.getOrDefault(book.bookId(), 1)
-                    )).toList();
+                    .map(book -> {
+                        Integer quantity = quantityMap.getOrDefault(book.bookId(), 1);
+                        // 총 가격 = 할인가 * 수량
+                        Long finalPrice = book.discountPrice() * quantity;
+
+                        return new BookInfo(
+                                book.bookId(),
+                                book.title(),
+                                book.price(),
+                                quantity,
+                                book.discountPercentage(),
+                                book.discountPrice(),
+                                finalPrice
+                        );
+                    }).toList();
 
             // 값을 채운 리스트로 다시 덮어씌움
             bookInfoResponse = new BookInfoResponse(updateBookInfos);
@@ -207,6 +226,7 @@ public class PrepareOrderService {
             // 여기 있는게 맞는지는 모르겠음
 
         } catch (FeignException e) {
+            log.error("외부 API 통신 간 오류 발생: {}", e.getMessage());
             throw new ExternalServiceException("외부 API 통신 간 오류 발생");
         }
 

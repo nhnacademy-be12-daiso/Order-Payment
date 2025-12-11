@@ -36,12 +36,12 @@ public class SyncService {
         List<CartDetail> cartDetailsToSave = new ArrayList<>();
 
         // ---> 회원 별로 sync가 진행됨
-        for(Map.Entry<Long, List<SyncInfo>> entry : syncInfosByUserId.entrySet()) {
+        for (Map.Entry<Long, List<SyncInfo>> entry : syncInfosByUserId.entrySet()) {
             Long userId = entry.getKey();
             List<SyncInfo> syncInfos = entry.getValue();
 
             // 장바구니 있는지 확인하고 없으면 하나 생성
-            Cart userCart = cartRepository.findByUserId(userId).orElseGet(
+            Cart userCart = cartRepository.findFirstByUserId(userId).orElseGet(
                     () -> {
                         Cart newCart = new Cart(userId);
                         log.info("장바구니 생성 : {}", userId);
@@ -53,12 +53,12 @@ public class SyncService {
             boolean isClearCart = false;
 
             // Create, Update, Delete 분류
-            for(SyncInfo syncInfo : syncInfos) {
+            for (SyncInfo syncInfo : syncInfos) {
                 Long bookId = syncInfo.bookId();
                 int quantity = syncInfo.quantity();
 
                 // 전체 삭제 플래그
-                if(bookId == -1) {
+                if (bookId == -1) {
                     cartDetailRepository.removeByCartUserId(userId);
                     log.info("[{}] 장바구니 전체 비워짐", userId);
                     isClearCart = true;
@@ -67,23 +67,23 @@ public class SyncService {
                 }
 
                 // 삭제 요청
-                if(quantity == 0) {
+                if (quantity == 0) {
                     bookIdsToDelete.add(bookId);
                 } else {
                     syncInfosToUpdateOrInsert.add(syncInfo);
                 }
             }
 
-            if(isClearCart) {
+            if (isClearCart) {
                 continue;  // --> 비워졌으므로 더 수행할 필요 없음
             }
 
-            if(!bookIdsToDelete.isEmpty()) {
+            if (!bookIdsToDelete.isEmpty()) {
                 cartDetailRepository.removeByBookIdInAndCartUserId(bookIdsToDelete, userId);
                 log.info("[{}] 도서 일괄 삭제 : {}", userId, bookIdsToDelete);
             }
 
-            if(!syncInfosToUpdateOrInsert.isEmpty()) {
+            if (!syncInfosToUpdateOrInsert.isEmpty()) {
                 // --> bookId만 list로 뽑아줌
                 List<Long> bookIdsToUpdateOrInsert = syncInfosToUpdateOrInsert.stream()
                         .map(SyncInfo::bookId)
@@ -94,10 +94,10 @@ public class SyncService {
                 Map<Long, CartDetail> existingDetailsByBookId = existingDetails.stream()
                         .collect(Collectors.toMap(CartDetail::getBookId, cd -> cd, (oldValue, newValue) -> oldValue));
 
-                for(SyncInfo syncInfo : syncInfosToUpdateOrInsert) {
+                for (SyncInfo syncInfo : syncInfosToUpdateOrInsert) {
                     CartDetail existingDetail = existingDetailsByBookId.get(syncInfo.bookId());
-                    if(existingDetail != null) { // 이미 DB에 데이터가 존재 ---> UPDATE 로직
-                        if(existingDetail.getQuantity() != syncInfo.quantity()) { // 기존 수량이랑 다름
+                    if (existingDetail != null) { // 이미 DB에 데이터가 존재 ---> UPDATE 로직
+                        if (existingDetail.getQuantity() != syncInfo.quantity()) { // 기존 수량이랑 다름
                             cartDetailsToSave.add(existingDetail);  // ---> 목록에 추가
                             log.info("[{}] 장바구니에 담겨있는 {} 도서의 수량이 {}로 변경되었습니다.", userId, syncInfo.bookId(), syncInfo.quantity());
                         } else {
@@ -112,7 +112,7 @@ public class SyncService {
             }
 
             // ----> 변경된 내용을 일괄로 꽂아넣음
-            if(!cartDetailsToSave.isEmpty()) {
+            if (!cartDetailsToSave.isEmpty()) {
                 cartDetailRepository.saveAll(cartDetailsToSave);
             }
         }

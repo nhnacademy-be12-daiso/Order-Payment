@@ -35,4 +35,7 @@ public class CouponResponse {
     private LocalDateTime issuedAt;
     private LocalDateTime expiryAt;
     private LocalDateTime usedAt;
+
+    private Long targetId; // 카테고리 or 특정 도서 판별하는 컬럼
+    private String itemName; // 카테고리/도서 쿠폰 view를 위한 컬럼
 }
