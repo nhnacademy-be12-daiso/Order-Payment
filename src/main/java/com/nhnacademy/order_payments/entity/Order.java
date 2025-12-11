@@ -88,7 +88,7 @@ public class Order {
     public Order(OrderSummaryDto dto) {
         this.ordererName = dto.ordererSummaryDto().ordererName();
         this.orderNumber = generateOrderNumber();
-        this.orderDate = ZonedDateTime.from(LocalDateTime.now());
+        this.orderDate = ZonedDateTime.now();
         this.phoneNumber = dto.ordererSummaryDto().ordererPhoneNumber();
         this.email = dto.ordererSummaryDto().ordererEmail();
         this.totalPrice = dto.totalPrice();

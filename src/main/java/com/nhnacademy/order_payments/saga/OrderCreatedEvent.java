@@ -1,4 +1,4 @@
-package com.nhnacademy.order_payments.event;
+package com.nhnacademy.order_payments.saga;
 
 import com.nhnacademy.order_payments.entity.OrderDetail;
 

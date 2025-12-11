@@ -1,4 +1,4 @@
-package com.nhnacademy.order_payments.event;
+package com.nhnacademy.order_payments.saga;
 
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
