@@ -4,8 +4,9 @@ import com.nhnacademy.order_payments.dto.order.BookSummaryDto;
 import com.nhnacademy.order_payments.dto.order.OrderSummaryDto;
 import com.nhnacademy.order_payments.entity.Order;
 import com.nhnacademy.order_payments.entity.OrderDetail;
-import com.nhnacademy.order_payments.event.OrderConfirmedEvent;
-import com.nhnacademy.order_payments.event.OrderEventPublisher;
+import com.nhnacademy.order_payments.saga.OrderConfirmedEvent;
+import com.nhnacademy.order_payments.saga.OrderEventFactory;
+import com.nhnacademy.order_payments.saga.OrderEventPublisher;
 import com.nhnacademy.order_payments.repository.OrderRepository;
 import jakarta.transaction.Transactional;
 import lombok.RequiredArgsConstructor;
@@ -19,6 +20,7 @@ public class OrderService {
 
     private final OrderEventPublisher eventPublisher;
     private final OrderRepository orderRepository;
+    private final OrderEventFactory orderEventFactory;
 
     @Transactional
     public void precessOrderPayment(Long userId, OrderSummaryDto dto) {
@@ -37,7 +39,8 @@ public class OrderService {
         Order order = createOrder(dto);
 
         // 이벤트 객체 생성
-        OrderConfirmedEvent event = new OrderConfirmedEvent(userId, order, dto);
+//        OrderConfirmedEvent event = new OrderConfirmedEvent(userId, order, dto);
+        OrderConfirmedEvent event = orderEventFactory.create(userId, order, dto);
 
         eventPublisher.publishOrderConfirmedEvent(event);
     }
