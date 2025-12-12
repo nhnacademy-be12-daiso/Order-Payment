@@ -123,7 +123,7 @@ public class PrepareOrderService {
             couponResponseList = couponApiClient.getAvailableCoupons(userId).getBody();
 
             // 포장지 정보: 현재 존재하는 포장지 모두 불러옴
-            List<Packaging> rawPackagings = packagingRepository.findAll();
+            List<Packaging> rawPackagings = packagingRepository.findAllByEnabled(true);
             packagingList = rawPackagings.stream()
                     .map(PackagingDto::new)
                     .toList();
@@ -203,7 +203,7 @@ public class PrepareOrderService {
             bookInfoResponse = new BookInfoResponse(updateBookInfos);
 
             // 포장지 정보: 현재 존재하는 포장지 모두 불러옴
-            List<Packaging> rawPackagings = packagingRepository.findAll();
+            List<Packaging> rawPackagings = packagingRepository.findAllByEnabled(true);
             packagingList = rawPackagings.stream()
                     .map(PackagingDto::new)
                     .toList();
