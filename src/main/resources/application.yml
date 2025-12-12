@@ -24,6 +24,12 @@ spring:
     username: ${SPRING_RABBITMQ_USERNAME}
     password: ${SPRING_RABBITMQ_PASSWORD}
 
+rabbitmq:
+  queue:
+    order: team3.payment.complete.order.queue.dev
+    payment: team3.coupon.used.payment.queue.dev
+
+
 eureka:
   instance:
     prefer-ip-address: true
