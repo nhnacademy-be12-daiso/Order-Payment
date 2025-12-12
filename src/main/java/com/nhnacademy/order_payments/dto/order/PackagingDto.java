@@ -21,7 +21,7 @@ public record PackagingDto(
 ) {
     public PackagingDto(Packaging packaging) {
         this(
-                packaging.getId(), packaging.getName(), packaging.getPrice()
+                packaging.getPackagingId(), packaging.getPackagingName(), packaging.getPrice()
         );
     }
 }

@@ -30,7 +30,7 @@ import com.nhnacademy.order_payments.exception.NotFoundDeliveryException;
 import com.nhnacademy.order_payments.exception.NotFoundOrderException;
 import com.nhnacademy.order_payments.repository.OrderDetailRepository;
 import com.nhnacademy.order_payments.repository.OrderRepository;
-import com.nhnacademy.order_payments.service.PackagingService;
+import com.nhnacademy.order_payments.service.packaging.PackagingService;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;

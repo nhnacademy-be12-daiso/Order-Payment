@@ -28,6 +28,7 @@ public class DeliveryPolicy {
     private Integer deliveryFee;
 
     // (회원)무료 배송 기준 주문 금액 = 30000원
+    @Column(name = "free_minimum_amount", nullable = false)
     private Integer freeMinimumAmount;
 
     @CreationTimestamp
