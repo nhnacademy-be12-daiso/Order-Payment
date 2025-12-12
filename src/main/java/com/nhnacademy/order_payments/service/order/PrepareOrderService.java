@@ -17,13 +17,13 @@ import com.nhnacademy.order_payments.client.CouponApiClient;
 import com.nhnacademy.order_payments.client.UserApiClient;
 import com.nhnacademy.order_payments.dto.cart.BookApiRequest;
 import com.nhnacademy.order_payments.dto.order.CouponResponse;
-import com.nhnacademy.order_payments.dto.order.DeliveryPolicyDto;
 import com.nhnacademy.order_payments.dto.order.InternalBookInfoResponse;
 import com.nhnacademy.order_payments.dto.order.InternalBooksInfoResponse;
 import com.nhnacademy.order_payments.dto.order.PackagingDto;
 import com.nhnacademy.order_payments.dto.order.PrepareOrderDto;
 import com.nhnacademy.order_payments.dto.order.UserInfoResponse;
 import com.nhnacademy.order_payments.dto.request.order.PrepareOrderRequest;
+import com.nhnacademy.order_payments.dto.response.DeliveryPolicyResponse;
 import com.nhnacademy.order_payments.entity.DeliveryPolicy;
 import com.nhnacademy.order_payments.entity.Packaging;
 import com.nhnacademy.order_payments.exception.ExternalServiceException;
@@ -83,7 +83,7 @@ public class PrepareOrderService {
         UserInfoResponse userInfoResponse = null;
         List<CouponResponse> couponResponseList = null;
         List<PackagingDto> packagingList = null;
-        DeliveryPolicyDto deliveryDto = null;
+        DeliveryPolicyResponse deliveryPolicyResponse = null;
 
         try {
             // requestList에서 bookId만 추출해서 리스트 생성
@@ -124,8 +124,7 @@ public class PrepareOrderService {
             // 배송 정책
             DeliveryPolicy deliveryPolicy = deliveryPolicyRepository.findTopByOrderByDeliveryPolicyIdDesc()
                     .orElseThrow(() -> new NotFoundOrderException("배송 정책을 찾을 수 없습니다."));
-            // --> 일단 기본 3000원 가져옴
-            deliveryDto = new DeliveryPolicyDto(deliveryPolicy);
+            deliveryPolicyResponse = new DeliveryPolicyResponse(deliveryPolicy);
             // 여기 있는게 맞는지는 모르겠음
 
         } catch (FeignException e) {
@@ -135,7 +134,7 @@ public class PrepareOrderService {
 
         // null이 반환된 경우 ---> 이럴 경우가 있나?
         if (booksInfoResponse == null || userInfoResponse == null || couponResponseList == null ||
-                deliveryDto == null) {
+                deliveryPolicyResponse == null) {
             throw new NotFoundOrderException("외부 API에서 null값 넘어옴");
         }
         // -----> 포장 정책은 진짜 비어있을 수 있어서 null체크 안함
@@ -145,7 +144,7 @@ public class PrepareOrderService {
                 userInfoResponse,
                 couponResponseList,
                 packagingList,
-                deliveryDto
+                deliveryPolicyResponse
         );
     }
 
@@ -155,7 +154,7 @@ public class PrepareOrderService {
 
         InternalBooksInfoResponse booksInfoResponse = null;
         List<PackagingDto> packagingList = null;
-        DeliveryPolicyDto deliveryDto = null;
+        DeliveryPolicyResponse deliveryPolicyResponse = null;
 
         try {
             // requestList에서 bookId만 추출해서 리스트 생성
@@ -190,8 +189,7 @@ public class PrepareOrderService {
             // 배송 정책
             DeliveryPolicy deliveryPolicy = deliveryPolicyRepository.findTopByOrderByDeliveryPolicyIdDesc()
                     .orElseThrow(() -> new NotFoundOrderException("배송 정책을 찾을 수 없습니다."));
-            // --> 일단 기본 3000원 가져옴
-            deliveryDto = new DeliveryPolicyDto(deliveryPolicy);
+            deliveryPolicyResponse = new DeliveryPolicyResponse(deliveryPolicy);
             // 여기 있는게 맞는지는 모르겠음
 
         } catch (FeignException e) {
@@ -200,14 +198,14 @@ public class PrepareOrderService {
         }
 
         // null이 반환된 경우 ---> 이럴 경우가 있나?
-        if (booksInfoResponse == null || deliveryDto == null) {
+        if (booksInfoResponse == null || deliveryPolicyResponse == null) {
             throw new NotFoundOrderException("외부 API에서 null값 넘어옴");
         }
 
         return new PrepareOrderDto(
                 booksInfoResponse,
                 packagingList,
-                deliveryDto
+                deliveryPolicyResponse
         );
     }
 
