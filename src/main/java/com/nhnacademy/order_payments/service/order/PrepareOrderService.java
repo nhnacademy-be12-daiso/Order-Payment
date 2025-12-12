@@ -102,7 +102,8 @@ public class PrepareOrderService {
                             book.Price(),
                             book.stock(),
                             book.discountPercentage(),
-                            book.discountPrice()
+                            book.discountPrice(),
+                            book.coverImage()
                     )).toList();
 
             // 값을 채운 리스트로 다시 덮어씌움
@@ -173,7 +174,8 @@ public class PrepareOrderService {
                             book.Price(),
                             book.stock(),
                             book.discountPercentage(),
-                            book.discountPrice()
+                            book.discountPrice(),
+                            book.coverImage()
                     )).toList();
 
             // 값을 채운 리스트로 다시 덮어씌움

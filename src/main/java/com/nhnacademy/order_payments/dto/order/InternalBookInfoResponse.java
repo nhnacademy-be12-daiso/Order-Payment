@@ -20,6 +20,7 @@ public record InternalBookInfoResponse(
         Long Price,
         Integer stock,
         BigDecimal discountPercentage,
-        Long discountPrice
+        Long discountPrice,
+        String coverImage
 ) {
 }
