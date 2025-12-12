@@ -10,18 +10,19 @@
  * +++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
  */
 
-package com.nhnacademy.order_payments.dto.order;
+package com.nhnacademy.order_payments.dto.response;
 
-import com.nhnacademy.order_payments.entity.Packaging;
+import com.nhnacademy.order_payments.entity.DeliveryPolicy;
 
-public record PackagingDto(
-        Long id,
-        String name,
-        Long price
-) {
-    public PackagingDto(Packaging packaging) {
-        this(
-                packaging.getPackagingId(), packaging.getPackagingName(), packaging.getPrice()
-        );
+public record DeliveryPolicyResponse(
+        Long deliveryPolicyId,
+        String policyName,
+        Integer deliveryFee,
+        Integer freeMinimumAmount) {
+    // 배송 정책 관련 데이터를 응답할 DTO
+
+    public DeliveryPolicyResponse(DeliveryPolicy deliveryPolicy) {
+        this(deliveryPolicy.getDeliveryPolicyId(), deliveryPolicy.getDeliveryPolicyName(),
+                deliveryPolicy.getDeliveryFee(), deliveryPolicy.getFreeMinimumAmount());
     }
 }

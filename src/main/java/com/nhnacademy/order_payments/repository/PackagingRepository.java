@@ -15,6 +15,10 @@ package com.nhnacademy.order_payments.repository;
 import com.nhnacademy.order_payments.entity.Packaging;
 import org.springframework.data.jpa.repository.JpaRepository;
 
+import java.util.List;
+
 public interface PackagingRepository extends JpaRepository<Packaging, Long> {
-    Packaging findPackagingById(Long id);
+
+    // 사용 가능한 포장지 조회 (enabled = true)
+    List<Packaging> findAllByEnabled(Boolean enabled);
 }

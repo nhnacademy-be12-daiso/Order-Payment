@@ -1,4 +1,4 @@
-package com.nhnacademy.order_payments.payment.provider;
+package com.nhnacademy.order_payments.provider;
 
 import com.nhnacademy.order_payments.exception.BusinessException;
 import lombok.RequiredArgsConstructor;

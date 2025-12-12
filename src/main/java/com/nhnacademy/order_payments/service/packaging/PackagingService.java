@@ -10,25 +10,30 @@
  * +++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
  */
 
-package com.nhnacademy.order_payments.dto.order;
+package com.nhnacademy.order_payments.service.packaging;
 
-import java.math.BigDecimal;
+import com.nhnacademy.order_payments.dto.packaging.request.PackagingRequest;
+import com.nhnacademy.order_payments.dto.packaging.response.PackagingResponse;
+
 import java.util.List;
 
-/**
- * 주문서 작성 시
- * user에게서 받아올 정보
- * 1. 사용가능한 포인트
- * 2. 현재 회원의 등급
- */
+public interface PackagingService {
 
-public record UserInfoResponse(Long userCreatedId,
-                               String userName,
-                               String phoneNumber,
-                               String email,
-                               String gradeName,
-                               BigDecimal pointRate,
-                               Long point,
-                               List<InternalAddressResponse> addresses) {
-    // 주문 서비스가 결제 화면을 그릴 때 원하는 정보만 담기 위해 필요한 DTO
+    // 포장 정책 이름 조회
+    String getPackagingName(Long packagingId);
+
+    // 포장 정책 등록
+    void createPackaging(PackagingRequest request);
+
+    // 전체 포장 정책 조회
+    List<PackagingResponse> getPackagings();
+
+    // 포장 정책 조회
+    List<PackagingResponse> getEnabledPackagings();
+
+    // 포장 정책 수정
+    void modifyPackaging(Long packagingId, PackagingRequest request);
+
+    // 포장 정책 삭제
+    void deletePackaging(Long packagingId);
 }

@@ -1,16 +1,27 @@
+/*
+ * +++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
+ * + Copyright 2025. NHN Academy Corp. All rights reserved.
+ * + * While every precaution has been taken in the preparation of this resource,  assumes no
+ * + responsibility for errors or omissions, or for damages resulting from the use of the information
+ * + contained herein
+ * + No part of this resource may be reproduced, stored in a retrieval system, or transmitted, in any
+ * + form or by any means, electronic, mechanical, photocopying, recording, or otherwise, without the
+ * + prior written permission.
+ * +++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
+ */
+
 package com.nhnacademy.order_payments.client;
 
 
-import com.nhnacademy.order_payments.dto.cart.BookApiResponse;
 import com.nhnacademy.order_payments.dto.cart.BookApiRequest;
-import com.nhnacademy.order_payments.dto.order.BookInfoResponse;
+import com.nhnacademy.order_payments.dto.cart.BookApiResponse;
+import com.nhnacademy.order_payments.dto.order.InternalBooksInfoResponse;
 import com.nhnacademy.order_payments.dto.review.BookReviewRequest;
 import com.nhnacademy.order_payments.dto.review.BookReviewResponse;
+import java.util.List;
 import org.springframework.cloud.openfeign.FeignClient;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
-
-import java.util.List;
 
 @FeignClient(name = "TEAM3-BOOKSEARCH", path = "/api/books")
 public interface BookApiClient {
@@ -31,8 +42,8 @@ public interface BookApiClient {
      * 2-1. BookInfo DTO - 요청 받은 bookId의 최신 정보(현재 제목, 현재 가격)
      */
     // 주문서 작성용: 책에 대한 자세한 정보를 받아옴 (정확성 요구함!!!)
-    @PostMapping("/info")
-    BookInfoResponse getBookInfos(@RequestBody BookApiRequest bookApiRequest);
+    @PostMapping("/order-service/books")
+    InternalBooksInfoResponse getBookInfos(@RequestBody BookApiRequest request);
     // -----> response dto 재탕해도 상관 없겠지?
 
     /**
