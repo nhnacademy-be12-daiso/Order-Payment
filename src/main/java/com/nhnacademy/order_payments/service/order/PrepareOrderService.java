@@ -1,14 +1,25 @@
+/*
+ * +++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
+ * + Copyright 2025. NHN Academy Corp. All rights reserved.
+ * + * While every precaution has been taken in the preparation of this resource,  assumes no
+ * + responsibility for errors or omissions, or for damages resulting from the use of the information
+ * + contained herein
+ * + No part of this resource may be reproduced, stored in a retrieval system, or transmitted, in any
+ * + form or by any means, electronic, mechanical, photocopying, recording, or otherwise, without the
+ * + prior written permission.
+ * +++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
+ */
+
 package com.nhnacademy.order_payments.service.order;
 
 import com.nhnacademy.order_payments.client.BookApiClient;
-import com.nhnacademy.order_payments.client.BookApiClientTemp;
 import com.nhnacademy.order_payments.client.CouponApiClient;
 import com.nhnacademy.order_payments.client.UserApiClient;
 import com.nhnacademy.order_payments.dto.cart.BookApiRequest;
-import com.nhnacademy.order_payments.dto.order.BookInfo;
-import com.nhnacademy.order_payments.dto.order.BookInfoResponse;
 import com.nhnacademy.order_payments.dto.order.CouponResponse;
 import com.nhnacademy.order_payments.dto.order.DeliveryPolicyDto;
+import com.nhnacademy.order_payments.dto.order.InternalBookInfoResponse;
+import com.nhnacademy.order_payments.dto.order.InternalBooksInfoResponse;
 import com.nhnacademy.order_payments.dto.order.PackagingDto;
 import com.nhnacademy.order_payments.dto.order.PrepareOrderDto;
 import com.nhnacademy.order_payments.dto.order.UserInfoResponse;
@@ -21,8 +32,6 @@ import com.nhnacademy.order_payments.repository.DeliveryPolicyRepository;
 import com.nhnacademy.order_payments.repository.PackagingRepository;
 import feign.FeignException;
 import java.util.List;
-import java.util.Map;
-import java.util.stream.Collectors;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
@@ -62,7 +71,6 @@ public class PrepareOrderService {
 
     private final PackagingRepository packagingRepository;
     private final DeliveryPolicyRepository deliveryPolicyRepository;
-    private final BookApiClientTemp bookApiClientTemp;
 
     /**
      * 회원용 주문서 작성 데이터 조회
@@ -71,7 +79,7 @@ public class PrepareOrderService {
     // ----> 읽기 작업 뿐이기 때문에 트랜잭션 굳이 안해도 됨
     public PrepareOrderDto prepareOrderInfo(Long userId, List<PrepareOrderRequest> requestList) {
 
-        BookInfoResponse bookInfoResponse = null;
+        InternalBooksInfoResponse booksInfoResponse = null;
         UserInfoResponse userInfoResponse = null;
         List<CouponResponse> couponResponseList = null;
         List<PackagingDto> packagingList = null;
@@ -83,38 +91,23 @@ public class PrepareOrderService {
                     .map(PrepareOrderRequest::bookId)
                     .toList();
 
-            // requestList를 Map으로 변환
-            Map<Long, Integer> quantityMap = requestList.stream()
-                    .collect(Collectors.toMap(
-                            PrepareOrderRequest::bookId,
-                            PrepareOrderRequest::quantity
-                    ));
-
             // 도서 정보
-            // bookInfoResponse = bookApiClient.getBookInfos(new BookApiRequest(bookIdList));
-            bookInfoResponse = bookApiClientTemp.getBookInfos(new BookApiRequest(bookIdList));
-            // ----> 임시로
+            booksInfoResponse = bookApiClient.getBookInfos(new BookApiRequest(bookIdList));
 
             // 받아온 도서 정보에 수량과 합계 주입
-            List<BookInfo> updateBookInfos = bookInfoResponse.bookInfos().stream()
-                    .map(book -> {
-                        Integer quantity = quantityMap.getOrDefault(book.bookId(), 1);
-                        // 총 가격 = 할인가 * 수량
-                        Long finalPrice = book.discountPrice() * quantity;
-
-                        return new BookInfo(
-                                book.bookId(),
-                                book.title(),
-                                book.price(),
-                                quantity,
-                                book.discountPercentage(),
-                                book.discountPrice(),
-                                finalPrice
-                        );
-                    }).toList();
+            List<InternalBookInfoResponse> updateBookInfos = booksInfoResponse.orderBookInfoRespDTOList().stream()
+                    .map(book -> new InternalBookInfoResponse(
+                            book.bookId(),
+                            book.title(),
+                            book.Price(),
+                            book.stock(),
+                            book.discountPercentage(),
+                            book.discountPrice(),
+                            book.coverImage()
+                    )).toList();
 
             // 값을 채운 리스트로 다시 덮어씌움
-            bookInfoResponse = new BookInfoResponse(updateBookInfos);
+            booksInfoResponse = new InternalBooksInfoResponse(updateBookInfos);
 
             // 회원 정보
             userInfoResponse = userApiClient.getUserInfo(userId).getBody();
@@ -141,13 +134,14 @@ public class PrepareOrderService {
         }
 
         // null이 반환된 경우 ---> 이럴 경우가 있나?
-        if (bookInfoResponse == null || userInfoResponse == null || couponResponseList == null || deliveryDto == null) {
+        if (booksInfoResponse == null || userInfoResponse == null || couponResponseList == null ||
+                deliveryDto == null) {
             throw new NotFoundOrderException("외부 API에서 null값 넘어옴");
         }
         // -----> 포장 정책은 진짜 비어있을 수 있어서 null체크 안함
 
         // 모든 데이터 수합한 dto
-        return new PrepareOrderDto(bookInfoResponse,
+        return new PrepareOrderDto(booksInfoResponse,
                 userInfoResponse,
                 couponResponseList,
                 packagingList,
@@ -159,7 +153,7 @@ public class PrepareOrderService {
     // 비회원 주문시 필요한 최소 정보
     public PrepareOrderDto prepareGuestOrderInfo(List<PrepareOrderRequest> requestList) {
 
-        BookInfoResponse bookInfoResponse = null;
+        InternalBooksInfoResponse booksInfoResponse = null;
         List<PackagingDto> packagingList = null;
         DeliveryPolicyDto deliveryDto = null;
 
@@ -169,38 +163,23 @@ public class PrepareOrderService {
                     .map(PrepareOrderRequest::bookId)
                     .toList();
 
-            // requestList를 Map으로 변환
-            Map<Long, Integer> quantityMap = requestList.stream()
-                    .collect(Collectors.toMap(
-                            PrepareOrderRequest::bookId,
-                            PrepareOrderRequest::quantity
-                    ));
-
             // 도서 정보
-            // bookInfoResponse = bookApiClient.getBookInfos(new BookApiRequest(bookIdList));
-            bookInfoResponse = bookApiClientTemp.getBookInfos(new BookApiRequest(bookIdList));
-            // ----> 임시로
+            booksInfoResponse = bookApiClient.getBookInfos(new BookApiRequest(bookIdList));
 
             // 받아온 도서 정보에 수량과 합계 주입
-            List<BookInfo> updateBookInfos = bookInfoResponse.bookInfos().stream()
-                    .map(book -> {
-                        Integer quantity = quantityMap.getOrDefault(book.bookId(), 1);
-                        // 총 가격 = 할인가 * 수량
-                        Long finalPrice = book.discountPrice() * quantity;
-
-                        return new BookInfo(
-                                book.bookId(),
-                                book.title(),
-                                book.price(),
-                                quantity,
-                                book.discountPercentage(),
-                                book.discountPrice(),
-                                finalPrice
-                        );
-                    }).toList();
+            List<InternalBookInfoResponse> updateBookInfos = booksInfoResponse.orderBookInfoRespDTOList().stream()
+                    .map(book -> new InternalBookInfoResponse(
+                            book.bookId(),
+                            book.title(),
+                            book.Price(),
+                            book.stock(),
+                            book.discountPercentage(),
+                            book.discountPrice(),
+                            book.coverImage()
+                    )).toList();
 
             // 값을 채운 리스트로 다시 덮어씌움
-            bookInfoResponse = new BookInfoResponse(updateBookInfos);
+            booksInfoResponse = new InternalBooksInfoResponse(updateBookInfos);
 
             // 포장지 정보: 현재 존재하는 포장지 모두 불러옴
             List<Packaging> rawPackagings = packagingRepository.findAllByEnabled(true);
@@ -221,12 +200,12 @@ public class PrepareOrderService {
         }
 
         // null이 반환된 경우 ---> 이럴 경우가 있나?
-        if (bookInfoResponse == null || deliveryDto == null) {
+        if (booksInfoResponse == null || deliveryDto == null) {
             throw new NotFoundOrderException("외부 API에서 null값 넘어옴");
         }
 
         return new PrepareOrderDto(
-                bookInfoResponse,
+                booksInfoResponse,
                 packagingList,
                 deliveryDto
         );

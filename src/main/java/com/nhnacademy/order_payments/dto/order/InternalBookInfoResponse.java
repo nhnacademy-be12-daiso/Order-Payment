@@ -13,22 +13,14 @@
 package com.nhnacademy.order_payments.dto.order;
 
 import java.math.BigDecimal;
-import java.util.List;
 
-/**
- * 주문서 작성 시
- * user에게서 받아올 정보
- * 1. 사용가능한 포인트
- * 2. 현재 회원의 등급
- */
-
-public record UserInfoResponse(Long userCreatedId,
-                               String userName,
-                               String phoneNumber,
-                               String email,
-                               String gradeName,
-                               BigDecimal pointRate,
-                               Long point,
-                               List<InternalAddressResponse> addresses) {
-    // 주문 서비스가 결제 화면을 그릴 때 원하는 정보만 담기 위해 필요한 DTO
+public record InternalBookInfoResponse(
+        long bookId,
+        String title,
+        Long Price,
+        Integer stock,
+        BigDecimal discountPercentage,
+        Long discountPrice,
+        String coverImage
+) {
 }
