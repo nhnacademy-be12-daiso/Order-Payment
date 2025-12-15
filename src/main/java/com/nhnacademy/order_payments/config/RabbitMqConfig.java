@@ -36,6 +36,7 @@ public class RabbitMqConfig {
     @Bean
     public Queue orderCompletionQueue() {
         return new Queue(ORDER_QUEUE, true); // 서버 재시작해도 유지될지 여부
+        // ----> 여기도 DLQ 처리 해놔야 하나?
     }
 
     // 구독할 Exchange와 내 큐를 연결(바인딩) 하는 코드 ---> 실제 구독하는 느낌
@@ -47,7 +48,6 @@ public class RabbitMqConfig {
     }
 
     // 내가 발행할 메세지를 보낼 Exchange
-    // 받는 쪽에서는 이 모양 그대로 정의해놔야함
     @Bean
     public TopicExchange orderExchange() { // Topic은 패턴으로 바인딩하는거라 유연성 조음
         return new TopicExchange(ORDER_EXCHANGE);

@@ -22,11 +22,11 @@
 --주문정보는 결제후에 출력
 
 -- 애플리케이션 시작 시 자동으로 실행되어 초기 데이터를 넣어줍니다.
-INSERT INTO DeliveryPolicies (delivery_policy_name, delivery_fee)
-VALUES ('DEFAULT', 3000);
+INSERT INTO DeliveryPolicies (delivery_policy_name, delivery_fee, free_minimum_amount, created_at)
+VALUES ('DEFAULT', 3000, 30000, NOW());
 
-INSERT INTO Packaging (wrapping_paper_name, wrapping_paper_price)
-VALUES ('NORMAL', 0);
+INSERT INTO Packaging (wrapping_paper_name, wrapping_paper_price, enabled, created_at)
+VALUES ('NORMAL', 0, TRUE, NOW());
 
-INSERT INTO Packaging (wrapping_paper_name, wrapping_paper_price)
-VALUES ('GIFT', 1500);
+INSERT INTO Packaging (wrapping_paper_name, wrapping_paper_price, enabled, created_at)
+VALUES ('GIFT', 1500, TRUE, NOW());
