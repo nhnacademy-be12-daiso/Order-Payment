@@ -1,7 +1,5 @@
 package com.nhnacademy.order_payments.config;
 
-import com.fasterxml.jackson.databind.ObjectMapper;
-import com.fasterxml.jackson.datatype.jsr310.JavaTimeModule;
 import org.springframework.amqp.core.Binding;
 import org.springframework.amqp.core.BindingBuilder;
 import org.springframework.amqp.core.Queue;
@@ -10,6 +8,7 @@ import org.springframework.amqp.rabbit.connection.ConnectionFactory;
 import org.springframework.amqp.rabbit.core.RabbitTemplate;
 import org.springframework.amqp.support.converter.Jackson2JsonMessageConverter;
 import org.springframework.amqp.support.converter.MessageConverter;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 
@@ -18,7 +17,8 @@ public class RabbitMqConfig {
 
     // 주문 Saga 시작 세팅
     private static final String ORDER_EXCHANGE = "team3.order.exchange";
-    private static final String ORDER_QUEUE = "team3.payment.complete.order.queue";
+    @Value("${rabbitmq.queue.order}")
+    private String ORDER_QUEUE;
     private static final String PAYMENT_EXCHANGE = "team3.payment.exchange";
     private static final String ROUTING_KEY_COMPLETE = "payment.success";
     // ---> 라우팅 키
@@ -34,8 +34,9 @@ public class RabbitMqConfig {
 
     // 내가 받아볼 메세지 큐
     @Bean
-    public Queue OrderCompletionQueue() {
+    public Queue orderCompletionQueue() {
         return new Queue(ORDER_QUEUE, true); // 서버 재시작해도 유지될지 여부
+        // ----> 여기도 DLQ 처리 해놔야 하나?
     }
 
     // 구독할 Exchange와 내 큐를 연결(바인딩) 하는 코드 ---> 실제 구독하는 느낌
@@ -47,26 +48,28 @@ public class RabbitMqConfig {
     }
 
     // 내가 발행할 메세지를 보낼 Exchange
-    // 받는 쪽에서는 이 모양 그대로 정의해놔야함
     @Bean
     public TopicExchange orderExchange() { // Topic은 패턴으로 바인딩하는거라 유연성 조음
         return new TopicExchange(ORDER_EXCHANGE);
     }
 
-
     @Bean
-// 🌟 2. 메소드 이름을 Spring이 찾는 관례적인 이름으로 변경
-    public MessageConverter messageConverter() {
-        ObjectMapper objectMapper = new ObjectMapper();
-        objectMapper.registerModule(new JavaTimeModule());
-        return new Jackson2JsonMessageConverter(objectMapper);
+    public MessageConverter jsonMessageConverter() {
+        return new Jackson2JsonMessageConverter();
     }
 
+    /**
+     * 3. RabbitTemplate 설정
+     * 위에서 만든 JSON 변환기를 템플릿에 끼워줍니다.
+     */
     @Bean
-// 이 경우, Spring은 자동으로 이 messageConverter 빈을 RabbitTemplate에 주입함
-    public RabbitTemplate rabbitTemplate(ConnectionFactory connectionFactory, MessageConverter messageConverter) {
+    public RabbitTemplate rabbitTemplate(ConnectionFactory connectionFactory) {
         RabbitTemplate rabbitTemplate = new RabbitTemplate(connectionFactory);
-        rabbitTemplate.setMessageConverter(messageConverter);
+        rabbitTemplate.setMessageConverter(jsonMessageConverter());
+
         return rabbitTemplate;
     }
+
+
+
 }

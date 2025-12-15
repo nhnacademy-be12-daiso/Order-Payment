@@ -1,15 +1,10 @@
 package com.nhnacademy.order_payments.saga;
 
-import com.nhnacademy.order_payments.dto.order.BookSummaryDto;
-import com.nhnacademy.order_payments.dto.order.OrderSummaryDto;
-import com.nhnacademy.order_payments.entity.Order;
 import lombok.AllArgsConstructor;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 
-import java.io.Serializable;
 import java.util.List;
-import java.util.Objects;
 
 
 /**
@@ -18,7 +13,7 @@ import java.util.Objects;
 @Getter
 @NoArgsConstructor
 @AllArgsConstructor
-public class OrderConfirmedEvent implements Serializable {
+public class OrderConfirmedEvent {
 
     private Long orderId;
     private Long userId;

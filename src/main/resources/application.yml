@@ -23,6 +23,22 @@ spring:
     port: ${SPRING_RABBITMQ_PORT}
     username: ${SPRING_RABBITMQ_USERNAME}
     password: ${SPRING_RABBITMQ_PASSWORD}
+    listener:
+      simple:
+        default-requeue-rejected: false
+        acknowledge-mode: auto
+        retry:
+          enabled: true
+          max-attempts: 3
+          initial-interval: 1000ms
+          multiplier: 2.0
+
+rabbitmq:
+  queue:
+    order: team3.payment.complete.order.queue
+    payment: team3.coupon.used.payment.queue
+    dlq: team3.saga.failure.dlq
+
 
 eureka:
   instance:
