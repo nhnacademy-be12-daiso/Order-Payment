@@ -15,7 +15,7 @@ public class OrderEventPublisher {
     // --> RabbitMQ 통신을 위한 컴포넌트 주입
     private final AmqpTemplate rabbitTemplate;
 
-    private static final String ORDER_EXCHANGE = "team3.order.exchange";
+    private static final String ORDER_EXCHANGE = "team3.saga.order.exchange";
     private static final String ROUTING_KEY_CONFIRMED = "order.confirmed";
 
     // saga 시작
