@@ -5,7 +5,7 @@ import jakarta.validation.constraints.NotNull;
 
 public record RefundRequest (
         @NotBlank String orderId,
-        @NotBlank String paymentKey,
+        String paymentKey, // 프론트에서 paymentKey를 넘겨주지 않고 저장된 데이터 불러오기
         String reason,
-        Integer cancelAmount
+        Long cancelAmount
 ) {}
