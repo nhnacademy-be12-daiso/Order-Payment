@@ -38,7 +38,10 @@ rabbitmq:
     order: team3.saga.order.queue
     payment: team3.saga.payment.queue
     dlq: team3.saga.failure.dlq
-
+  routing:
+    success: payment.success
+    used: coupon.used
+    confirmed: order.confirmed.v2
 
 eureka:
   instance:
