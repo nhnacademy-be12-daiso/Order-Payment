@@ -163,13 +163,13 @@ public class PaymentFacade {
             throw new BusinessException("INVALID_CANCEL_AMOUNT", "취소 금액이 올바르지 않습니다.");
         }
 
-        // [MOD] 프론트에서 paymentKey가 null/blank로 오면 DB에 저장된 paymentKey로 대체해서 PG 호출
+        // 프론트에서 paymentKey가 null/blank로 오면 DB에 저장된 paymentKey로 PG 호출
         String effectivePaymentKey = req.paymentKey();
         if (effectivePaymentKey == null || effectivePaymentKey.isBlank()) {
             effectivePaymentKey = payment.getPaymentKey();
         }
 
-        // [MOD] 그래도 paymentKey가 없으면(데이터 이상) 명확히 예외 처리
+        // [\paymentKey가 없으면 예외 처리
         if (effectivePaymentKey == null || effectivePaymentKey.isBlank()) {
             log.warn("[PAYMENT CANCEL NO_PAYMENT_KEY] orderNumber={}, orderId={}", order.getOrderNumber(), req.orderId());
             throw new BusinessException("PAYMENT_KEY_NOT_FOUND", "결제키(paymentKey)를 찾을 수 없습니다.");
@@ -185,7 +185,7 @@ public class PaymentFacade {
 
         // 4. 결제 이력 저장(취소/부분취소)
         PaymentEventType eventType =
-                (cancelAmount == payment.getPaymentCost())
+                (cancelAmount.equals(payment.getPaymentCost()))
                         ? PaymentEventType.CANCEL
                         : PaymentEventType.PARTIAL_CANCEL;
 
@@ -215,7 +215,7 @@ public class PaymentFacade {
 
     /** 환불 처리 (REFUND 이력용) */
     @Transactional
-    public RefundResponse refund(Long userId, @Valid RefundRequest req) {   // ✅ 리턴 타입 변경
+    public RefundResponse refund(Long userId, @Valid RefundRequest req) {
         log.info("[PAYMENT REFUND START] userId={}, orderId={}, paymentKey={}, cancelAmount={}, reason={}",
                 userId, req.orderId(), req.paymentKey(), req.cancelAmount(), req.reason());
 
@@ -235,13 +235,12 @@ public class PaymentFacade {
             throw new BusinessException("INVALID_CANCEL_AMOUNT", "환불 금액이 올바르지 않습니다.");
         }
 
-        // [MOD] 프론트에서 paymentKey가 null/blank로 오면 DB에 저장된 paymentKey로 대체해서 PG 호출
+        // 프론트에서 paymentKey가 null/blank로 오면 DB에 저장된 paymentKey로 PG 호출
         String effectivePaymentKey = req.paymentKey();
         if (effectivePaymentKey == null || effectivePaymentKey.isBlank()) {
             effectivePaymentKey = payment.getPaymentKey();
         }
 
-        // [MOD] 그래도 paymentKey가 없으면(데이터 이상) 명확히 예외 처리
         if (effectivePaymentKey == null || effectivePaymentKey.isBlank()) {
             log.warn("[PAYMENT REFUND NO_PAYMENT_KEY] orderNumber={}, orderId={}", order.getOrderNumber(), req.orderId());
             throw new BusinessException("PAYMENT_KEY_NOT_FOUND", "결제키(paymentKey)를 찾을 수 없습니다.");
@@ -269,7 +268,7 @@ public class PaymentFacade {
                 order.getOrderNumber(), PaymentEventType.REFUND, cancelAmount);
 
         // 5. 응답 반환
-        RefundResponse response = new RefundResponse(   // ✅ RefundResponse 사용
+        RefundResponse response = new RefundResponse( 
                 String.valueOf(order.getOrderNumber()),
                 "REFUNDED",
                 result.canceledAtIso(),    // refundedAt 필드에 ISO 문자열
