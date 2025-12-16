@@ -11,13 +11,13 @@ public class PaymentRabbitMqConfig {
     // ------- payment 설정 ---------
     @Value("${rabbitmq.queue.payment}")
     private String PAYMENT_QUEUE;
-    private static final String COUPON_EXCHANGE = "team3.coupon.exchange";
+    private static final String COUPON_EXCHANGE = "team3.saga.coupon.exchange";
     private static final String ROUTING_KEY_USED = "coupon.used";
 
     // 구독할 Exchange
     @Bean
-    public TopicExchange couponExchange() {
-        return new TopicExchange(COUPON_EXCHANGE);
+    public DirectExchange couponExchange() {
+        return new DirectExchange(COUPON_EXCHANGE);
     }
 
     // 내가 받아볼 메세지 큐
@@ -31,7 +31,7 @@ public class PaymentRabbitMqConfig {
 
     // 구독할 Exchange와 내 큐를 연결(바인딩) 하는 코드 ---> 실제 구독하는 느낌
     @Bean
-    public Binding bindingCoupon(Queue paymentQueue, TopicExchange couponExchange) {
+    public Binding bindingCoupon(Queue paymentQueue, DirectExchange couponExchange) {
         return BindingBuilder.bind(paymentQueue)
                 .to(couponExchange)
                 .with(ROUTING_KEY_USED);
