@@ -35,8 +35,8 @@ spring:
 
 rabbitmq:
   queue:
-    order: team3.payment.complete.order.queue
-    payment: team3.coupon.used.payment.queue
+    order: team3.saga.order.queue
+    payment: team3.saga.payment.queue
     dlq: team3.saga.failure.dlq
 
 

@@ -13,10 +13,10 @@ import org.springframework.transaction.event.TransactionalEventListener;
 public class PaymentEventPublisher {
     private final AmqpTemplate rabbitTemplate;
 
-    private static final String PAYMENT_EXCHANGE = "team3.payment.exchange";
+    private static final String PAYMENT_EXCHANGE = "team3.saga.payment.exchange";
     private static final String ROUTING_KEY_SUCCESS = "payment.success";
 
-//    @TransactionalEventListener(phase = TransactionPhase.AFTER_COMMIT)
+    @TransactionalEventListener(phase = TransactionPhase.AFTER_COMMIT)
     public void publishBookDeductedEvent(OrderConfirmedEvent event) {
         try {
             rabbitTemplate.convertAndSend(

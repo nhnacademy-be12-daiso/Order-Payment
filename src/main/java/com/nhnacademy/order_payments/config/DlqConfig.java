@@ -49,6 +49,11 @@ public class DlqConfig {
     }
 
     @Bean
+    public DirectExchange orderDlx() {
+        return new DirectExchange("team3.order.dlx");
+    }
+
+    @Bean
     public Binding bookDlxToDlqBinding() {
         return BindingBuilder.bind(sagaFailureDlq())
                 .to(bookDlx())
@@ -74,5 +79,12 @@ public class DlqConfig {
         return BindingBuilder.bind(sagaFailureDlq())
                 .to(paymentDlx())
                 .with("fail.payment");
+    }
+
+    @Bean
+    public Binding OrderDlxToDlqBinding() {
+        return BindingBuilder.bind(sagaFailureDlq())
+                .to(paymentDlx())
+                .with("fail.order");
     }
 }
