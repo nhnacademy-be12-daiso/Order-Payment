@@ -14,8 +14,18 @@ package com.nhnacademy.order_payments.entity;
 
 import com.nhnacademy.order_payments.dto.order.BookSummaryDto;
 import com.nhnacademy.order_payments.model.OrderDetailStatus;
-import jakarta.persistence.*;
-
+import jakarta.persistence.Column;
+import jakarta.persistence.Entity;
+import jakarta.persistence.EnumType;
+import jakarta.persistence.Enumerated;
+import jakarta.persistence.FetchType;
+import jakarta.persistence.GeneratedValue;
+import jakarta.persistence.GenerationType;
+import jakarta.persistence.Id;
+import jakarta.persistence.JoinColumn;
+import jakarta.persistence.ManyToOne;
+import jakarta.persistence.OneToMany;
+import jakarta.persistence.Table;
 import java.util.List;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
@@ -51,6 +61,7 @@ public class OrderDetail {
     private Long couponId;
 
     @Setter
+    @Enumerated(EnumType.STRING)
     @Column(name = "order_detail_status")
     private OrderDetailStatus orderDetailStatus;
 
@@ -64,7 +75,7 @@ public class OrderDetail {
 
     public OrderDetail(BookSummaryDto dto) {
         this.bookId = dto.bookId();
-        this.price = dto.discountPrice(); // 할인 금액을 넣는걸로
+        this.price = dto.price() - dto.discountPrice(); // 단가 - 할인 금액
         this.quantity = dto.quantity();
         this.packagingId = dto.packagingId();
         this.couponId = dto.couponId();
