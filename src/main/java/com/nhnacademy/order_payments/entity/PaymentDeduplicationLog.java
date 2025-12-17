@@ -40,4 +40,6 @@ public class PaymentDeduplicationLog {
         this.messageId = messageId;
         this.receivedAt = LocalDateTime.now(); // @CreatedDate가 아닌 경우 수동으로 설정
     }
+
+
 }

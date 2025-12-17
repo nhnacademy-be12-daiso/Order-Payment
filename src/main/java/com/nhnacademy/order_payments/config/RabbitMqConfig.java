@@ -71,7 +71,7 @@ public class RabbitMqConfig {
         return converter;
     }
 
-
+    // 발신용 컨버터
     @Bean
     public MessageConverter simpleMessageConverter() {
         // String, byte[], Serializable 객체를 처리하는 기본 컨버터
@@ -87,8 +87,6 @@ public class RabbitMqConfig {
         RabbitTemplate rabbitTemplate = new RabbitTemplate(connectionFactory);
 //        rabbitTemplate.setMessageConverter(jsonMessageConverter());
         rabbitTemplate.setMessageConverter(simpleMessageConverter());
-
-
 
         return rabbitTemplate;
     }

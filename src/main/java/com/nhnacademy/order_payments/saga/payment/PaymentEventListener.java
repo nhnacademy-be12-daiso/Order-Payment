@@ -62,11 +62,10 @@ public class PaymentEventListener {
                 // ----> 커밋 이벤트 발행
 
             } catch (JsonProcessingException e) {
-                log.warn("객체 직렬화 실패");
+               log.warn("객체 직렬화 실패");
                 throw new FailedSerializationException("Failed to serialize event payload", e);
             }
             log.info("[Payment API] 결제 성공");
-            log.info("[Payment API] 다음 이벤트 발행 완료 : Payment API -> Order API");
 
         }
 //        } catch(Exception e) { // 커스텀 예외 만들기!
