@@ -23,7 +23,7 @@ public class GlobalExceptionHandler {
         return ResponseEntity.notFound().build();
     }
 
-    @ExceptionHandler(ExternalServiceException.class)
+    @ExceptionHandler({ExternalServiceException.class, FailedSerializationException.class})
     public ResponseEntity<String> handleExternalServiceException(Exception e) {
         return ResponseEntity.status(HttpStatus.SERVICE_UNAVAILABLE).body(e.getMessage());
     }

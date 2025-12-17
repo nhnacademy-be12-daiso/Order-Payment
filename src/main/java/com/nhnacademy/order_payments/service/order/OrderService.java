@@ -12,17 +12,24 @@
 
 package com.nhnacademy.order_payments.service.order;
 
+import com.fasterxml.jackson.core.JsonProcessingException;
+import com.fasterxml.jackson.databind.ObjectMapper;
 import com.nhnacademy.order_payments.dto.order.BookSummaryDto;
 import com.nhnacademy.order_payments.dto.order.OrderSummaryDto;
 import com.nhnacademy.order_payments.entity.Order;
 import com.nhnacademy.order_payments.entity.OrderDetail;
+import com.nhnacademy.order_payments.entity.OrderOutbox;
+import com.nhnacademy.order_payments.exception.FailedSerializationException;
 import com.nhnacademy.order_payments.repository.OrderRepository;
-import com.nhnacademy.order_payments.saga.OrderConfirmedEvent;
-import com.nhnacademy.order_payments.saga.OrderEventFactory;
-import com.nhnacademy.order_payments.saga.OrderEventPublisher;
+import com.nhnacademy.order_payments.repository.OrderOutboxRepository;
+import com.nhnacademy.order_payments.saga.common.OrderConfirmedEvent;
+import com.nhnacademy.order_payments.saga.order.OrderEventFactory;
+import com.nhnacademy.order_payments.saga.order.OrderOutboxCommittedEvent;
 import jakarta.transaction.Transactional;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.beans.factory.annotation.Value;
+import org.springframework.context.ApplicationEventPublisher;
 import org.springframework.stereotype.Service;
 
 @Slf4j
@@ -30,9 +37,16 @@ import org.springframework.stereotype.Service;
 @Service
 public class OrderService {
 
-    private final OrderEventPublisher eventPublisher;
+//    private final OrderEventPublisher eventPublisher;
     private final OrderRepository orderRepository;
     private final OrderEventFactory orderEventFactory;
+    private final ObjectMapper objectMapper;
+    private final OrderOutboxRepository orderOutboxRepository;
+    private final ApplicationEventPublisher publisher;
+
+
+    @Value("${rabbitmq.routing.confirmed}")
+    private String routingKey;
 
     @Transactional
     public void precessOrderPayment(Long userId, OrderSummaryDto dto) {
@@ -44,17 +58,32 @@ public class OrderService {
             throw new RuntimeException("주문 정보에 대한 검증 실패"); // -----> 예외처리 다시 해주기 <<<<<<<<
         }
 
-
         // ----- 검증 이후 로직 -----
 
         // 일단 임시 데이터(아직 트랜잭션이 안돈 상태)를 DB에 저장함
         Order order = createOrder(userId, dto);
-
-        // 이벤트 객체 생성
-//        OrderConfirmedEvent event = new OrderConfirmedEvent(userId, order, dto);
         OrderConfirmedEvent event = orderEventFactory.create(userId, order, dto);
 
-        eventPublisher.publishOrderConfirmedEvent(event);
+        try {
+            OrderOutbox outbox = new OrderOutbox(
+                    order.getId(),
+                    "ORDER",
+                    "team3.saga.order.exchange",
+                    routingKey,
+                    objectMapper.writeValueAsString(event)
+            );
+
+            orderOutboxRepository.save(outbox);
+            publisher.publishEvent(new OrderOutboxCommittedEvent(this, outbox.getId()));
+            // ---> Outbox 저장 완료 후, 알림 이벤트 발행
+
+        } catch (JsonProcessingException e) {
+            log.error("객체 직렬화에 실패했습니다.");
+            throw new FailedSerializationException("Failed to serialize event payload", e);
+        }
+
+//        eventPublisher.publishOrderConfirmedEvent(event);
+        // ----> Outbox 패턴 도입으로 인해 없어도 됨
     }
 
     /**
