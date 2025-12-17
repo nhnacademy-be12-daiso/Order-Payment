@@ -26,7 +26,6 @@ import com.nhnacademy.order_payments.entity.DeliveryDetail;
 import com.nhnacademy.order_payments.entity.GuestOrderer;
 import com.nhnacademy.order_payments.entity.Order;
 import com.nhnacademy.order_payments.entity.OrderDetail;
-import com.nhnacademy.order_payments.exception.NotFoundDeliveryException;
 import com.nhnacademy.order_payments.exception.NotFoundOrderException;
 import com.nhnacademy.order_payments.repository.OrderDetailRepository;
 import com.nhnacademy.order_payments.repository.OrderRepository;
@@ -81,92 +80,117 @@ public class OrderResultService {
         }
 
         Map<Long, BookReviewResponse> bookList =
-                bookApiClient.getBookReviewList(new BookReviewRequest(order.getUserId(), orderDetailList.stream()
-                                .map(od -> new BookOrderDetailRequest(od.getBookId(), od.getId()))
-                                .toList())).stream()
+                bookApiClient.getBookReviewList(
+                                new BookReviewRequest(
+                                        order.getUserId(),
+                                        orderDetailList.stream()
+                                                .map(od -> new BookOrderDetailRequest(od.getBookId(), od.getId()))
+                                                .toList()
+                                )
+                        ).stream()
                         .collect(Collectors.toMap(BookReviewResponse::orderDetailId, b -> b));
 
         Delivery delivery = order.getDelivery();
+
+        // 배송정보가 없을 수 있으므로 deliveryResponse를 기본 null로 둔다.
+        DeliveryResponse deliveryResponse = null;
+
         if (delivery == null) {
-            log.error("배송정보가 존재하지 않습니다 - 주문 번호:{}", order.getOrderNumber());
-            throw new NotFoundDeliveryException("배송정보가 존재하지 않습니다.");
-        }
-
-
-        List<DeliveryDetail> deliveryDetailList = delivery.getDeliveryDetailList();
-        List<DeliveryDetailResponse> deliveryDetailResponses = new ArrayList<>();
-        if (deliveryDetailList == null || deliveryDetailList.isEmpty()) {
-            log.warn("아직 배송상세가 존재하지 않아 임시 목록으로 표시합니다 - 주문 번호: {}", order.getOrderNumber());
-            deliveryDetailResponses.add(new DeliveryDetailResponse(null, "출고 대기", null, null, null, null,
-                    orderDetailList.stream()
-                            .map(od ->
-                                    new OrderDetailResponse(od.getId(), od.getBookId(),
-                                            bookList.get(od.getId()).book().title(),
-                                            !bookList.get(od.getId()).book().imageList().isEmpty() ?
-                                                    bookList.get(od.getId()).book().imageList().getFirst().path() :
-                                                    null,
-                                            od.getPrice(), od.getQuantity(),
-                                            packagingService.getPackagingName(od.getPackagingId()),
-                                            od.getOrderDetailStatus(), bookList.get(od.getId()).reviewId()))
-                            .toList()));
-
+            // [MOD] 기존에는 예외를 던져서 주문목록 전체가 500으로 죽었음.
+            //       주문목록에서는 배송정보가 아직 없을 수 있으니 null로 내려준다.
+            log.warn("배송정보가 아직 없습니다(주문목록에서는 delivery=null) - 주문 번호:{}", order.getOrderNumber());
         } else {
-            Map<Long, OrderDetail> orderDetailMap = orderDetailList.stream()
-                    .collect(Collectors.toMap(OrderDetail::getId, od -> od));
+            // [MOVE] 배송 관련 로직은 delivery가 있을 때만 수행
+            List<DeliveryDetail> deliveryDetailList = delivery.getDeliveryDetailList();
+            List<DeliveryDetailResponse> deliveryDetailResponses = new ArrayList<>();
 
-//            for(DeliveryDetail dd: deliveryDetailList){
-//
-//                List<OrderDetailResponse> orderDetailResponseList = new ArrayList<>();
-//                for(DeliveryOrderDetail dod :dd.getDeliveryOrderDetails()){
-//                    OrderDetail orderDetail = orderDetailMap.get(dod.getOrderDetail().getId());
-//                    BookReviewResponse bookReviewResponse = bookList.get(dod.getOrderDetail().getId());
-//                    BookResponse book = bookReviewResponse.book();
-//
-//                    orderDetailResponseList.add(new OrderDetailResponse(orderDetail.getId(), book.title(), book.imageList().getFirst().path(), orderDetail.getPrice(),
-//                            dod.getQuantity(), packagingService.getPackagingName(orderDetail.getPackagingId()), orderDetail.getOrderDetailStatus(), bookReviewResponse.reviewId()));
-//                }
-//
-//                deliveryDetailResponses.add(new DeliveryDetailResponse(dd.getId(), dd.getDeliveryCompanyName(), dd.getDeliveryManName(),
-//                        dd.getEstimatedAt(), dd.getCompleteAt(), dd.getDeliveryStatus(), orderDetailResponseList));
-//            }
+            if (deliveryDetailList == null || deliveryDetailList.isEmpty()) {
+                log.warn("아직 배송상세가 존재하지 않아 임시 목록으로 표시합니다 - 주문 번호: {}", order.getOrderNumber());
+                deliveryDetailResponses.add(new DeliveryDetailResponse(
+                        null, "출고 대기", null, null, null, null,
+                        orderDetailList.stream()
+                                .map(od -> new OrderDetailResponse(
+                                        od.getId(),
+                                        od.getBookId(),
+                                        bookList.get(od.getId()).book().title(),
+                                        !bookList.get(od.getId()).book().imageList().isEmpty()
+                                                ? bookList.get(od.getId()).book().imageList().getFirst().path()
+                                                : null,
+                                        od.getPrice(),
+                                        od.getQuantity(),
+                                        packagingService.getPackagingName(od.getPackagingId()),
+                                        od.getOrderDetailStatus(),
+                                        bookList.get(od.getId()).reviewId()
+                                ))
+                                .toList()
+                ));
+            } else {
+                Map<Long, OrderDetail> orderDetailMap = orderDetailList.stream()
+                        .collect(Collectors.toMap(OrderDetail::getId, od -> od));
 
-            // 같은 기능을 중첩 for문이 아니라 stream을 이용해 해당 로직 변경 - stream으로 이렇게 까지 사용을 하네..
-            deliveryDetailResponses = deliveryDetailList.stream()
-                    .map(dd -> {
-                        List<OrderDetailResponse> orderDetailResponseList = dd.getDeliveryOrderDetails().stream()
-                                .map(dod -> {
-                                    OrderDetail orderDetail = orderDetailMap.get(dod.getOrderDetail().getId());
-                                    BookReviewResponse br = bookList.get(orderDetail.getId());
+                deliveryDetailResponses = deliveryDetailList.stream()
+                        .map(dd -> {
+                            List<OrderDetailResponse> orderDetailResponseList = dd.getDeliveryOrderDetails().stream()
+                                    .map(dod -> {
+                                        OrderDetail orderDetail = orderDetailMap.get(dod.getOrderDetail().getId());
+                                        BookReviewResponse br = bookList.get(orderDetail.getId());
 
-                                    return new OrderDetailResponse(orderDetail.getId(), orderDetail.getBookId(),
-                                            br.book().title(),
-                                            !br.book().imageList().isEmpty() ? br.book().imageList().getFirst().path() :
-                                                    null,
-                                            orderDetail.getPrice(), dod.getQuantity(),
-                                            orderDetail.getPackagingId() != null ?
-                                                    packagingService.getPackagingName(orderDetail.getPackagingId()) :
-                                                    null,
-                                            orderDetail.getOrderDetailStatus(), br.reviewId());
-                                })
-                                .toList();
+                                        return new OrderDetailResponse(
+                                                orderDetail.getId(),
+                                                orderDetail.getBookId(),
+                                                br.book().title(),
+                                                !br.book().imageList().isEmpty()
+                                                        ? br.book().imageList().getFirst().path()
+                                                        : null,
+                                                orderDetail.getPrice(),
+                                                dod.getQuantity(),
+                                                orderDetail.getPackagingId() != null
+                                                        ? packagingService.getPackagingName(orderDetail.getPackagingId())
+                                                        : null,
+                                                orderDetail.getOrderDetailStatus(),
+                                                br.reviewId()
+                                        );
+                                    })
+                                    .toList();
 
-                        return new DeliveryDetailResponse(dd.getId(), dd.getDeliveryCompanyName(),
-                                dd.getDeliveryManName(),
-                                dd.getEstimatedAt(), dd.getCompleteAt(), dd.getDeliveryStatus(),
-                                orderDetailResponseList);
-                    })
-                    .toList();
+                            return new DeliveryDetailResponse(
+                                    dd.getId(),
+                                    dd.getDeliveryCompanyName(),
+                                    dd.getDeliveryManName(),
+                                    dd.getEstimatedAt(),
+                                    dd.getCompleteAt(),
+                                    dd.getDeliveryStatus(),
+                                    orderDetailResponseList
+                            );
+                        })
+                        .toList();
+            }
+
+            // [MOVE] deliveryResponse 생성도 delivery != null 일 때만 수행
+            deliveryResponse = new DeliveryResponse(
+                    delivery.getId(),
+                    delivery.getAddress(),
+                    delivery.getAddressDetail(),
+                    delivery.getPostalCode(),
+                    delivery.getReceiverName(),
+                    delivery.getReceiverPhoneNumber(),
+                    delivery.getFee(),
+                    deliveryDetailResponses
+            );
         }
 
-        DeliveryResponse deliveryResponse =
-                new DeliveryResponse(delivery.getId(), delivery.getAddress(), delivery.getAddressDetail(),
-                        delivery.getPostalCode(),
-                        delivery.getReceiverName(), delivery.getReceiverPhoneNumber(), delivery.getFee(),
-                        deliveryDetailResponses);
-
-        return new OrderResponse(order.getId(), order.getOrderNumber(), order.getOrderStatus(), order.getOrderDate(),
-                order.getOrdererName(), order.getTotalPrice(), order.getPhoneNumber(), order.getEmail(),
-                deliveryResponse);
+        // [MOD] deliveryResponse는 없으면 null 그대로 내려감
+        return new OrderResponse(
+                order.getId(),
+                order.getOrderNumber(),
+                order.getOrderStatus(),
+                order.getOrderDate(),
+                order.getOrdererName(),
+                order.getTotalPrice(),
+                order.getPhoneNumber(),
+                order.getEmail(),
+                deliveryResponse
+        );
     }
 
     private OrderListResponse createOrderListResponse(List<Order> orderList) {
