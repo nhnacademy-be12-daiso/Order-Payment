@@ -9,6 +9,10 @@ import org.springframework.beans.factory.annotation.Value;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 
+/**
+ * OrderAPI의 RabbitMQ 설정
+ * Payment -> Order의 바인딩 설정
+ */
 @Configuration
 public class RabbitMqConfig {
 
@@ -17,7 +21,9 @@ public class RabbitMqConfig {
     @Value("${rabbitmq.queue.order}")
     private String ORDER_QUEUE;
     private static final String PAYMENT_EXCHANGE = "team3.saga.payment.exchange";
-    private static final String ROUTING_KEY_COMPLETE = "payment.success";
+//    private static final String ROUTING_KEY_COMPLETE = "payment.success";
+    @Value("${rabbitmq.routing.success}")
+    private String ROUTING_KEY_COMPLETE;
     // ---> 라우팅 키
 
     // 구독할 Exchange

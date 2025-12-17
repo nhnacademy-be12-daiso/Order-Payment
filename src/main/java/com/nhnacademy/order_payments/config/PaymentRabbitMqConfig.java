@@ -12,7 +12,8 @@ public class PaymentRabbitMqConfig {
     @Value("${rabbitmq.queue.payment}")
     private String PAYMENT_QUEUE;
     private static final String COUPON_EXCHANGE = "team3.saga.coupon.exchange";
-    private static final String ROUTING_KEY_USED = "coupon.used";
+    @Value("${rabbitmq.routing.used}")
+    private String ROUTING_KEY_USED;
 
     // 구독할 Exchange
     @Bean

@@ -3,6 +3,7 @@ package com.nhnacademy.order_payments.saga;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.amqp.core.AmqpTemplate;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.event.TransactionPhase;
 import org.springframework.transaction.event.TransactionalEventListener;
@@ -16,7 +17,10 @@ public class OrderEventPublisher {
     private final AmqpTemplate rabbitTemplate;
 
     private static final String ORDER_EXCHANGE = "team3.saga.order.exchange";
-    private static final String ROUTING_KEY_CONFIRMED = "order.confirmed";
+//    private static final String ROUTING_KEY_CONFIRMED = "order.confirmed";
+    @Value("${rabbitmq.routing.confirmed}")
+    private String ROUTING_KEY_CONFIRMED;
+
 
     // saga 시작
     @TransactionalEventListener(phase = TransactionPhase.AFTER_COMMIT)
