@@ -10,7 +10,7 @@
  * +++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
  */
 
-package com.nhnacademy.order_payments.dto.request.order;
+package com.nhnacademy.order_payments.dto.order;
 
 public record PrepareOrderRequest(Long bookId,
                                   Integer quantity) {

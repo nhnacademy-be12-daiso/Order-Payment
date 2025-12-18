@@ -49,7 +49,7 @@ public class OrderService {
     private String routingKey;
 
     @Transactional
-    public void precessOrderPayment(Long userId, OrderSummaryDto dto) {
+    public Order precessOrderPayment(Long userId, OrderSummaryDto dto) {
 
         // TODO 주문 검증 및 Order DB에 임시 주문 정보 저장
         // ---> saga와는 무관한 로컬 트랜잭션임
@@ -84,6 +84,7 @@ public class OrderService {
 
 //        eventPublisher.publishOrderConfirmedEvent(event);
         // ----> Outbox 패턴 도입으로 인해 없어도 됨
+        return order; //임시
     }
 
     /**
