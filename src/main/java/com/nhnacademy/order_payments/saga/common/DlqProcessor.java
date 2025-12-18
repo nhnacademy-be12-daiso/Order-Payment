@@ -1,4 +1,4 @@
-package com.nhnacademy.order_payments.saga;
+package com.nhnacademy.order_payments.saga.common;
 
 import jakarta.transaction.Transactional;
 import lombok.RequiredArgsConstructor;
