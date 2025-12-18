@@ -22,7 +22,7 @@ import com.nhnacademy.order_payments.dto.order.InternalBooksInfoResponse;
 import com.nhnacademy.order_payments.dto.order.PackagingDto;
 import com.nhnacademy.order_payments.dto.order.PrepareOrderDto;
 import com.nhnacademy.order_payments.dto.order.UserInfoResponse;
-import com.nhnacademy.order_payments.dto.request.order.PrepareOrderRequest;
+import com.nhnacademy.order_payments.dto.order.PrepareOrderRequest;
 import com.nhnacademy.order_payments.dto.response.DeliveryPolicyResponse;
 import com.nhnacademy.order_payments.entity.DeliveryPolicy;
 import com.nhnacademy.order_payments.entity.Packaging;

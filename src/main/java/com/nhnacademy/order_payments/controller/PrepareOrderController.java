@@ -13,7 +13,7 @@
 package com.nhnacademy.order_payments.controller;
 
 import com.nhnacademy.order_payments.dto.order.PrepareOrderDto;
-import com.nhnacademy.order_payments.dto.request.order.PrepareOrderRequest;
+import com.nhnacademy.order_payments.dto.order.PrepareOrderRequest;
 import com.nhnacademy.order_payments.service.order.PrepareOrderService;
 import java.util.List;
 import lombok.RequiredArgsConstructor;

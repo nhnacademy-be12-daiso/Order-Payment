@@ -6,31 +6,24 @@ import com.nhnacademy.order_payments.entity.Order;
 import com.nhnacademy.order_payments.exception.NotFoundOrderException;
 import com.nhnacademy.order_payments.service.order.OrderService;
 import lombok.RequiredArgsConstructor;
-import lombok.extern.slf4j.Slf4j;
 import org.springframework.http.ResponseEntity;
-import org.springframework.web.bind.annotation.*;
+import org.springframework.web.bind.annotation.RequestBody;
+import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.RestController;
 
-@Slf4j
-@RequiredArgsConstructor
 @RestController
-@RequestMapping("/api/orders")
-public class OrderController {
+@RequestMapping("/api/guest/orders")
+@RequiredArgsConstructor
+public class GuestOrderController {
 
     private final OrderService orderService;
 
-    /**
-     * ** 회원과 비회원의 주문 로직을 어떻게 분기할지? **
-     */
-
-    @PostMapping
-    public ResponseEntity<OrderCreateResponse> order(@RequestHeader("X-User-Id") Long userId, @RequestBody OrderSummaryDto dto) {
-
-        if(dto == null) {
+    public ResponseEntity<OrderCreateResponse> order(@RequestBody OrderSummaryDto dto) {
+        if (dto == null) {
             throw new NotFoundOrderException("주문 정보가 없습니다.");
         }
 
-        Order order = orderService.precessOrderPayment(userId, dto);
-
+        Order order = orderService.precessOrderPayment(null, dto);
         return ResponseEntity.ok(OrderCreateResponse.from(order));
     }
 }

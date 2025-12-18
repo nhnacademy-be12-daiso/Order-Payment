@@ -35,7 +35,7 @@ public class OrderService {
     private final OrderEventFactory orderEventFactory;
 
     @Transactional
-    public void precessOrderPayment(Long userId, OrderSummaryDto dto) {
+    public Order precessOrderPayment(Long userId, OrderSummaryDto dto) {
 
         // TODO 주문 검증 및 Order DB에 임시 주문 정보 저장
         // ---> saga와는 무관한 로컬 트랜잭션임
@@ -43,7 +43,6 @@ public class OrderService {
         if (!validateOrder(userId, dto)) { // 검증 실패
             throw new RuntimeException("주문 정보에 대한 검증 실패"); // -----> 예외처리 다시 해주기 <<<<<<<<
         }
-
 
         // ----- 검증 이후 로직 -----
 
@@ -55,6 +54,8 @@ public class OrderService {
         OrderConfirmedEvent event = orderEventFactory.create(userId, order, dto);
 
         eventPublisher.publishOrderConfirmedEvent(event);
+
+        return order;
     }
 
     /**
