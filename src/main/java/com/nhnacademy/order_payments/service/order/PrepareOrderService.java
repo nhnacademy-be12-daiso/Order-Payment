@@ -92,7 +92,7 @@ public class PrepareOrderService {
             booksInfoResponse = getBooks(requestList);
 
             // 포장지 정보
-            packagingList = getPackaging();
+            packagingList = getPackagings();
 
             // 배송비 정책 정보
             deliveryPolicyResponse = getDeliveryPolicy();
@@ -139,7 +139,7 @@ public class PrepareOrderService {
             booksInfoResponse = getBooks(requestList);
 
             // 포장지 정보
-            packagingList = getPackaging();
+            packagingList = getPackagings();
 
             // 배송비 정책 정보
             deliveryPolicyResponse = getDeliveryPolicy();
@@ -192,7 +192,7 @@ public class PrepareOrderService {
     }
 
     // 포장지 정보: 현재 존재하는 포장지 모두 불러옴
-    private List<PackagingDto> getPackaging() {
+    private List<PackagingDto> getPackagings() {
         return packagingRepository.findAllByEnabled(true).stream()
                 .map(PackagingDto::new)
                 .toList();
