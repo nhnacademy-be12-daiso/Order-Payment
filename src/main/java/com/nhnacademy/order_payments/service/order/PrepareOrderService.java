@@ -21,11 +21,10 @@ import com.nhnacademy.order_payments.dto.order.InternalBookInfoResponse;
 import com.nhnacademy.order_payments.dto.order.InternalBooksInfoResponse;
 import com.nhnacademy.order_payments.dto.order.PackagingDto;
 import com.nhnacademy.order_payments.dto.order.PrepareOrderDto;
-import com.nhnacademy.order_payments.dto.order.UserInfoResponse;
 import com.nhnacademy.order_payments.dto.order.PrepareOrderRequest;
+import com.nhnacademy.order_payments.dto.order.UserInfoResponse;
 import com.nhnacademy.order_payments.dto.response.DeliveryPolicyResponse;
 import com.nhnacademy.order_payments.entity.DeliveryPolicy;
-import com.nhnacademy.order_payments.entity.Packaging;
 import com.nhnacademy.order_payments.exception.ExternalServiceException;
 import com.nhnacademy.order_payments.exception.NotFoundOrderException;
 import com.nhnacademy.order_payments.repository.DeliveryPolicyRepository;
@@ -78,36 +77,26 @@ public class PrepareOrderService {
     // @Transactional
     // ----> 읽기 작업 뿐이기 때문에 트랜잭션 굳이 안해도 됨
     public PrepareOrderDto prepareOrderInfo(Long userId, List<PrepareOrderRequest> requestList) {
-
+        // 공통 데이터
         InternalBooksInfoResponse booksInfoResponse = null;
-        UserInfoResponse userInfoResponse = null;
-        List<CouponResponse> couponResponseList = null;
         List<PackagingDto> packagingList = null;
         DeliveryPolicyResponse deliveryPolicyResponse = null;
 
+        // 회원 관련 데이터
+        // 회원 정보, 쿠폰 정보
+        UserInfoResponse userInfoResponse = null;
+        List<CouponResponse> couponResponseList = null;
+
         try {
-            // requestList에서 bookId만 추출해서 리스트 생성
-            List<Long> bookIdList = requestList.stream()
-                    .map(PrepareOrderRequest::bookId)
-                    .toList();
-
             // 도서 정보
-            booksInfoResponse = bookApiClient.getBookInfos(new BookApiRequest(bookIdList));
+            booksInfoResponse = getBooks(requestList);
 
-            // 받아온 도서 정보에 수량과 합계 주입
-            List<InternalBookInfoResponse> updateBookInfos = booksInfoResponse.orderBookInfoRespDTOList().stream()
-                    .map(book -> new InternalBookInfoResponse(
-                            book.bookId(),
-                            book.title(),
-                            book.Price(),
-                            book.stock(),
-                            book.discountPercentage(),
-                            book.discountPrice(),
-                            book.coverImage()
-                    )).toList();
+            // 포장지 정보
+            packagingList = getPackaging();
 
-            // 값을 채운 리스트로 다시 덮어씌움
-            booksInfoResponse = new InternalBooksInfoResponse(updateBookInfos);
+            // 배송비 정책 정보
+            deliveryPolicyResponse = getDeliveryPolicy();
+            // 여기 있는게 맞는지는 모르겠음
 
             // 회원 정보
             userInfoResponse = userApiClient.getUserInfo(userId).getBody();
@@ -115,98 +104,106 @@ public class PrepareOrderService {
             // 쿠폰 정보
             couponResponseList = couponApiClient.getAvailableCoupons(userId).getBody();
 
-            // 포장지 정보: 현재 존재하는 포장지 모두 불러옴
-            List<Packaging> rawPackagings = packagingRepository.findAllByEnabled(true);
-            packagingList = rawPackagings.stream()
-                    .map(PackagingDto::new)
-                    .toList();
-
-            // 배송 정책
-            DeliveryPolicy deliveryPolicy = deliveryPolicyRepository.findTopByOrderByDeliveryPolicyIdDesc()
-                    .orElseThrow(() -> new NotFoundOrderException("배송 정책을 찾을 수 없습니다."));
-            deliveryPolicyResponse = new DeliveryPolicyResponse(deliveryPolicy);
-            // 여기 있는게 맞는지는 모르겠음
-
         } catch (FeignException e) {
-            log.error("외부 API 통신 간 오류 발생: {}", e.getMessage());
-            throw new ExternalServiceException("외부 API 통신 간 오류 발생");
+            log.error("[PrepareOrderService] 회원 - 외부 API 통신 간 오류 발생: {}", e.getMessage());
+            throw new ExternalServiceException("[PrepareOrderService] 회원 - 외부 API 통신 간 오류 발생");
         }
 
         // null이 반환된 경우 ---> 이럴 경우가 있나?
-        if (booksInfoResponse == null || userInfoResponse == null || couponResponseList == null ||
-                deliveryPolicyResponse == null) {
-            throw new NotFoundOrderException("외부 API에서 null값 넘어옴");
+        if (booksInfoResponse == null || deliveryPolicyResponse == null ||
+                userInfoResponse == null || couponResponseList == null) {
+            throw new NotFoundOrderException("[PrepareOrderService] 회원 - 외부 API에서 null값 넘어옴");
         }
         // -----> 포장 정책은 진짜 비어있을 수 있어서 null체크 안함
 
         // 모든 데이터 수합한 dto
-        return new PrepareOrderDto(booksInfoResponse,
-                userInfoResponse,
-                couponResponseList,
-                packagingList,
-                deliveryPolicyResponse
+        return new PrepareOrderDto(
+                booksInfoResponse,      // 도서 정보
+                userInfoResponse,       // 회원 정보
+                couponResponseList,     // 쿠폰 정보
+                packagingList,          // 포장지 정보
+                deliveryPolicyResponse  // 배송비 정책 정보
         );
     }
 
 
     // 비회원 주문시 필요한 최소 정보
     public PrepareOrderDto prepareGuestOrderInfo(List<PrepareOrderRequest> requestList) {
-
+        // 공통 테이터
         InternalBooksInfoResponse booksInfoResponse = null;
         List<PackagingDto> packagingList = null;
         DeliveryPolicyResponse deliveryPolicyResponse = null;
 
         try {
-            // requestList에서 bookId만 추출해서 리스트 생성
-            List<Long> bookIdList = requestList.stream()
-                    .map(PrepareOrderRequest::bookId)
-                    .toList();
-
             // 도서 정보
-            booksInfoResponse = bookApiClient.getBookInfos(new BookApiRequest(bookIdList));
+            booksInfoResponse = getBooks(requestList);
 
-            // 받아온 도서 정보에 수량과 합계 주입
-            List<InternalBookInfoResponse> updateBookInfos = booksInfoResponse.orderBookInfoRespDTOList().stream()
-                    .map(book -> new InternalBookInfoResponse(
-                            book.bookId(),
-                            book.title(),
-                            book.Price(),
-                            book.stock(),
-                            book.discountPercentage(),
-                            book.discountPrice(),
-                            book.coverImage()
-                    )).toList();
+            // 포장지 정보
+            packagingList = getPackaging();
 
-            // 값을 채운 리스트로 다시 덮어씌움
-            booksInfoResponse = new InternalBooksInfoResponse(updateBookInfos);
-
-            // 포장지 정보: 현재 존재하는 포장지 모두 불러옴
-            List<Packaging> rawPackagings = packagingRepository.findAllByEnabled(true);
-            packagingList = rawPackagings.stream()
-                    .map(PackagingDto::new)
-                    .toList();
-
-            // 배송 정책
-            DeliveryPolicy deliveryPolicy = deliveryPolicyRepository.findTopByOrderByDeliveryPolicyIdDesc()
-                    .orElseThrow(() -> new NotFoundOrderException("배송 정책을 찾을 수 없습니다."));
-            deliveryPolicyResponse = new DeliveryPolicyResponse(deliveryPolicy);
+            // 배송비 정책 정보
+            deliveryPolicyResponse = getDeliveryPolicy();
             // 여기 있는게 맞는지는 모르겠음
 
         } catch (FeignException e) {
-            log.error("외부 API 통신 간 오류 발생: {}", e.getMessage());
-            throw new ExternalServiceException("외부 API 통신 간 오류 발생");
+            log.error("[PrepareOrderService] 비회원 - 외부 API 통신 간 오류 발생: {}", e.getMessage());
+            throw new ExternalServiceException("[PrepareOrderService] 비회원 - 외부 API 통신 간 오류 발생");
         }
 
         // null이 반환된 경우 ---> 이럴 경우가 있나?
         if (booksInfoResponse == null || deliveryPolicyResponse == null) {
-            throw new NotFoundOrderException("외부 API에서 null값 넘어옴");
+            throw new NotFoundOrderException("[PrepareOrderService] 비회원 - 외부 API에서 null값 넘어옴");
         }
+        // -----> 포장 정책은 진짜 비어있을 수 있어서 null체크 안함
 
         return new PrepareOrderDto(
-                booksInfoResponse,
-                packagingList,
-                deliveryPolicyResponse
+                booksInfoResponse,      // 도서 정보
+                packagingList,          // 포장지 정보
+                deliveryPolicyResponse  // 배송비 정책 정보
         );
+    }
+
+    // 도서 정보
+    private InternalBooksInfoResponse getBooks(List<PrepareOrderRequest> requestList) {
+        InternalBooksInfoResponse booksInfoResponse;
+
+        // requestList에서 bookId만 추출해서 리스트 생성
+        List<Long> bookIdList = requestList.stream()
+                .map(PrepareOrderRequest::bookId)
+                .toList();
+
+        // 도서 정보
+        booksInfoResponse = bookApiClient.getBookInfos(new BookApiRequest(bookIdList));
+
+        // 받아온 도서 정보에 수량과 합계 주입
+        List<InternalBookInfoResponse> updateBookInfos = booksInfoResponse.orderBookInfoRespDTOList().stream()
+                .map(book -> new InternalBookInfoResponse(
+                        book.bookId(),
+                        book.title(),
+                        book.Price(),
+                        book.stock(),
+                        book.discountPercentage(),
+                        book.discountPrice(),
+                        book.coverImage()
+                )).toList();
+
+        // 값을 채운 리스트로 다시 덮어씌움
+        return new InternalBooksInfoResponse(updateBookInfos);
+    }
+
+    // 포장지 정보: 현재 존재하는 포장지 모두 불러옴
+    private List<PackagingDto> getPackaging() {
+        return packagingRepository.findAllByEnabled(true).stream()
+                .map(PackagingDto::new)
+                .toList();
+    }
+
+    // 배송비 정책 정보
+    private DeliveryPolicyResponse getDeliveryPolicy() {
+        DeliveryPolicy deliveryPolicy = deliveryPolicyRepository.findTopByOrderByDeliveryPolicyIdDesc()
+                .orElseThrow(() -> new NotFoundOrderException("배송 정책을 찾을 수 없습니다."));
+
+        return new DeliveryPolicyResponse(deliveryPolicy);
     }
 
 }
