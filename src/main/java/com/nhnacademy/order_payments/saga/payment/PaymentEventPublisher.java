@@ -53,14 +53,10 @@ public class PaymentEventPublisher {
 
             rabbitTemplate.send(topic, routingKey, message); // 직렬화 해서 생으로 보냄
 
-            log.info("[Payment API] 결제 성공 이벤트 발행 완료 : {}", routingKey);
+            log.info("[Payment API] 다음 이벤트 발행 완료 : Payment API -> Order API");
         } catch (Exception e) {
             log.warn("[Payment API] RabbitMQ 발행 실패 : {}", e.getMessage());
             throw new ExternalServiceException("rabbitMQ 메세지 발행 실패");
         }
-
-
-
     }
-
 }
