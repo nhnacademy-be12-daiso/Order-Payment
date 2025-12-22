@@ -10,17 +10,19 @@
  * +++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
  */
 
-package com.nhnacademy.order_payments.repository;
+package com.nhnacademy.order_payments.config;
 
-import com.nhnacademy.order_payments.entity.Order;
-import java.util.List;
-import java.util.Optional;
-import org.springframework.data.jpa.repository.JpaRepository;
+import org.springframework.context.annotation.Bean;
+import org.springframework.context.annotation.Configuration;
+import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
+import org.springframework.security.crypto.password.PasswordEncoder;
 
-public interface OrderRepository extends JpaRepository<Order, Long> {
+@Configuration
+public class PasswordEncoderConfig {    // 비밀번호 암호화를 위한 빈 등록
 
-    Optional<Order> findByOrderNumber(Long orderNumber);
-
-    List<Order> findOrderByUserId(Long userId);
+    @Bean
+    public PasswordEncoder passwordEncoder() {
+        return new BCryptPasswordEncoder();
+    }
 
 }

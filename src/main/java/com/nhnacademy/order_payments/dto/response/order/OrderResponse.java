@@ -14,6 +14,7 @@ package com.nhnacademy.order_payments.dto.response.order;
 
 import com.nhnacademy.order_payments.model.OrderStatus;
 import java.time.ZonedDateTime;
+import java.util.List;
 
 public record OrderResponse(
         Long orderId,
@@ -25,6 +26,6 @@ public record OrderResponse(
         String ordererPhoneNumber,
         String ordererEmail,
 
-        java.util.List<OrderDetailResponse> orderDetailList
+        List<OrderDetailResponse> orderDetailList
 ) {
 }

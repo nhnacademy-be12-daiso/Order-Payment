@@ -47,10 +47,6 @@ public class Order {
     private Long id;
 
     @Setter
-    @Column(name = "guest_id", nullable = true)
-    private String guestId;
-
-    @Setter
     @Column(name = "user_created_id", nullable = true)
     private Long userId;
 

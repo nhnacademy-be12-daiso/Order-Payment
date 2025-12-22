@@ -20,7 +20,6 @@ import com.nhnacademy.order_payments.service.order.OrderService;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.http.ResponseEntity;
-import org.springframework.web.bind.annotation.CookieValue;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestHeader;
@@ -42,14 +41,12 @@ public class OrderController {
      */
     @PostMapping
     public ResponseEntity<OrderCreateResponse> order(@RequestHeader(value = "X-User-Id", required = false) Long userId,
-                                                     @CookieValue(value = "X-Guest-Id", required = false)
-                                                     String guestId,
                                                      @RequestBody OrderSummaryDto dto) {
         if (dto == null) {
             throw new NotFoundOrderException("주문 정보가 없습니다.");
         }
 
-        Order order = orderService.precessOrderPayment(userId, guestId, dto);
+        Order order = orderService.precessOrderPayment(userId, dto);
 
         return ResponseEntity.ok(OrderCreateResponse.from(order));
     }
