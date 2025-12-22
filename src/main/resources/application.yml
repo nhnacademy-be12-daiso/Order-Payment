@@ -54,7 +54,6 @@ eureka:
 
 logging:
   level:
-    org.springframework.security: DEBUG
     org.springframework.web: DEBUG
 
 management:

@@ -21,6 +21,6 @@ public record DeliveryResponse(
         String postalCode,
         String receiverName,
         String ReceiverPhoneNumber,
-        Integer deliveryFee,
+        Long deliveryFee,
         List<DeliveryDetailResponse> deliveryDetailList) {
 }

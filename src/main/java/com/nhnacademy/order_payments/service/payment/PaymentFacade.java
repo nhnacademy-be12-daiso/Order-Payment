@@ -64,7 +64,7 @@ public class PaymentFacade {
             throw new BusinessException("AMOUNT_MISMATCH", "결제금액이 총 주문 금액과 다릅니다.");
         }
 
-        // 3. 멱등성 보장
+        // 3. 멱등성 보장(중복결제방지)
         Payment existing = payments.findByOrder(order).orElse(null);
         if (existing != null) {
             log.info("[PAYMENT CONFIRM DUPLICATE] orderNumber={}, paymentKey={}, method={}, approvedAt={}",
@@ -163,9 +163,21 @@ public class PaymentFacade {
             throw new BusinessException("INVALID_CANCEL_AMOUNT", "취소 금액이 올바르지 않습니다.");
         }
 
+        // 프론트에서 paymentKey가 null/blank로 오면 DB에 저장된 paymentKey로 PG 호출
+        String effectivePaymentKey = req.paymentKey();
+        if (effectivePaymentKey == null || effectivePaymentKey.isBlank()) {
+            effectivePaymentKey = payment.getPaymentKey();
+        }
+
+        // [\paymentKey가 없으면 예외 처리
+        if (effectivePaymentKey == null || effectivePaymentKey.isBlank()) {
+            log.warn("[PAYMENT CANCEL NO_PAYMENT_KEY] orderNumber={}, orderId={}", order.getOrderNumber(), req.orderId());
+            throw new BusinessException("PAYMENT_KEY_NOT_FOUND", "결제키(paymentKey)를 찾을 수 없습니다.");
+        }
+
         // 3. PG 취소 호출
         var result = provider.cancel(new PaymentProvider.CancelCommand(
-                req.orderId(), req.paymentKey(), cancelAmount, req.reason()
+                req.orderId(), effectivePaymentKey, cancelAmount, req.reason() // [MOD]
         ));
 
         log.info("[PAYMENT CANCEL PG_SUCCESS] orderNumber={}, provider={}, method={}, canceledAtIso={}",
@@ -173,7 +185,7 @@ public class PaymentFacade {
 
         // 4. 결제 이력 저장(취소/부분취소)
         PaymentEventType eventType =
-                (cancelAmount == payment.getPaymentCost())
+                (cancelAmount.equals(payment.getPaymentCost()))
                         ? PaymentEventType.CANCEL
                         : PaymentEventType.PARTIAL_CANCEL;
 
@@ -203,7 +215,7 @@ public class PaymentFacade {
 
     /** 환불 처리 (REFUND 이력용) */
     @Transactional
-    public RefundResponse refund(Long userId, @Valid RefundRequest req) {   // ✅ 리턴 타입 변경
+    public RefundResponse refund(Long userId, @Valid RefundRequest req) {
         log.info("[PAYMENT REFUND START] userId={}, orderId={}, paymentKey={}, cancelAmount={}, reason={}",
                 userId, req.orderId(), req.paymentKey(), req.cancelAmount(), req.reason());
 
@@ -223,9 +235,20 @@ public class PaymentFacade {
             throw new BusinessException("INVALID_CANCEL_AMOUNT", "환불 금액이 올바르지 않습니다.");
         }
 
+        // 프론트에서 paymentKey가 null/blank로 오면 DB에 저장된 paymentKey로 PG 호출
+        String effectivePaymentKey = req.paymentKey();
+        if (effectivePaymentKey == null || effectivePaymentKey.isBlank()) {
+            effectivePaymentKey = payment.getPaymentKey();
+        }
+
+        if (effectivePaymentKey == null || effectivePaymentKey.isBlank()) {
+            log.warn("[PAYMENT REFUND NO_PAYMENT_KEY] orderNumber={}, orderId={}", order.getOrderNumber(), req.orderId());
+            throw new BusinessException("PAYMENT_KEY_NOT_FOUND", "결제키(paymentKey)를 찾을 수 없습니다.");
+        }
+
         // 3. 토스 취소(환불) 호출
         var result = provider.cancel(new PaymentProvider.CancelCommand(
-                req.orderId(), req.paymentKey(), cancelAmount, req.reason()
+                req.orderId(), effectivePaymentKey, cancelAmount, req.reason() // [MOD]
         ));
 
         log.info("[PAYMENT REFUND PG_SUCCESS] orderNumber={}, provider={}, method={}, canceledAtIso={}",
@@ -245,7 +268,7 @@ public class PaymentFacade {
                 order.getOrderNumber(), PaymentEventType.REFUND, cancelAmount);
 
         // 5. 응답 반환
-        RefundResponse response = new RefundResponse(   // ✅ RefundResponse 사용
+        RefundResponse response = new RefundResponse( 
                 String.valueOf(order.getOrderNumber()),
                 "REFUNDED",
                 result.canceledAtIso(),    // refundedAt 필드에 ISO 문자열
@@ -294,6 +317,7 @@ public class PaymentFacade {
                 .or(() -> orders.findByOrderNumber(n))
                 .orElseThrow(() -> new BusinessException("ORDER_NOT_FOUND", "주문 없음"));
     }
+
     /** 주문에 대한 결제 히스토리를 조회 */
     @Transactional
     public List<PaymentHistoryResponse> getHistory(Long userId, String orderIdOrNumber) {

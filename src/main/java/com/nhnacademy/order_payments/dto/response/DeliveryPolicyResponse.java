@@ -17,8 +17,8 @@ import com.nhnacademy.order_payments.entity.DeliveryPolicy;
 public record DeliveryPolicyResponse(
         Long deliveryPolicyId,
         String policyName,
-        Integer deliveryFee,
-        Integer freeMinimumAmount) {
+        Long deliveryFee,
+        Long freeMinimumAmount) {
     // 배송 정책 관련 데이터를 응답할 DTO
 
     public DeliveryPolicyResponse(DeliveryPolicy deliveryPolicy) {

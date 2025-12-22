@@ -25,23 +25,23 @@ public class DeliveryPolicy {
 
     // 기본 배송비 = 5000원
     @Column(name = "delivery_fee", nullable = false)
-    private Integer deliveryFee;
+    private Long deliveryFee;
 
     // (회원)무료 배송 기준 주문 금액 = 30000원
     @Column(name = "free_minimum_amount", nullable = false)
-    private Integer freeMinimumAmount;
+    private Long freeMinimumAmount;
 
     @CreationTimestamp
     @Column(name = "created_at", nullable = false, updatable = false)
     private LocalDateTime createdAt;
 
-    public DeliveryPolicy(String deliveryPolicyName, Integer deliveryFee, Integer freeMinimumAmount) {
+    public DeliveryPolicy(String deliveryPolicyName, Long deliveryFee, Long freeMinimumAmount) {
         this.deliveryPolicyName = deliveryPolicyName;
         this.deliveryFee = deliveryFee;
         this.freeMinimumAmount = freeMinimumAmount;
     }
 
-    public void modifyPolicy(String deliveryPolicyName, Integer deliveryFee, Integer freeMinimumAmount) {
+    public void modifyPolicy(String deliveryPolicyName, Long deliveryFee, Long freeMinimumAmount) {
         this.deliveryPolicyName = deliveryPolicyName;
         this.deliveryFee = deliveryFee;
         this.freeMinimumAmount = freeMinimumAmount;
