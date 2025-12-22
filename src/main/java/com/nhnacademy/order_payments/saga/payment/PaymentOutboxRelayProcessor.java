@@ -29,6 +29,8 @@ public class PaymentOutboxRelayProcessor {
                     outbox.getRoutingKey(),
                     outbox.getPayload()
             );
+
+            log.info("[Payment API] Order ID : {}", outbox.getAggregateId());
             outbox.markAsPublished();
             paymentOutboxRepository.save(outbox);
 

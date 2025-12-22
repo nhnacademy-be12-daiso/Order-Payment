@@ -43,6 +43,7 @@ public class OrderService {
     private final ObjectMapper objectMapper;
     private final OrderOutboxRepository orderOutboxRepository;
     private final ApplicationEventPublisher publisher;
+    private final OrderValidationService orderValidationService;
 
 
     @Value("${rabbitmq.routing.confirmed}")
@@ -54,7 +55,7 @@ public class OrderService {
         // TODO 주문 검증 및 Order DB에 임시 주문 정보 저장
         // ---> saga와는 무관한 로컬 트랜잭션임
 
-        if (!validateOrder(userId, guestId, dto)) { // 검증 실패
+        if (!orderValidationService.validateOrder(userId, dto)) { // 검증 실패
             throw new RuntimeException("주문 정보에 대한 검증 실패"); // -----> 예외처리 다시 해주기 <<<<<<<<
         }
 
@@ -87,12 +88,7 @@ public class OrderService {
         return order; //임시
     }
 
-    /**
-     * Order 정보 검증하는 메서드
-     */
-    private boolean validateOrder(Long userId, String guestId, OrderSummaryDto dto) { // boolean으로 반환하는게 과연 맞는지?
-        return true;
-    }
+
 
     public Order createOrder(Long userId, String guestId, OrderSummaryDto dto) {
         // 1. 주문 객체 생성 (아직 저장 안 함 - 비영속 상태)
