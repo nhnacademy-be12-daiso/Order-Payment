@@ -29,7 +29,8 @@ public class OrderResultController {
 
     @GetMapping("/my")
     public OrderListResponse getMyOrders(@RequestHeader("X-User-Id") Long userId) {
-        OrderListResponse orderList = orderResultService.getOrderList(userId);
-        return orderList;
+        // 주문 내역은 회원만 조회 가능
+        // 주문서 작성시 썼던 주문자 정보(이름, 연락처, 이메일 등)랑 주문 번호(orderNumber) 받아서 처리하는 비회원 전용 컨트롤러 만들어야 될 듯
+        return orderResultService.getOrderList(userId, null);
     }
 }

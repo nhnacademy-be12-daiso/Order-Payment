@@ -20,6 +20,7 @@ import com.nhnacademy.order_payments.service.order.OrderService;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.http.ResponseEntity;
+import org.springframework.web.bind.annotation.CookieValue;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestHeader;
@@ -36,17 +37,19 @@ public class OrderController {
 
     /**
      * ** 회원과 비회원의 주문 로직을 어떻게 분기할지? **
+     * 회원 여부에 상관 없이 일단 해당 컨트롤러를 타고
+     * 서비스 로직 안에서 분기
      */
-
     @PostMapping
     public ResponseEntity<OrderCreateResponse> order(@RequestHeader(value = "X-User-Id", required = false) Long userId,
+                                                     @CookieValue(value = "X-Guest-Id", required = false)
+                                                     String guestId,
                                                      @RequestBody OrderSummaryDto dto) {
-
         if (dto == null) {
             throw new NotFoundOrderException("주문 정보가 없습니다.");
         }
 
-        Order order = orderService.precessOrderPayment(userId, dto);
+        Order order = orderService.precessOrderPayment(userId, guestId, dto);
 
         return ResponseEntity.ok(OrderCreateResponse.from(order));
     }
