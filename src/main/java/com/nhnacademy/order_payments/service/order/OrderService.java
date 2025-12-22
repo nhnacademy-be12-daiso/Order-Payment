@@ -20,8 +20,8 @@ import com.nhnacademy.order_payments.entity.Order;
 import com.nhnacademy.order_payments.entity.OrderDetail;
 import com.nhnacademy.order_payments.entity.OrderOutbox;
 import com.nhnacademy.order_payments.exception.FailedSerializationException;
-import com.nhnacademy.order_payments.repository.OrderRepository;
 import com.nhnacademy.order_payments.repository.OrderOutboxRepository;
+import com.nhnacademy.order_payments.repository.OrderRepository;
 import com.nhnacademy.order_payments.saga.common.OrderConfirmedEvent;
 import com.nhnacademy.order_payments.saga.order.OrderEventFactory;
 import com.nhnacademy.order_payments.saga.order.OrderOutboxCommittedEvent;
@@ -37,6 +37,7 @@ import org.springframework.stereotype.Service;
 @Service
 public class OrderService {
 
+    //    private final OrderEventPublisher eventPublisher;
     private final OrderRepository orderRepository;
     private final OrderEventFactory orderEventFactory;
     private final ObjectMapper objectMapper;
@@ -49,7 +50,7 @@ public class OrderService {
     private String routingKey;
 
     @Transactional
-    public Order precessOrderPayment(Long userId, OrderSummaryDto dto) {
+    public Order precessOrderPayment(Long userId, String guestId, OrderSummaryDto dto) {
 
         // TODO 주문 검증 및 Order DB에 임시 주문 정보 저장
         // ---> saga와는 무관한 로컬 트랜잭션임
@@ -61,7 +62,7 @@ public class OrderService {
         // ----- 검증 이후 로직 -----
 
         // 일단 임시 데이터(아직 트랜잭션이 안돈 상태)를 DB에 저장함
-        Order order = createOrder(userId, dto);
+        Order order = createOrder(userId, guestId, dto);
         OrderConfirmedEvent event = orderEventFactory.create(userId, order, dto);
 
         try {
@@ -89,11 +90,18 @@ public class OrderService {
 
 
 
-    public Order createOrder(Long userId, OrderSummaryDto dto) {
+    public Order createOrder(Long userId, String guestId, OrderSummaryDto dto) {
         // 1. 주문 객체 생성 (아직 저장 안 함 - 비영속 상태)
         Order order = new Order(dto);
 
-        order.setUserId(userId);
+        if (userId != null) {
+            order.setUserId(userId);
+            order.setGuestId(null);
+
+        } else {
+            order.setUserId(null);
+            order.setGuestId(guestId);
+        }
 
         // 2. 상세 내역 조립
         for (BookSummaryDto book : dto.bookList()) {

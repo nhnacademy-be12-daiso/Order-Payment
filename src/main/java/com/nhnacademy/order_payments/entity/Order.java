@@ -13,17 +13,24 @@
 package com.nhnacademy.order_payments.entity;
 
 import com.nhnacademy.order_payments.dto.order.OrderSummaryDto;
-import com.nhnacademy.order_payments.model.Grade;
 import com.nhnacademy.order_payments.model.OrderStatus;
-import jakarta.persistence.*;
-
+import jakarta.persistence.CascadeType;
+import jakarta.persistence.Column;
+import jakarta.persistence.Entity;
+import jakarta.persistence.EnumType;
+import jakarta.persistence.Enumerated;
+import jakarta.persistence.GeneratedValue;
+import jakarta.persistence.GenerationType;
+import jakarta.persistence.Id;
+import jakarta.persistence.OneToMany;
+import jakarta.persistence.OneToOne;
+import jakarta.persistence.Table;
 import java.time.Instant;
-import java.time.LocalDateTime;
+import java.time.ZoneId;
 import java.time.ZonedDateTime;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.concurrent.ThreadLocalRandom;
-
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.Setter;
@@ -40,9 +47,8 @@ public class Order {
     private Long id;
 
     @Setter
-    @ManyToOne
-    @JoinColumn(name = "guest_id", nullable = true)
-    private GuestOrderer guestOrderer;
+    @Column(name = "guest_id", nullable = true)
+    private String guestId;
 
     @Setter
     @Column(name = "user_created_id", nullable = true)
@@ -77,7 +83,7 @@ public class Order {
     public Order(String ordererName, Long totalPrice, String phoneNumber, String email) {
         this.ordererName = ordererName;
         this.orderNumber = generateOrderNumber();
-        this.orderDate = ZonedDateTime.now();
+        this.orderDate = ZonedDateTime.now(ZoneId.of("Asia/Seoul"));
         this.phoneNumber = phoneNumber;
         this.email = email;
         this.totalPrice = totalPrice;
@@ -88,7 +94,7 @@ public class Order {
     public Order(OrderSummaryDto dto) {
         this.ordererName = dto.ordererSummaryDto().ordererName();
         this.orderNumber = generateOrderNumber();
-        this.orderDate = ZonedDateTime.now();
+        this.orderDate = ZonedDateTime.now(ZoneId.of("Asia/Seoul"));
         this.phoneNumber = dto.ordererSummaryDto().ordererPhoneNumber();
         this.email = dto.ordererSummaryDto().ordererEmail();
         this.totalPrice = dto.totalPrice();

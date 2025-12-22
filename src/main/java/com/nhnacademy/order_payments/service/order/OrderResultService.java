@@ -19,7 +19,6 @@ import com.nhnacademy.order_payments.dto.response.order.OrderResponse;
 import com.nhnacademy.order_payments.dto.review.BookOrderDetailRequest;
 import com.nhnacademy.order_payments.dto.review.BookReviewRequest;
 import com.nhnacademy.order_payments.dto.review.BookReviewResponse;
-import com.nhnacademy.order_payments.entity.GuestOrderer;
 import com.nhnacademy.order_payments.entity.Order;
 import com.nhnacademy.order_payments.entity.OrderDetail;
 import com.nhnacademy.order_payments.repository.OrderRepository;
@@ -38,23 +37,20 @@ import org.springframework.transaction.annotation.Transactional;
 public class OrderResultService {
 
     private final OrderRepository orderRepository;
-    private final GuestOrdererService guestOrdererService;
 
     private final PackagingService packagingService;
 
     private final BookApiClient bookApiClient;
 
     @Transactional(readOnly = true)
-    public OrderListResponse getOrderList(Long userId) {
+    public OrderListResponse getOrderList(Long userId, String guestId) {
         // 주문 목록 조회 (회원/비회원 분기)
         List<Order> orderList;
 
-        GuestOrderer guestOrderer = guestOrdererService.getOrderer(userId);
-
-        if (guestOrderer == null) {
+        if (guestId == null) {
             orderList = orderRepository.findOrderByUserId(userId);  // 최신순 정렬 고려
         } else {
-            orderList = guestOrderer.getOrderList();
+            orderList = orderRepository.findOrderByGuestId(guestId);
         }
 
         if (orderList == null || orderList.isEmpty()) {
