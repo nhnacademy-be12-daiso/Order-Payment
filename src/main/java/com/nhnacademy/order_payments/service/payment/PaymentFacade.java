@@ -7,7 +7,7 @@ import com.nhnacademy.order_payments.dto.request.RefundRequest;
 import com.nhnacademy.order_payments.dto.response.CancelResponse;
 import com.nhnacademy.order_payments.dto.response.ConfirmResponse;
 import com.nhnacademy.order_payments.dto.response.PaymentHistoryResponse;
-import com.nhnacademy.order_payments.dto.response.RefundResponse;   // ✅ 추가
+import com.nhnacademy.order_payments.dto.response.RefundResponse;
 import com.nhnacademy.order_payments.entity.Order;
 import com.nhnacademy.order_payments.entity.Payment;
 import com.nhnacademy.order_payments.entity.PaymentHistory;
@@ -268,7 +268,7 @@ public class PaymentFacade {
                 order.getOrderNumber(), PaymentEventType.REFUND, cancelAmount);
 
         // 5. 응답 반환
-        RefundResponse response = new RefundResponse( 
+        RefundResponse response = new RefundResponse(
                 String.valueOf(order.getOrderNumber()),
                 "REFUNDED",
                 result.canceledAtIso(),    // refundedAt 필드에 ISO 문자열
