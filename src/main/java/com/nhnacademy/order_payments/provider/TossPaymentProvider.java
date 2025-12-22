@@ -1,6 +1,9 @@
 package com.nhnacademy.order_payments.provider;
 
 import com.nhnacademy.order_payments.exception.BusinessException;
+import lombok.AllArgsConstructor;
+import lombok.Getter;
+import lombok.NoArgsConstructor;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.http.HttpStatusCode;
@@ -97,29 +100,19 @@ public class TossPaymentProvider implements PaymentProvider {
     }
 
     // 토스 응답용 DTO
+    @Getter
+    @NoArgsConstructor
+    @AllArgsConstructor
     public static class TossConfirmResponse {
         private String method;
         private String approvedAt;
-
-        public String getMethod() {
-            return method;
-        }
-
-        public String getApprovedAt() {
-            return approvedAt;
-        }
     }
 
+    @Getter
+    @NoArgsConstructor
+    @AllArgsConstructor
     public static class TossCancelResponse {
         private String method;
         private String canceledAt;
-
-        public String getMethod() {
-            return method;
-        }
-
-        public String getCanceledAt() {
-            return canceledAt;
-        }
     }
 }
