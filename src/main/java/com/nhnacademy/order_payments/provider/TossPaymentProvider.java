@@ -34,7 +34,7 @@ public class TossPaymentProvider implements PaymentProvider {
 
         // 토스 confirm API 호출
         TossConfirmResponse res = tossWebClient.post()
-                .uri("/confirm")   // base-url: https://api.tosspayments.com/v1/payments
+                .uri("v1/payments/confirm")   // base-url: https://api.tosspayments.com/v1/payments
                 .bodyValue(body)
                 .retrieve()
                 .onStatus(HttpStatusCode::isError, clientResponse ->
