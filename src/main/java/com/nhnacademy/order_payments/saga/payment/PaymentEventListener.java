@@ -17,7 +17,6 @@ import org.springframework.amqp.AmqpRejectAndDontRequeueException;
 import org.springframework.amqp.rabbit.annotation.RabbitListener;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.context.ApplicationEventPublisher;
-import org.springframework.security.core.parameters.P;
 import org.springframework.stereotype.Service;
 
 @Slf4j
@@ -50,9 +49,10 @@ public class PaymentEventListener {
             // TODO 실제 재고 차감 로직
 
             // 멱등성을 위한 로그 기록
-            PaymentDeduplicationLog logEntry = new PaymentDeduplicationLog(msgId);
+            PaymentDeduplicationLog logEntry = new PaymentDeduplicationLog(msgId.toString());
             deduplicationRepository.save(logEntry);
 
+            // 정합성을 위한 Outbox
             try {
                 PaymentOutbox outbox = new PaymentOutbox(
                         event.getOrderId(),
@@ -89,7 +89,7 @@ public class PaymentEventListener {
                 throw new FailedSerializationException("Failed to serialize event payload", ex);
             }
 
-            PaymentDeduplicationLog logEntry = new PaymentDeduplicationLog(orderCompensateEvent.getOrderId());
+            PaymentDeduplicationLog logEntry = new PaymentDeduplicationLog(orderCompensateEvent.getOrderId().toString());
             deduplicationRepository.save(logEntry);
 
 
