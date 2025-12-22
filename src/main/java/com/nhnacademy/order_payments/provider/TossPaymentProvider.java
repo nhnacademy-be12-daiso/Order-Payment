@@ -50,6 +50,11 @@ public class TossPaymentProvider implements PaymentProvider {
                 .bodyToMono(TossConfirmResponse.class)
                 .block();   // 동기 호출
 
+        if (res == null) {
+            log.error("[TOSS ERROR] Response body is NULL. orderId={}", cmd.orderId());
+            throw new BusinessException("TOSS_NO_RESPONSE", "토스 API 응답이 비어있습니다. (URL이나 키 설정을 확인하세요)");
+        }
+
         // 응답
         log.info("[TOSS CONFIRM RESPONSE] method={}, approvedAt={}",
                 res.getMethod(), res.getApprovedAt());
