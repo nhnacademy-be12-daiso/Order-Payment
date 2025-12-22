@@ -20,11 +20,6 @@ public class OrderEventPublisher {
     // --> RabbitMQ 통신을 위한 컴포넌트 주입
     private final AmqpTemplate rabbitTemplate;
 
-    private static final String ORDER_EXCHANGE = "team3.saga.order.exchange";
-    @Value("${rabbitmq.routing.confirmed}")
-    private String ROUTING_KEY_CONFIRMED;
-
-
     public void publishOrderOutboxMessage(String topic, String routingKey, String payload) {
 
         try {
@@ -43,8 +38,6 @@ public class OrderEventPublisher {
             log.warn("[Order API] RabbitMQ 발행 실패 : {}", e.getMessage());
             throw new ExternalServiceException("rabbitMQ 메세지 발행 실패");
         }
-
-
     }
 
 
