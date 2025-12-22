@@ -12,15 +12,12 @@
 
 package com.nhnacademy.order_payments.repository;
 
-import com.nhnacademy.order_payments.entity.Order;
-import java.util.List;
+import com.nhnacademy.order_payments.entity.GuestOrderers;
 import java.util.Optional;
 import org.springframework.data.jpa.repository.JpaRepository;
 
-public interface OrderRepository extends JpaRepository<Order, Long> {
+public interface GuestOrdererRepository extends JpaRepository<GuestOrderers, Long> {
 
-    Optional<Order> findByOrderNumber(Long orderNumber);
-
-    List<Order> findOrderByUserId(Long userId);
+    Optional<GuestOrderers> findByOrder_OrderNumber(Long orderNumber);
 
 }
