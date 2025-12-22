@@ -63,9 +63,9 @@ public class Delivery {
     private String receiverPhoneNumber;
 
     @Column(name = "delivary_fee")  // 오타
-    private Integer fee;
+    private Long fee;
 
-    public Delivery(String address, String postalCode, String receiverName, String receiverPhoneNumber, Integer fee) {
+    public Delivery(String address, String postalCode, String receiverName, String receiverPhoneNumber, Long fee) {
         this.address = address;
         this.postalCode = postalCode;
         this.receiverName = receiverName;

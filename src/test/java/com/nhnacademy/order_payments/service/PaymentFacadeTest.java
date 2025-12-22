@@ -285,7 +285,7 @@ public class PaymentFacadeTest {
                 orderIdStr,
                 paymentKey,
                 "상품 문제",
-                30_000   // 부분 환불
+                30_000L   // 부분 환불
         );
 
         // when

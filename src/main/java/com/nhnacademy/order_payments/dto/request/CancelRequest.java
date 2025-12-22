@@ -11,5 +11,5 @@ public record CancelRequest(
         @Schema(description = "취소 사유", example = "고객 단순 변심")
         String reason,
         @Schema(description = "환불 금액, null이면 전액 취소", example = "50000")
-        Integer cancelAmount
+        Long cancelAmount
 ) {}

@@ -6,6 +6,6 @@ import jakarta.validation.constraints.NotNull;
 
 public record DeliveryPolicyRequest(
         @NotBlank String policyName,
-        @NotNull @Min(0) Integer deliveryFee,
-        @NotNull @Min(0) Integer freeMinimumAmount
+        @NotNull @Min(0) Long deliveryFee,
+        @NotNull @Min(0) Long freeMinimumAmount
 ) {} // 관리자 전용, 배송 정책 관련 데이터를 줄 DTO

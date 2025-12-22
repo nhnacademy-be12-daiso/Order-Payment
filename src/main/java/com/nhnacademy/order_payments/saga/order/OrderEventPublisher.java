@@ -32,7 +32,9 @@ public class OrderEventPublisher {
 
             rabbitTemplate.send(topic, routingKey, message); // 직렬화 해서 생으로 보냄
 
-        log.info("[Order API] Saga 시작 이벤트 발행 성공 : {}", routingKey);
+
+            log.info("[Order API] ===== Saga 시작 =====");
+            log.info("[Order API] Saga 시작 이벤트 발행 완료 : OrderAPI -> User API ");
 
         } catch(Exception e) {
             log.warn("[Order API] RabbitMQ 발행 실패 : {}", e.getMessage());
