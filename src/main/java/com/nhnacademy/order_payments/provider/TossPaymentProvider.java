@@ -1,6 +1,9 @@
 package com.nhnacademy.order_payments.provider;
 
 import com.nhnacademy.order_payments.exception.BusinessException;
+import lombok.AllArgsConstructor;
+import lombok.Getter;
+import lombok.NoArgsConstructor;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.http.HttpStatusCode;
@@ -31,7 +34,7 @@ public class TossPaymentProvider implements PaymentProvider {
 
         // 토스 confirm API 호출
         TossConfirmResponse res = tossWebClient.post()
-                .uri("/confirm")   // base-url: https://api.tosspayments.com/v1/payments
+                .uri("v1/payments/confirm")   // base-url: https://api.tosspayments.com/v1/payments
                 .bodyValue(body)
                 .retrieve()
                 .onStatus(HttpStatusCode::isError, clientResponse ->
@@ -46,6 +49,11 @@ public class TossPaymentProvider implements PaymentProvider {
                 )
                 .bodyToMono(TossConfirmResponse.class)
                 .block();   // 동기 호출
+
+        if (res == null) {
+            log.error("[TOSS ERROR] Response body is NULL. orderId={}", cmd.orderId());
+            throw new BusinessException("TOSS_NO_RESPONSE", "토스 API 응답이 비어있습니다. (URL이나 키 설정을 확인하세요)");
+        }
 
         // 응답
         log.info("[TOSS CONFIRM RESPONSE] method={}, approvedAt={}",
@@ -97,29 +105,19 @@ public class TossPaymentProvider implements PaymentProvider {
     }
 
     // 토스 응답용 DTO
+    @Getter
+    @NoArgsConstructor
+    @AllArgsConstructor
     public static class TossConfirmResponse {
         private String method;
         private String approvedAt;
-
-        public String getMethod() {
-            return method;
-        }
-
-        public String getApprovedAt() {
-            return approvedAt;
-        }
     }
 
+    @Getter
+    @NoArgsConstructor
+    @AllArgsConstructor
     public static class TossCancelResponse {
         private String method;
         private String canceledAt;
-
-        public String getMethod() {
-            return method;
-        }
-
-        public String getCanceledAt() {
-            return canceledAt;
-        }
     }
 }

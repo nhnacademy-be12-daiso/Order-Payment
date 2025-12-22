@@ -38,7 +38,7 @@ public class PaymentController {
             }
     )
     @PostMapping("/confirm")
-    public ConfirmResponse confirm(@RequestHeader("X-User-Id") Long userId, @Valid @RequestBody ConfirmRequest req) {
+    public ConfirmResponse confirm(@RequestHeader(value = "X-User-Id", required = false) Long userId, @Valid @RequestBody ConfirmRequest req) {
 
         return facade.confirm(userId, req);
     }

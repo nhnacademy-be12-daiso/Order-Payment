@@ -14,22 +14,37 @@ package com.nhnacademy.order_payments.entity;
 
 import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
+import jakarta.persistence.GeneratedValue;
+import jakarta.persistence.GenerationType;
 import jakarta.persistence.Id;
-import jakarta.persistence.OneToMany;
+import jakarta.persistence.JoinColumn;
+import jakarta.persistence.OneToOne;
 import jakarta.persistence.Table;
-import java.util.List;
+import lombok.AccessLevel;
 import lombok.Getter;
+import lombok.NoArgsConstructor;
 
-@Getter
 @Entity
-@Table(name = "GuestsOrderers")
-public class GuestOrderer {
+@Table(name = "GuestOrderers")
+@Getter
+@NoArgsConstructor(access = AccessLevel.PROTECTED)
+public class GuestOrderers {
 
     @Id
-    @Column(name = "guest_id")
-    private Long id;
+    @GeneratedValue(strategy = GenerationType.IDENTITY)
+    @Column(name = "guest_orderer_id", nullable = false)
+    private Long guestOrdererId;
 
-    @OneToMany(mappedBy = "guestOrderer")
-    @Column(name = "order_id")
-    private List<Order> orderList;
+    @OneToOne
+    @JoinColumn(name = "order_number", referencedColumnName = "order_number", nullable = false)
+    private Order order;
+
+    @Column(name = "password", nullable = false)
+    private String password;
+
+    public GuestOrderers(Order order, String password) {
+        this.order = order;
+        this.password = password;
+    }
+
 }

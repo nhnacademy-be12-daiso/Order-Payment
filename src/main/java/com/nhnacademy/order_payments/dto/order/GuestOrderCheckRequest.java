@@ -10,14 +10,8 @@
  * +++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
  */
 
-package com.nhnacademy.order_payments.repository;
+package com.nhnacademy.order_payments.dto.order;
 
-import com.nhnacademy.order_payments.entity.GuestOrderers;
-import java.util.Optional;
-import org.springframework.data.jpa.repository.JpaRepository;
-
-public interface GuestOrdererRepository extends JpaRepository<GuestOrderers, Long> {
-
-    Optional<GuestOrderers> findByOrder_OrderNumber(Long orderNumber);
-
+public record GuestOrderCheckRequest(Long orderNumber,
+                                     String password) {
 }
