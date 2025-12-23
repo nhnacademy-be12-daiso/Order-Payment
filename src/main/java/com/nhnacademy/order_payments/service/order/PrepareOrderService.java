@@ -99,11 +99,14 @@ public class PrepareOrderService {
                     .map(book -> new InternalBookInfoResponse(
                             book.bookId(),
                             book.title(),
-                            book.Price(),
+                            book.price(),
                             book.stock(),
+                            book.staus(),
                             book.discountPercentage(),
                             book.discountPrice(),
-                            book.coverImage()
+                            book.coverImage(),
+                            book.volumeNo(),
+                            book.isPackaging()
                     )).toList();
 
             // 값을 채운 리스트로 다시 덮어씌움
@@ -170,11 +173,14 @@ public class PrepareOrderService {
                     .map(book -> new InternalBookInfoResponse(
                             book.bookId(),
                             book.title(),
-                            book.Price(),
+                            book.price(),
                             book.stock(),
+                            book.staus(),
                             book.discountPercentage(),
                             book.discountPrice(),
-                            book.coverImage()
+                            book.coverImage(),
+                            book.volumeNo(),
+                            book.isPackaging()
                     )).toList();
 
             // 값을 채운 리스트로 다시 덮어씌움
