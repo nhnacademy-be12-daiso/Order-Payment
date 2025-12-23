@@ -23,11 +23,12 @@ import jakarta.persistence.ManyToOne;
 import jakarta.persistence.OneToMany;
 import jakarta.persistence.Table;
 import java.time.LocalDate;
-import java.time.ZonedDateTime;
+import java.time.LocalDateTime;
 import java.util.List;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.Setter;
+import org.hibernate.annotations.CreationTimestamp;
 
 @NoArgsConstructor
 @Getter
@@ -57,8 +58,9 @@ public class DeliveryDetail {
     private LocalDate estimatedAt; //배성 예정일이기에 일까지만
 
     @Setter
+    @CreationTimestamp
     @Column(name = "complete_at")
-    private ZonedDateTime completeAt; //실제 도착한것이기에 시간까지
+    private LocalDateTime completeAt; //실제 도착한것이기에 시간까지
 
     @Setter
     @Column(name = "delivery_status")

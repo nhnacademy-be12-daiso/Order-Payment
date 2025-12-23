@@ -10,19 +10,19 @@
  * +++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
  */
 
-package com.nhnacademy.order_payments.service.order;
+package com.nhnacademy.order_payments.config;
 
-import com.nhnacademy.order_payments.entity.GuestOrderer;
-import com.nhnacademy.order_payments.repository.GuestOrdererRepository;
-import lombok.RequiredArgsConstructor;
-import org.springframework.stereotype.Service;
+import org.springframework.context.annotation.Bean;
+import org.springframework.context.annotation.Configuration;
+import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
+import org.springframework.security.crypto.password.PasswordEncoder;
 
-@Service
-@RequiredArgsConstructor
-public class GuestOrdererService {
-    private final GuestOrdererRepository guestOrdererRepository;
+@Configuration
+public class PasswordEncoderConfig {    // 비밀번호 암호화를 위한 빈 등록
 
-    public GuestOrderer getOrderer(Long userId) {
-        return guestOrdererRepository.findGuestOrdererById(userId);
+    @Bean
+    public PasswordEncoder passwordEncoder() {
+        return new BCryptPasswordEncoder();
     }
+
 }

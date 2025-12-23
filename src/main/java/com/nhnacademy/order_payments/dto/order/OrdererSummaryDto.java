@@ -16,6 +16,7 @@ package com.nhnacademy.order_payments.dto.order;
 public record OrdererSummaryDto(
         String ordererName, // 주문자 이름
         String ordererPhoneNumber, // 주문자 전화번호
-        String ordererEmail // 주문자 이메일
+        String ordererEmail, // 주문자 이메일
+        String ordererPassword      // 비회원 주문 조회시 필요한 비밀번호, 회원은 null
 ) {
 }
