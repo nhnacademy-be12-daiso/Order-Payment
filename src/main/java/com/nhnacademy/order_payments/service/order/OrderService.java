@@ -16,12 +16,14 @@ import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.nhnacademy.order_payments.dto.order.BookSummaryDto;
 import com.nhnacademy.order_payments.dto.order.OrderSummaryDto;
+import com.nhnacademy.order_payments.entity.GuestOrderers;
 import com.nhnacademy.order_payments.entity.Order;
 import com.nhnacademy.order_payments.entity.OrderDetail;
 import com.nhnacademy.order_payments.entity.OrderOutbox;
 import com.nhnacademy.order_payments.exception.FailedSerializationException;
-import com.nhnacademy.order_payments.repository.OrderRepository;
+import com.nhnacademy.order_payments.repository.GuestOrdererRepository;
 import com.nhnacademy.order_payments.repository.OrderOutboxRepository;
+import com.nhnacademy.order_payments.repository.OrderRepository;
 import com.nhnacademy.order_payments.saga.common.OrderConfirmedEvent;
 import com.nhnacademy.order_payments.saga.order.OrderEventFactory;
 import com.nhnacademy.order_payments.saga.order.OrderOutboxCommittedEvent;
@@ -30,6 +32,7 @@ import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.context.ApplicationEventPublisher;
+import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 
 @Slf4j
@@ -37,13 +40,17 @@ import org.springframework.stereotype.Service;
 @Service
 public class OrderService {
 
-//    private final OrderEventPublisher eventPublisher;
+    //    private final OrderEventPublisher eventPublisher;
     private final OrderRepository orderRepository;
+    private final GuestOrdererRepository guestOrdererRepository;
+
     private final OrderEventFactory orderEventFactory;
     private final ObjectMapper objectMapper;
     private final OrderOutboxRepository orderOutboxRepository;
     private final ApplicationEventPublisher publisher;
+    private final OrderValidationService orderValidationService;
 
+    private final PasswordEncoder passwordEncoder;
 
     @Value("${rabbitmq.routing.confirmed}")
     private String routingKey;
@@ -54,7 +61,7 @@ public class OrderService {
         // TODO 주문 검증 및 Order DB에 임시 주문 정보 저장
         // ---> saga와는 무관한 로컬 트랜잭션임
 
-        if (!validateOrder(userId, dto)) { // 검증 실패
+        if (!orderValidationService.validateOrder(userId, dto)) { // 검증 실패
             throw new RuntimeException("주문 정보에 대한 검증 실패"); // -----> 예외처리 다시 해주기 <<<<<<<<
         }
 
@@ -87,18 +94,11 @@ public class OrderService {
         return order; //임시
     }
 
-    /**
-     * Order 정보 검증하는 메서드
-     */
-    private boolean validateOrder(Long userId, OrderSummaryDto dto) { // boolean으로 반환하는게 과연 맞는지?
-        return true;
-    }
 
     public Order createOrder(Long userId, OrderSummaryDto dto) {
-        // 1. 주문 객체 생성 (아직 저장 안 함 - 비영속 상태)
+        // 1. 주문 객체 생성 (아직 저장 안 함 - 비영속 상태) 및 기본 정보 세팅
         Order order = new Order(dto);
-
-        order.setUserId(userId);
+        order.setUserId(userId);    // userId == null일 때 (비회원일 때) 알아서 null 드감
 
         // 2. 상세 내역 조립
         for (BookSummaryDto book : dto.bookList()) {
@@ -108,8 +108,18 @@ public class OrderService {
             order.addOrderDetail(detail);
         }
 
-        // 3. 마지막에 한 번만 저장
-        return orderRepository.save(order);
-        // 부모를 저장하면 자식들이 Cascade에 의해 자동으로 저장됨
+        // 3. 일단 주문부터 DB에 저장 (order_number 확정)
+        Order savedOrder = orderRepository.save(order);
+
+        // 4. 비회원일 경우 인증 정보(비밀번호) 저장
+        if (userId == null) {
+            String password = passwordEncoder.encode(dto.ordererSummaryDto().ordererPassword());    // 비밀번호 암호화
+
+            GuestOrderers guestOrderers = new GuestOrderers(savedOrder, password);
+            guestOrdererRepository.save(guestOrderers);
+        }
+
+        return savedOrder;
     }
+
 }

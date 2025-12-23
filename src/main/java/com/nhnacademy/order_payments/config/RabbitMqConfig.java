@@ -1,5 +1,7 @@
 package com.nhnacademy.order_payments.config;
 
+import com.nhnacademy.order_payments.saga.common.SagaTopic;
+import jakarta.annotation.PostConstruct;
 import org.springframework.amqp.core.*;
 import org.springframework.amqp.rabbit.config.SimpleRabbitListenerContainerFactory;
 import org.springframework.amqp.rabbit.connection.ConnectionFactory;
@@ -12,12 +14,31 @@ import org.springframework.beans.factory.annotation.Value;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 
+import java.util.Arrays;
+import java.util.Map;
+import java.util.stream.Collectors;
+
 /**
  * OrderAPI의 RabbitMQ 설정
  * Payment -> Order의 바인딩 설정
  */
 @Configuration
 public class RabbitMqConfig {
+
+    @Value("${spring.profiles.active}")
+    private String activeProfile;
+
+    @PostConstruct
+    public void init() {
+        boolean isDev = "dev".equalsIgnoreCase(activeProfile);
+        SagaTopic.setMode(isDev);
+    }
+
+    @Bean("Saga")
+    public Map<String, SagaTopic> sagaTopics() {
+        return Arrays.stream(SagaTopic.values())
+                .collect(Collectors.toMap(Enum::name, topic -> topic));
+    }
 
     // 주문 Saga 시작 세팅
     private static final String ORDER_EXCHANGE = "team3.saga.order.exchange";
@@ -71,7 +92,7 @@ public class RabbitMqConfig {
         return converter;
     }
 
-
+    // 발신용 컨버터
     @Bean
     public MessageConverter simpleMessageConverter() {
         // String, byte[], Serializable 객체를 처리하는 기본 컨버터
@@ -87,8 +108,6 @@ public class RabbitMqConfig {
         RabbitTemplate rabbitTemplate = new RabbitTemplate(connectionFactory);
 //        rabbitTemplate.setMessageConverter(jsonMessageConverter());
         rabbitTemplate.setMessageConverter(simpleMessageConverter());
-
-
 
         return rabbitTemplate;
     }

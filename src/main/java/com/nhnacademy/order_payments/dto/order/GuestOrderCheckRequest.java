@@ -10,22 +10,8 @@
  * +++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
  */
 
-package com.nhnacademy.order_payments.dto.response.order;
+package com.nhnacademy.order_payments.dto.order;
 
-import com.nhnacademy.order_payments.model.OrderStatus;
-import java.time.LocalDateTime;
-import java.util.List;
-
-public record OrderResponse(
-        Long orderId,
-        Long orderNumber,
-        OrderStatus orderStatus,
-        LocalDateTime orderDate,
-        String ordererName,
-        Long totalPrice,
-        String ordererPhoneNumber,
-        String ordererEmail,
-
-        List<OrderDetailResponse> orderDetailList
-) {
+public record GuestOrderCheckRequest(Long orderNumber,
+                                     String password) {
 }

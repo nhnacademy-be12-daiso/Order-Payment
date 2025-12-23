@@ -31,7 +31,7 @@ public class OrderOutboxRelayProcessor {
                     outbox.getRoutingKey(),
                     outbox.getPayload()
             );
-
+            log.info("[Order API] Order ID : {}", outbox.getAggregateId());
             outbox.markAsPublished();
             orderOutboxRepository.save(outbox);
 

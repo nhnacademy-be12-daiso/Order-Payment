@@ -38,11 +38,9 @@ public class PrepareOrderController {
     ResponseEntity<PrepareOrderDto> getOrderPrepare(@RequestHeader(value = "X-User-Id", required = false) Long userId,
                                                     @RequestBody List<PrepareOrderRequest> requestList) {
         if (userId == null) { // 비회원의 경우 userId가 null로 넘어옴
-            PrepareOrderDto dto = prepareOrderService.prepareGuestOrderInfo(requestList);
-            return ResponseEntity.ok().body(dto);
+            return ResponseEntity.ok().body(prepareOrderService.prepareGuestOrderInfo(requestList));
         } else { // 회원인 경우
-            PrepareOrderDto dto = prepareOrderService.prepareOrderInfo(userId, requestList);
-            return ResponseEntity.ok().body(dto);
+            return ResponseEntity.ok().body(prepareOrderService.prepareOrderInfo(userId, requestList));
         }
     }
 

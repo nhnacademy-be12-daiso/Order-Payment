@@ -19,9 +19,11 @@ import com.nhnacademy.order_payments.dto.response.order.OrderResponse;
 import com.nhnacademy.order_payments.dto.review.BookOrderDetailRequest;
 import com.nhnacademy.order_payments.dto.review.BookReviewRequest;
 import com.nhnacademy.order_payments.dto.review.BookReviewResponse;
-import com.nhnacademy.order_payments.entity.GuestOrderer;
+import com.nhnacademy.order_payments.entity.GuestOrderers;
 import com.nhnacademy.order_payments.entity.Order;
 import com.nhnacademy.order_payments.entity.OrderDetail;
+import com.nhnacademy.order_payments.exception.NotFoundOrderException;
+import com.nhnacademy.order_payments.repository.GuestOrdererRepository;
 import com.nhnacademy.order_payments.repository.OrderRepository;
 import com.nhnacademy.order_payments.service.packaging.PackagingService;
 import java.util.List;
@@ -29,6 +31,7 @@ import java.util.Map;
 import java.util.stream.Collectors;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -38,24 +41,20 @@ import org.springframework.transaction.annotation.Transactional;
 public class OrderResultService {
 
     private final OrderRepository orderRepository;
-    private final GuestOrdererService guestOrdererService;
+    private final GuestOrdererRepository guestOrdererRepository;
 
     private final PackagingService packagingService;
 
     private final BookApiClient bookApiClient;
 
+    private final PasswordEncoder passwordEncoder;
+
     @Transactional(readOnly = true)
     public OrderListResponse getOrderList(Long userId) {
-        // 주문 목록 조회 (회원/비회원 분기)
+        // 주문 목록 조회 (회원)
         List<Order> orderList;
 
-        GuestOrderer guestOrderer = guestOrdererService.getOrderer(userId);
-
-        if (guestOrderer == null) {
-            orderList = orderRepository.findOrderByUserId(userId);  // 최신순 정렬 고려
-        } else {
-            orderList = guestOrderer.getOrderList();
-        }
+        orderList = orderRepository.findOrderByUserId(userId);  // 최신순 정렬 고려
 
         if (orderList == null || orderList.isEmpty()) {
             return new OrderListResponse(List.of());
@@ -66,6 +65,23 @@ public class OrderResultService {
                 .toList();
 
         return new OrderListResponse(responseList);
+    }
+
+    @Transactional(readOnly = true)
+    public OrderResponse getGuestOrder(Long orderNumber, String password) {
+        // 주문 조회 (비회원)
+        // 비회원은 주문 번호(order_number)와 주문서 작성시 입력했던 비밀번호(orderer_password)로 주문 조회
+        GuestOrderers guestInfo = guestOrdererRepository.findByOrder_OrderNumber(orderNumber)
+                .orElseThrow(() -> {
+                    log.warn("[OrderResultService] 비회원 - 찾을 수 없는 주문: {}", orderNumber);
+                    return new NotFoundOrderException("[OrderResultService] 비회원 - 찾을 수 없는 주문");
+                });
+
+        if (!passwordEncoder.matches(password, guestInfo.getPassword())) {
+            throw new RuntimeException("[OrderResultService] 비회원 - 일치하지 않는 비밀번호");
+        }
+
+        return createOrderResponse(guestInfo.getOrder());
     }
 
     private OrderResponse createOrderResponse(Order order) {
