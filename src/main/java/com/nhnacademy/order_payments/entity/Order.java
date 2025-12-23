@@ -26,14 +26,14 @@ import jakarta.persistence.OneToMany;
 import jakarta.persistence.OneToOne;
 import jakarta.persistence.Table;
 import java.time.Instant;
-import java.time.ZoneId;
-import java.time.ZonedDateTime;
+import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.concurrent.ThreadLocalRandom;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.Setter;
+import org.hibernate.annotations.CreationTimestamp;
 
 @NoArgsConstructor
 @Getter
@@ -58,8 +58,9 @@ public class Order {
     @Column(name = "order_status")
     private OrderStatus orderStatus;// enum으로 독립
 
+    @CreationTimestamp
     @Column(name = "order_date")
-    private ZonedDateTime orderDate;
+    private LocalDateTime orderDate;
 
     @Column(name = "orderer_name", nullable = false)
     private String ordererName;
@@ -79,7 +80,6 @@ public class Order {
     public Order(String ordererName, Long totalPrice, String phoneNumber, String email) {
         this.ordererName = ordererName;
         this.orderNumber = generateOrderNumber();
-        this.orderDate = ZonedDateTime.now(ZoneId.of("Asia/Seoul"));
         this.phoneNumber = phoneNumber;
         this.email = email;
         this.totalPrice = totalPrice;
@@ -90,7 +90,6 @@ public class Order {
     public Order(OrderSummaryDto dto) {
         this.ordererName = dto.ordererSummaryDto().ordererName();
         this.orderNumber = generateOrderNumber();
-        this.orderDate = ZonedDateTime.now(ZoneId.of("Asia/Seoul"));
         this.phoneNumber = dto.ordererSummaryDto().ordererPhoneNumber();
         this.email = dto.ordererSummaryDto().ordererEmail();
         this.totalPrice = dto.totalPrice();

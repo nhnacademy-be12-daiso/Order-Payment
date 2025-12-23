@@ -13,14 +13,14 @@
 package com.nhnacademy.order_payments.dto.response.order;
 
 import com.nhnacademy.order_payments.model.OrderStatus;
-import java.time.ZonedDateTime;
+import java.time.LocalDateTime;
 import java.util.List;
 
 public record OrderResponse(
         Long orderId,
         Long orderNumber,
         OrderStatus orderStatus,
-        ZonedDateTime orderDate,
+        LocalDateTime orderDate,
         String ordererName,
         Long totalPrice,
         String ordererPhoneNumber,
