@@ -10,12 +10,15 @@ import com.nhnacademy.order_payments.repository.PaymentDeduplicationRepository;
 import com.nhnacademy.order_payments.repository.PaymentOutboxRepository;
 import com.nhnacademy.order_payments.saga.common.OrderCompensateEvent;
 import com.nhnacademy.order_payments.saga.common.OrderConfirmedEvent;
+import com.nhnacademy.order_payments.saga.common.SagaTopic;
 import jakarta.transaction.Transactional;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.amqp.AmqpRejectAndDontRequeueException;
+import org.springframework.amqp.rabbit.annotation.Exchange;
+import org.springframework.amqp.rabbit.annotation.Queue;
+import org.springframework.amqp.rabbit.annotation.QueueBinding;
 import org.springframework.amqp.rabbit.annotation.RabbitListener;
-import org.springframework.beans.factory.annotation.Value;
 import org.springframework.context.ApplicationEventPublisher;
 import org.springframework.stereotype.Service;
 
@@ -26,13 +29,20 @@ public class PaymentEventListener {
     private final PaymentDeduplicationRepository deduplicationRepository;
     private final PaymentOutboxRepository paymentOutboxRepository;
     private final ApplicationEventPublisher publisher;
-    private final PaymentEventPublisher paymentEventPublisher;
     private final ObjectMapper objectMapper;
+    private final CompensationOutboxService compensationOutboxService;
 
-    @Value("${rabbitmq.routing.success}")
-    private String routingKey;
-
-    @RabbitListener(queues = "${rabbitmq.queue.payment}")
+    @RabbitListener(bindings = @QueueBinding(
+            value = @Queue(
+                    value = "#{@Saga.COUPON_SUCCESS.getQueue()}",
+                    durable = "true"
+            ),
+            exchange = @Exchange(
+                    value = "#{@Saga.COUPON_SUCCESS.getExchange()}",
+                    type = "topic"
+            ),
+            key = "#{@Saga.COUPON_SUCCESS.getRoutingKey()}"
+    ))
     @Transactional
     public void handleOrderConfirmedEvent(OrderConfirmedEvent event) {
 
@@ -46,7 +56,7 @@ public class PaymentEventListener {
         }
 
         try {
-            // TODO 실제 재고 차감 로직
+            // TODO 실제 주문 로직
 
             // 멱등성을 위한 로그 기록
             PaymentDeduplicationLog logEntry = new PaymentDeduplicationLog(msgId.toString());
@@ -57,8 +67,8 @@ public class PaymentEventListener {
                 PaymentOutbox outbox = new PaymentOutbox(
                         event.getOrderId(),
                         "PAYMENT",
-                        "team3.saga.payment.exchange",
-                        routingKey,
+                        SagaTopic.PAYMENT_SUCCESS.getExchange(),
+                        SagaTopic.PAYMENT_SUCCESS.getRoutingKey(),
                         objectMapper.writeValueAsString(event)
                 );
                 paymentOutboxRepository.save(outbox);
@@ -71,30 +81,27 @@ public class PaymentEventListener {
             }
             log.info("[Payment API] 결제 성공");
 
-        } catch(PaymentFailedException e) { // 커스텀 예외 만들기!
+        } catch(PaymentFailedException e) {
 //             TODO 재고 부족 혹은 실패 시 보상 트랜잭션 이벤트 발행
             log.error("[Payment API] 결제 실패 : {}", e.getMessage());
             log.error("[Payment API] ===== 결제 실패로 인한 보상 트랜잭션 시작 Order ID : {} =====", event.getOrderId());
 
             OrderCompensateEvent orderCompensateEvent = new OrderCompensateEvent(event, "PAYMENT_FAILED");
 
-            try {
-                paymentEventPublisher.publishPaymentOutboxMessage(
-                        "Order용 익스체인지",
-                        "Order용 라우팅 키",
-                        objectMapper.writeValueAsString(orderCompensateEvent)
-                );
-            } catch (JsonProcessingException ex) {
-                log.warn("객체 직렬화 실패");
-                throw new FailedSerializationException("Failed to serialize event payload", ex);
-            }
+            compensationOutboxService.saveCompensationEvent(
+                    event.getOrderId(),
+                    orderCompensateEvent,
+                    SagaTopic.PAYMENT_COMPENSATION
+            );
 
-            PaymentDeduplicationLog logEntry = new PaymentDeduplicationLog(orderCompensateEvent.getOrderId().toString());
-            deduplicationRepository.save(logEntry);
+            // Order로 직접 쏴줌
+            compensationOutboxService.saveCompensationEvent(
+                    event.getOrderId(),
+                    orderCompensateEvent,
+                    SagaTopic.PAYMENT_NOTIFICATION
+            );
 
-
-
-            throw e;  // 트랜잭션 걸려있으므로 예외 던지면 DB 트랜잭션 롤백됨
+            throw e;  // Payment 서비스 로직 롤백됨 (보상 이벤트는 남아있음!)
         }
         catch(Exception e) {
             log.error("[Payment API] 이벤트 처리 중 예상치 못한 오류 발생 : {}", e.getMessage());

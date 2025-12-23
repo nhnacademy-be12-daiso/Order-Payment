@@ -5,7 +5,7 @@ import lombok.Getter;
 
 @Getter
 @AllArgsConstructor
-public enum RabbitMqAddress {
+public enum SagaTopic {
 
     // 성공 트랜잭션
     // order -> book
@@ -21,13 +21,13 @@ public enum RabbitMqAddress {
 
     // 보상 트랜잭션 시
     // book -> order
-    BOOK_COMPENSATION("team3.saga.book.exchange", "team3.saga.user.compensate.queue", "book.compensate"),
+    BOOK_COMPENSATION("team3.saga.book.exchange", "team3.saga.order.compensate.queue", "book.compensate"),
     // user -> book
-    USER_COMPENSATION("team3.saga.user.exchange", "team3.saga.coupon.compensate.queue", "point.compensate"),
+    USER_COMPENSATION("team3.saga.user.exchange", "team3.saga.book.compensate.queue", "point.compensate"),
     // coupon -> user
-    COUPON_COMPENSATION("team3.saga.coupon.exchange", "team3.saga.payment.compensate.queue", "coupon.compensate"),
+    COUPON_COMPENSATION("team3.saga.coupon.exchange", "team3.saga.user.compensate.queue", "coupon.compensate"),
     // payment -> coupon
-    PAYMENT_COMPENSATION("team3.saga.payment.exchange", "team3.saga.order.compensate.queue", "payment.compensate"),
+    PAYMENT_COMPENSATION("team3.saga.payment.exchange", "team3.saga.coupon.compensate.queue", "payment.compensate"),
 
     // OrderAPI로 우선 알림
     USER_NOTIFICATION("team3.saga.user.exchange", "team3.saga.order.notice.queue", "point.notice"),
@@ -41,4 +41,18 @@ public enum RabbitMqAddress {
     private final String queue;
     private final String routingKey;
 
+    private static boolean isDevMode = false;
+
+    public static void setMode(boolean isDev) {
+        isDevMode = isDev;
+    }
+
+    public String getQueue() {
+        return isDevMode ?  queue + ".dev" : queue;
+    }
+
+    public String getRoutingKey() {
+        return isDevMode ? routingKey + ".dev" : routingKey;
+    }
 }
+
