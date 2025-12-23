@@ -17,10 +17,13 @@ import java.math.BigDecimal;
 public record InternalBookInfoResponse(
         long bookId,
         String title,
-        Long Price,
+        Long price,
         Integer stock,
+        Status staus,
         BigDecimal discountPercentage,
         Long discountPrice,
-        String coverImage
+        String coverImage,
+        Integer volumeNo,
+        boolean isPackaging
 ) {
 }

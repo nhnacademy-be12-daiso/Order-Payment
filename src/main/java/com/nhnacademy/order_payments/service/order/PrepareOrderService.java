@@ -93,6 +93,20 @@ public class PrepareOrderService {
 
             // 포장지 정보
             packagingList = getPackagings();
+            // 받아온 도서 정보에 수량과 합계 주입
+            List<InternalBookInfoResponse> updateBookInfos = booksInfoResponse.orderBookInfoRespDTOList().stream()
+                    .map(book -> new InternalBookInfoResponse(
+                            book.bookId(),
+                            book.title(),
+                            book.price(),
+                            book.stock(),
+                            book.staus(),
+                            book.discountPercentage(),
+                            book.discountPrice(),
+                            book.coverImage(),
+                            book.volumeNo(),
+                            book.isPackaging()
+                    )).toList();
 
             // 배송비 정책 정보
             deliveryPolicyResponse = getDeliveryPolicy();
@@ -175,17 +189,20 @@ public class PrepareOrderService {
         // 도서 정보
         booksInfoResponse = bookApiClient.getBookInfos(new BookApiRequest(bookIdList));
 
-        // 받아온 도서 정보에 수량과 합계 주입
-        List<InternalBookInfoResponse> updateBookInfos = booksInfoResponse.orderBookInfoRespDTOList().stream()
-                .map(book -> new InternalBookInfoResponse(
-                        book.bookId(),
-                        book.title(),
-                        book.Price(),
-                        book.stock(),
-                        book.discountPercentage(),
-                        book.discountPrice(),
-                        book.coverImage()
-                )).toList();
+            // 받아온 도서 정보에 수량과 합계 주입
+            List<InternalBookInfoResponse> updateBookInfos = booksInfoResponse.orderBookInfoRespDTOList().stream()
+                    .map(book -> new InternalBookInfoResponse(
+                            book.bookId(),
+                            book.title(),
+                            book.price(),
+                            book.stock(),
+                            book.staus(),
+                            book.discountPercentage(),
+                            book.discountPrice(),
+                            book.coverImage(),
+                            book.volumeNo(),
+                            book.isPackaging()
+                    )).toList();
 
         // 값을 채운 리스트로 다시 덮어씌움
         return new InternalBooksInfoResponse(updateBookInfos);
