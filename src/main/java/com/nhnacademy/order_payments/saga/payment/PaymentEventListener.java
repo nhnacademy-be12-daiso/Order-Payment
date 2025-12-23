@@ -38,8 +38,7 @@ public class PaymentEventListener {
                     durable = "true"
             ),
             exchange = @Exchange(
-                    value = "#{@Saga.COUPON_SUCCESS.getExchange()}",
-                    type = "topic"
+                    value = "#{@Saga.COUPON_SUCCESS.getExchange()}"
             ),
             key = "#{@Saga.COUPON_SUCCESS.getRoutingKey()}"
     ))
