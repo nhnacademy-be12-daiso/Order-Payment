@@ -24,6 +24,7 @@ public class OrderOutboxRelayProcessor {
     public void processRelay(Long outboxId) {
 
         OrderOutbox outbox = orderOutboxRepository.findById(outboxId).orElseThrow();
+        // ---> 방금 저장한 outbox 꺼내옴
 
         try {
             orderEventPublisher.publishOrderOutboxMessage(

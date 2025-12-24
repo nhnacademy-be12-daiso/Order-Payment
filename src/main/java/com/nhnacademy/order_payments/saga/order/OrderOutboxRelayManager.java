@@ -1,5 +1,6 @@
 package com.nhnacademy.order_payments.saga.order;
 
+import com.nhnacademy.order_payments.saga.event.OrderOutboxCommittedEvent;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.event.TransactionPhase;

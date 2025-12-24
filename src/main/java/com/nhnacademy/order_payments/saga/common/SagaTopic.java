@@ -1,58 +1,35 @@
 package com.nhnacademy.order_payments.saga.common;
 
-import lombok.AllArgsConstructor;
 import lombok.Getter;
 
 @Getter
-@AllArgsConstructor
-public enum SagaTopic {
+public class SagaTopic {
 
-    // 성공 트랜잭션
-    // order -> book
-    ORDER_SUCCESS("team3.saga.order.exchange", "team3.saga.book.queue", "order.confirmed.v2"),
-    // book -> user
-    BOOK_SUCCESS("team3.saga.book.exchange", "team3.saga.user.queue", "inventory.deducted"),
-    // user -> coupon
-    USER_SUCCESS("team3.saga.user.exchange", "team3.saga.coupon.queue", "point.deducted"),
-    // coupon -> payment
-    COUPON_SUCCESS("team3.saga.coupon.exchange", "team3.saga.payment.queue", "coupon.used"),
-    // payment -> order
-    PAYMENT_SUCCESS("team3.saga.payment.exchange", "team3.saga.order.queue", "payment.success"),
+    // exchange는 하나로 돌려씀
+    public static final String ORDER_EXCHANGE = "team3.saga.exchange";
 
-    // 보상 트랜잭션 시
-    // book -> order
-    BOOK_COMPENSATION("team3.saga.book.exchange", "team3.saga.order.compensate.queue", "book.compensate"),
-    // user -> book
-    USER_COMPENSATION("team3.saga.user.exchange", "team3.saga.book.compensate.queue", "point.compensate"),
-    // coupon -> user
-    COUPON_COMPENSATION("team3.saga.coupon.exchange", "team3.saga.user.compensate.queue", "coupon.compensate"),
-    // payment -> coupon
-    PAYMENT_COMPENSATION("team3.saga.payment.exchange", "team3.saga.coupon.compensate.queue", "payment.compensate"),
+    public static final String BOOK_QUEUE = "team3.saga.book.checkout";
+    public static final String USER_QUEUE = "team3.saga.user.point-deduct";
+    public static final String COUPON_QUEUE = "team3.saga.coupon.use";
+    public static final String ORDER_QUEUE = "team3.saga.order.reply"; // 응답용 큐
 
-    // OrderAPI로 우선 알림
-    USER_NOTIFICATION("team3.saga.user.exchange", "team3.saga.order.notice.queue", "point.notice"),
-    // coupon -> user
-    COUPON_NOTIFICATION("team3.saga.coupon.exchange", "team3.saga.order.notice.queue", "coupon.notice"),
-    // payment -> coupon
-    PAYMENT_NOTIFICATION("team3.saga.payment.exchange", "team3.saga.order.notice.queue", "payment.notice");
+    public static final String BOOK_RK = "command.book.checkout";
+    public static final String USER_RK = "command.user.point-deduct";
+    public static final String COUPON_RK = "command.coupon.use";
+
+    public static final String REPLY_RK = "reply.order";
 
 
-    private final String exchange;
-    private final String queue;
-    private final String routingKey;
+    // ==== 보상 관련 ====
 
-    private static boolean isDevMode = false;
+    public static final String BOOK_COMPENSATION_RK = "compensate.book";
+    public static final String USER_COMPENSATION_RK = "compensate.user";
+    public static final String COUPON_COMPENSATION_RK = "compensate.coupon";
+    public static final String REPLY_COMPENSATION_RK = "reply.compensate";
 
-    public static void setMode(boolean isDev) {
-        isDevMode = isDev;
-    }
+    public static final String BOOK_COMPENSATION_QUEUE = "team3.saga.book.rollback";
+    public static final String USER_COMPENSATION_QUEUE = "team3.saga.user.rollback";
+    public static final String COUPON_COMPENSATION_QUEUE = "team3.saga.coupon.rollback";
+    public static final String ORDER_COMPENSATION_QUEUE = "team3.saga.rollback.reply";
 
-    public String getQueue() {
-        return isDevMode ?  queue + ".dev" : queue;
-    }
-
-    public String getRoutingKey() {
-        return isDevMode ? routingKey + ".dev" : routingKey;
-    }
 }
-

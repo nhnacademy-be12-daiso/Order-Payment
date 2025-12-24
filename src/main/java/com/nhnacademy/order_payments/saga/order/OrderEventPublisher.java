@@ -1,13 +1,11 @@
 package com.nhnacademy.order_payments.saga.order;
 
 import com.nhnacademy.order_payments.exception.ExternalServiceException;
-import com.nhnacademy.order_payments.saga.common.OrderConfirmedEvent;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.amqp.core.AmqpTemplate;
 import org.springframework.amqp.core.Message;
 import org.springframework.amqp.core.MessageProperties;
-import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
 
 import java.nio.charset.StandardCharsets;
@@ -16,6 +14,10 @@ import java.nio.charset.StandardCharsets;
 @RequiredArgsConstructor
 @Service
 public class OrderEventPublisher {
+
+    /**
+     * 실제 RabbitMQ로 메세지를 전송하는 로직
+     */
 
     // --> RabbitMQ 통신을 위한 컴포넌트 주입
     private final AmqpTemplate rabbitTemplate;
@@ -32,12 +34,11 @@ public class OrderEventPublisher {
 
             rabbitTemplate.send(topic, routingKey, message); // 직렬화 해서 생으로 보냄
 
-
-            log.info("[Order API] ===== Saga 시작 =====");
-            log.info("[Order API] Saga 시작 이벤트 발행 완료 : OrderAPI -> User API ");
+            log.info("[Orchestrator] ===== 메세지 발송됨 =====");
+            log.info("[Orchestrator] Routing Key : {}", routingKey);
 
         } catch(Exception e) {
-            log.warn("[Order API] RabbitMQ 발행 실패 : {}", e.getMessage());
+            log.warn("[Orchestrator] RabbitMQ 발행 실패 : {}", e.getMessage());
             throw new ExternalServiceException("rabbitMQ 메세지 발행 실패");
         }
     }

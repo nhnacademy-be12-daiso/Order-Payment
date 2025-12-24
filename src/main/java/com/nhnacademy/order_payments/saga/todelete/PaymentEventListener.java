@@ -1,4 +1,4 @@
-package com.nhnacademy.order_payments.saga.payment;
+package com.nhnacademy.order_payments.saga.todelete;
 
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
@@ -8,16 +8,12 @@ import com.nhnacademy.order_payments.exception.FailedSerializationException;
 import com.nhnacademy.order_payments.exception.PaymentFailedException;
 import com.nhnacademy.order_payments.repository.PaymentDeduplicationRepository;
 import com.nhnacademy.order_payments.repository.PaymentOutboxRepository;
-import com.nhnacademy.order_payments.saga.common.OrderCompensateEvent;
-import com.nhnacademy.order_payments.saga.common.OrderConfirmedEvent;
-import com.nhnacademy.order_payments.saga.common.SagaTopic;
+import com.nhnacademy.order_payments.saga.event.OrderCompensateEvent;
+import com.nhnacademy.order_payments.saga.event.OrderConfirmedEvent;
 import jakarta.transaction.Transactional;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.amqp.AmqpRejectAndDontRequeueException;
-import org.springframework.amqp.rabbit.annotation.Exchange;
-import org.springframework.amqp.rabbit.annotation.Queue;
-import org.springframework.amqp.rabbit.annotation.QueueBinding;
 import org.springframework.amqp.rabbit.annotation.RabbitListener;
 import org.springframework.context.ApplicationEventPublisher;
 import org.springframework.stereotype.Service;
@@ -31,17 +27,17 @@ public class PaymentEventListener {
     private final ApplicationEventPublisher publisher;
     private final ObjectMapper objectMapper;
     private final CompensationOutboxService compensationOutboxService;
-
-    @RabbitListener(bindings = @QueueBinding(
-            value = @Queue(
-                    value = "#{@Saga.COUPON_SUCCESS.getQueue()}",
-                    durable = "true"
-            ),
-            exchange = @Exchange(
-                    value = "#{@Saga.COUPON_SUCCESS.getExchange()}"
-            ),
-            key = "#{@Saga.COUPON_SUCCESS.getRoutingKey()}"
-    ))
+//
+//    @RabbitListener(bindings = @QueueBinding(
+//            value = @Queue(
+//                    value = "#{@Saga.COUPON_SUCCESS.getQueue()}",
+//                    durable = "true"
+//            ),
+//            exchange = @Exchange(
+//                    value = "#{@Saga.COUPON_SUCCESS.getExchange()}"
+//            ),
+//            key = "#{@Saga.COUPON_SUCCESS.getRoutingKey()}"
+//    ))
     @Transactional
     public void handleOrderConfirmedEvent(OrderConfirmedEvent event) {
 
@@ -66,8 +62,8 @@ public class PaymentEventListener {
                 PaymentOutbox outbox = new PaymentOutbox(
                         event.getOrderId(),
                         "PAYMENT",
-                        SagaTopic.PAYMENT_SUCCESS.getExchange(),
-                        SagaTopic.PAYMENT_SUCCESS.getRoutingKey(),
+                        "",
+                        "",
                         objectMapper.writeValueAsString(event)
                 );
                 paymentOutboxRepository.save(outbox);
@@ -90,14 +86,14 @@ public class PaymentEventListener {
             compensationOutboxService.saveCompensationEvent(
                     event.getOrderId(),
                     orderCompensateEvent,
-                    SagaTopic.PAYMENT_COMPENSATION
+                    SagaTopic2.PAYMENT_COMPENSATION
             );
 
             // Order로 직접 쏴줌
             compensationOutboxService.saveCompensationEvent(
                     event.getOrderId(),
                     orderCompensateEvent,
-                    SagaTopic.PAYMENT_NOTIFICATION
+                    SagaTopic2.PAYMENT_NOTIFICATION
             );
 
             throw e;  // Payment 서비스 로직 롤백됨 (보상 이벤트는 남아있음!)

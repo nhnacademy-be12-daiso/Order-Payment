@@ -1,4 +1,4 @@
-package com.nhnacademy.order_payments.saga.payment;
+package com.nhnacademy.order_payments.saga.todelete;
 
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
@@ -7,7 +7,6 @@ import com.nhnacademy.order_payments.entity.PaymentOutbox;
 import com.nhnacademy.order_payments.exception.FailedSerializationException;
 import com.nhnacademy.order_payments.repository.PaymentDeduplicationRepository;
 import com.nhnacademy.order_payments.repository.PaymentOutboxRepository;
-import com.nhnacademy.order_payments.saga.common.SagaTopic;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.context.ApplicationEventPublisher;
@@ -26,7 +25,7 @@ public class CompensationOutboxService {
 
     // 기존 트랜잭션과 상관 없는 새 트랜잭션을 시작함
     @Transactional(propagation = Propagation.REQUIRES_NEW)
-    public void saveCompensationEvent(Long orderId, Object event, SagaTopic topic) {
+    public void saveCompensationEvent(Long orderId, Object event, SagaTopic2 topic) {
 
         String dedupKey = orderId + "_PAYMENT_FAIL";
         if(paymentDeduplicationRepository.existsByMessageId(dedupKey)) {

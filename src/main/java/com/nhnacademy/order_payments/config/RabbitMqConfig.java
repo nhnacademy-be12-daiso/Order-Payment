@@ -1,6 +1,7 @@
 package com.nhnacademy.order_payments.config;
 
 import com.nhnacademy.order_payments.saga.common.SagaTopic;
+import com.nhnacademy.order_payments.saga.todelete.SagaTopic2;
 import jakarta.annotation.PostConstruct;
 import org.springframework.amqp.core.*;
 import org.springframework.amqp.rabbit.config.SimpleRabbitListenerContainerFactory;
@@ -25,18 +26,53 @@ import java.util.stream.Collectors;
 @Configuration
 public class RabbitMqConfig {
 
+
+    // === Orchestration 방식 Config ===
+
+    @Bean
+    public TopicExchange sagaExchange() {
+        return new TopicExchange(SagaTopic.ORDER_EXCHANGE);
+    }
+
+    // order가 답장 받을 큐
+    @Bean
+    public Queue orderReplyQueue() {
+        return new Queue(SagaTopic.ORDER_QUEUE);
+    }
+
+    @Bean
+    public Queue orderRollbackReplyQueue() {
+        return new Queue(SagaTopic.ORDER_COMPENSATION_QUEUE);
+    }
+
+    @Bean
+    public Binding orderReplyBinding(Queue orderReplyQueue, TopicExchange sagaExchange) {
+        return BindingBuilder.bind(orderReplyQueue)
+                .to(sagaExchange)
+                .with(SagaTopic.REPLY_RK);
+    }
+
+
+    @Bean
+    public Binding orderRollbackReplyBinding(Queue orderRollbackReplyQueue, TopicExchange sagaExchange) {
+        return BindingBuilder.bind(orderRollbackReplyQueue)
+                .to(sagaExchange)
+                .with(SagaTopic.REPLY_COMPENSATION_RK);
+    }
+
+    // =============================
     @Value("${spring.profiles.active}")
     private String activeProfile;
 
     @PostConstruct
     public void init() {
         boolean isDev = "dev".equalsIgnoreCase(activeProfile);
-        SagaTopic.setMode(isDev);
+        SagaTopic2.setMode(isDev);
     }
 
     @Bean("Saga")
-    public Map<String, SagaTopic> sagaTopics() {
-        return Arrays.stream(SagaTopic.values())
+    public Map<String, SagaTopic2> sagaTopics() {
+        return Arrays.stream(SagaTopic2.values())
                 .collect(Collectors.toMap(Enum::name, topic -> topic));
     }
 

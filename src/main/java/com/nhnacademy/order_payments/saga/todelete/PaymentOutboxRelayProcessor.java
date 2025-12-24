@@ -1,4 +1,4 @@
-package com.nhnacademy.order_payments.saga.payment;
+package com.nhnacademy.order_payments.saga.todelete;
 
 import com.nhnacademy.order_payments.entity.PaymentOutbox;
 import com.nhnacademy.order_payments.exception.ExternalServiceException;
