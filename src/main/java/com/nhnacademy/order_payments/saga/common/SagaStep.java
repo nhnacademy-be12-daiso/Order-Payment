@@ -18,7 +18,7 @@ import lombok.Getter;
 
 public enum SagaStep {
 
-    BOOK_CHECKOUT(1, SagaTopic.BOOK_RK, SagaTopic.BOOK_COMPENSATION_RK) {
+    BOOK_CHECKOUT(1, SagaTopic.BOOK_RK, SagaTopic.BOOK_COMPENSATION_RK, "BOOK") {
         @Override
         public void updateStatus(SagaInstance instance, ServiceStatus status) {
             instance.setBookStatus(status); // 자기가 알아서 Book 필드를 수정
@@ -33,10 +33,10 @@ public enum SagaStep {
         }
     },
 
-    USER_POINTS(2, SagaTopic.USER_RK, SagaTopic.USER_COMPENSATION_RK) {
+    USER_POINTS(2, SagaTopic.USER_RK, SagaTopic.USER_COMPENSATION_RK, "USER") {
         @Override
         public void updateStatus(SagaInstance instance, ServiceStatus status) {
-            instance.setBookStatus(status);
+            instance.setUserStatus(status);
         }
         @Override
         public void execute(SagaOrchestrator orchestrator, OrderConfirmedEvent event) {
@@ -49,10 +49,10 @@ public enum SagaStep {
     },
 
 //    COUPON_USE(3) {
-    COUPON_USE(3, SagaTopic.COUPON_RK, SagaTopic.COUPON_COMPENSATION_RK) {
+    COUPON_USE(3, SagaTopic.COUPON_RK, SagaTopic.COUPON_COMPENSATION_RK, "COUPON") {
         @Override
         public void updateStatus(SagaInstance instance, ServiceStatus status) {
-            instance.setBookStatus(status);
+            instance.setCouponStatus(status);
         }
         @Override
         public void execute(SagaOrchestrator orchestrator, OrderConfirmedEvent event) {
@@ -64,7 +64,7 @@ public enum SagaStep {
         }
     },
 
-    FINISHED(4, null, null) {
+    FINISHED(4, null, null, "FINISHED") {
         @Override
         public void updateStatus(SagaInstance instance, ServiceStatus status) {
             instance.setBookStatus(status); // 자기가 알아서 Book 필드를 수정
@@ -82,18 +82,31 @@ public enum SagaStep {
     public abstract ServiceStatus getStatus(SagaInstance instance);
 
     @Getter
+    private final String serviceIdentifier;
+    @Getter
     private final int order; // 순서를 정의하는 듯?
     @Getter
     private final String key; // 성공 시 라우팅 키
     @Getter
     private final String rollbackKey; // 실패 시 라우팅 키
 
-    SagaStep(int order, String key, String rollbackKey) {
+    SagaStep(int order, String key, String rollbackKey, String serviceIdentifier) {
         this.order = order;
         this.key = key;
         this.rollbackKey = rollbackKey;
+        this.serviceIdentifier = serviceIdentifier;
     }
 
+    // 서비스 이름으로 찾기
+    public static SagaStep fromServiceName(String serviceName) {
+        for (SagaStep step : values()) {
+            if (step.getServiceIdentifier().equalsIgnoreCase(serviceName)) {
+                return step;
+            }
+        }
+        // TODO 커스텀 예외 처리 해주기
+        throw new IllegalArgumentException("알 수 없는 서비스 응답 : " + serviceName);
+    }
 
     public SagaStep next() {
         SagaStep[] steps = SagaStep.values();

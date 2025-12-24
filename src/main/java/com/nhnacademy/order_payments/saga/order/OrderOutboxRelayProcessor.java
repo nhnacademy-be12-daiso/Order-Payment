@@ -32,7 +32,7 @@ public class OrderOutboxRelayProcessor {
                     outbox.getRoutingKey(),
                     outbox.getPayload()
             );
-            log.info("[Order API] Order ID : {}", outbox.getAggregateId());
+            log.info("[Orchestrator] Order ID : {}", outbox.getAggregateId());
             outbox.markAsPublished();
             orderOutboxRepository.save(outbox);
 
@@ -45,10 +45,9 @@ public class OrderOutboxRelayProcessor {
             } else {
                 outbox.markAsFailed();
                 orderOutboxRepository.save(outbox); // DB에 업데이트
-                log.error("[Order API] Outbox 메세지 최종 발행 실패 OutboxID : {}", outboxId);
+                log.error("[Orchestrator] Outbox 메세지 최종 발행 실패 OutboxID : {}", outboxId);
             }
             throw e; // 예외 던져서 롤백 유도
         }
-
     }
 }

@@ -33,7 +33,7 @@ public class SagaInstance {
     private ServiceStatus couponStatus = ServiceStatus.PENDING;
 
     @Setter
-    private SagaStep currentStep;
+    private SagaStep currentStep = SagaStep.BOOK_CHECKOUT;
     // converter 써서 정수로 입력해도 알잘딱 저장해줌
 
     @Column(columnDefinition = "TEXT")

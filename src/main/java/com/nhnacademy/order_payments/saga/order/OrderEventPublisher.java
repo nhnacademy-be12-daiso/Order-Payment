@@ -28,7 +28,7 @@ public class OrderEventPublisher {
             byte[] body = payload.getBytes(StandardCharsets.UTF_8);
 
             MessageProperties properties = new MessageProperties();
-            properties.setContentType(MessageProperties.CONTENT_TYPE_JSON); // 👈 핵심 수정
+            properties.setContentType(MessageProperties.CONTENT_TYPE_JSON);
             properties.setContentEncoding("UTF-8");
             Message message = new Message(body);
 

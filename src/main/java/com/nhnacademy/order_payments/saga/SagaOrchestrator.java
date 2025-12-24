@@ -112,6 +112,8 @@ public class SagaOrchestrator {
 
         instance.setSagaStatus(SagaStatus.COMPENSATING); // 보상 시작 상태
 
+
+
         /**
          *  보상 트랜잭션 로직
          *  1. 모든 단계 순회
@@ -119,6 +121,22 @@ public class SagaOrchestrator {
          *  3. 상태 변경하고
          *  4. 모든 서비스에 동시에 쏨 (send() 사용)
          */
+        // 1. 보상해야 할 단계 필터링
+        var stepsToRollback = Arrays.stream(SagaStep.values())
+                .filter(step -> step.getOrder() < instance.getCurrentStep().getOrder())
+                .filter(step -> step != SagaStep.FINISHED)
+                .toList();
+
+        // ⚠️ 2. 만약 보상할 단계가 없다면? (첫 단계에서 실패한 경우)
+        if (stepsToRollback.isEmpty()) {
+            log.info("[Saga] 보상할 내부 서비스가 없습니다. 바로 결제 취소 로직으로 넘어갑니다.");
+            return;
+        }
+        stepsToRollback.forEach(step -> {
+            step.updateStatus(instance, ServiceStatus.COMPENSATING);
+            this.send(step.getRollbackKey(), rollbackEvent);
+        });
+        /*
         Arrays.stream(SagaStep.values())
                 // 2. 현재 실패한 단계보다 '작은' 순서(이미 성공했을 가능성이 있는 단계)만 필터링
                 .filter(step -> step.getOrder() < instance.getCurrentStep().getOrder())
@@ -130,6 +148,8 @@ public class SagaOrchestrator {
                     this.send(step.getRollbackKey(), rollbackEvent);
                     // ----> 각각 메세지를 쏴줌
                 });
+
+         */
     }
 
     @Transactional
@@ -143,7 +163,7 @@ public class SagaOrchestrator {
                 .orElseThrow(() -> new RuntimeException("여기에 커스텀 예외 꽂아넣어야함 !!!!!"));
 
         // 방금 답장 보낸 서비스 상태 변경
-        SagaStep responseStep = SagaStep.valueOf(reply.getServiceName());
+        SagaStep responseStep = SagaStep.fromServiceName(reply.getServiceName());
         responseStep.updateStatus(instance, ServiceStatus.COMPENSATED);
 
         // 끝났는지 검사

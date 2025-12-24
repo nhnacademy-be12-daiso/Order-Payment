@@ -29,7 +29,9 @@ public class OrderReplyListener {
     @RabbitListener(queues = SagaTopic.ORDER_QUEUE)
     public void onReply(SagaReply reply) {
 
-        if(deduplicationRepository.existsByMessageId(String.valueOf(reply.getOrderId()))) { // 이미 존재한다면?
+        String dedupeKey = reply.getOrderId() + "_" + reply.getServiceName();
+
+        if(deduplicationRepository.existsByMessageId(dedupeKey)) { // 이미 존재한다면?
             log.info("[Saga] 중복된 응답 무시 - Order ID : {}, Service : {}", reply.getOrderId(), reply.getServiceName());
             return;
         }
@@ -38,7 +40,7 @@ public class OrderReplyListener {
                 reply.getOrderId(), reply.getServiceName(), reply.isSuccess());
 
         // 멱등성 보장
-        OrderDeduplicationLog logEntry = new OrderDeduplicationLog(reply.getOrderId().toString());
+        OrderDeduplicationLog logEntry = new OrderDeduplicationLog(dedupeKey);
         deduplicationRepository.save(logEntry);
 
         sagaOrchestrator.handleReply(reply);
