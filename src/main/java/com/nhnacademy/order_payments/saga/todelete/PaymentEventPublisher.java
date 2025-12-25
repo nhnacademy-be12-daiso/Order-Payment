@@ -1,8 +1,6 @@
-package com.nhnacademy.order_payments.saga.payment;
+package com.nhnacademy.order_payments.saga.todelete;
 
 import com.nhnacademy.order_payments.exception.ExternalServiceException;
-import com.nhnacademy.order_payments.saga.common.OrderConfirmedEvent;
-import jakarta.transaction.Transactional;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.amqp.core.AmqpTemplate;
@@ -10,8 +8,6 @@ import org.springframework.amqp.core.Message;
 import org.springframework.amqp.core.MessageProperties;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
-import org.springframework.transaction.event.TransactionPhase;
-import org.springframework.transaction.event.TransactionalEventListener;
 
 import java.nio.charset.StandardCharsets;
 

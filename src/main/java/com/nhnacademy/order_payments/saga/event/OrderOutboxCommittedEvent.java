@@ -1,4 +1,4 @@
-package com.nhnacademy.order_payments.saga.order;
+package com.nhnacademy.order_payments.saga.event;
 
 import org.springframework.context.ApplicationEvent;
 
