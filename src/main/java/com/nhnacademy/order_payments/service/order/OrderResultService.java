@@ -95,12 +95,12 @@ public class OrderResultService {
                         .toList());
 
         Map<Long, BookReviewResponse> bookInfoMap = bookApiClient.getBookReviewList(reviewRequest).stream()
-                .collect(Collectors.toMap(BookReviewResponse::orderDetailId, b -> b));
+                .collect(Collectors.toMap(br -> br.book().bookId(), b -> b));
 
         // 주문 상세 DTO 리스트 생성
         List<OrderDetailResponse> detailResponses = orderDetailList.stream()
                 .map(od -> {
-                    BookReviewResponse bookInfo = bookInfoMap.get(od.getId());
+                    BookReviewResponse bookInfo = bookInfoMap.get(od.getBookId());
 
                     String title = "정보 없음";
                     String imgUrl = null;
@@ -109,7 +109,7 @@ public class OrderResultService {
                     if (bookInfo != null && bookInfo.book() != null) {
                         title = bookInfo.book().title();
 
-                        if (!bookInfo.book().imageList().isEmpty()) {
+                        if (bookInfo.book().imageList() != null && !bookInfo.book().imageList().isEmpty()) {
                             imgUrl = bookInfo.book().imageList().getFirst().path();
                         }
 

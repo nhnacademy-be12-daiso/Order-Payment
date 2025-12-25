@@ -1,5 +1,6 @@
-package com.nhnacademy.order_payments.saga.common;
+package com.nhnacademy.order_payments.saga.event;
 
+import com.nhnacademy.order_payments.saga.common.SagaEvent;
 import lombok.AllArgsConstructor;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
@@ -10,7 +11,7 @@ import java.util.Map;
 @Getter
 @NoArgsConstructor
 @AllArgsConstructor
-public class OrderCompensateEvent {
+public class OrderCompensateEvent implements SagaEvent {
 
     private Long orderId;
     private Long userId;

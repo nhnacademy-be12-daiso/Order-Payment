@@ -3,7 +3,7 @@ package com.nhnacademy.order_payments.saga.order;
 import com.nhnacademy.order_payments.dto.order.BookSummaryDto;
 import com.nhnacademy.order_payments.dto.order.OrderSummaryDto;
 import com.nhnacademy.order_payments.entity.Order;
-import com.nhnacademy.order_payments.saga.common.OrderConfirmedEvent;
+import com.nhnacademy.order_payments.saga.event.OrderConfirmedEvent;
 import org.springframework.stereotype.Component;
 
 import java.util.List;

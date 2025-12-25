@@ -1,8 +1,8 @@
-package com.nhnacademy.order_payments.saga.order;
+package com.nhnacademy.order_payments.saga.todelete;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.nhnacademy.order_payments.repository.OrderDeduplicationRepository;
-import com.nhnacademy.order_payments.saga.common.OrderConfirmedEvent;
+import com.nhnacademy.order_payments.saga.event.OrderConfirmedEvent;
 import jakarta.transaction.Transactional;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;

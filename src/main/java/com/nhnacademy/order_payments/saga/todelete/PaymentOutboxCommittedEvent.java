@@ -1,4 +1,4 @@
-package com.nhnacademy.order_payments.saga.payment;
+package com.nhnacademy.order_payments.saga.todelete;
 
 import lombok.Getter;
 import org.springframework.context.ApplicationEvent;

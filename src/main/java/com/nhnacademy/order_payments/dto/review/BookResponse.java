@@ -16,7 +16,7 @@ import com.nhnacademy.order_payments.dto.response.ImageResponse;
 import java.util.List;
 
 public record BookResponse(
-        Long bookId,
+        long bookId,
         String title,
         List<ImageResponse> imageList
 ) {
