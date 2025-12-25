@@ -169,7 +169,7 @@ public class SagaOrchestrator {
         // 끝났는지 검사
         if(this.isAllCompensated(instance)) {
             instance.setSagaStatus(SagaStatus.COMPENSATED);
-            log.warn("[Saga] Saga 보상 로직 완료됨! Order ID : {}", instance.getSagaId());
+            log.info("[Saga] Saga 보상 로직 완료됨! Order ID : {}", instance.getSagaId());
         }
         // 안끝났으면 그냥 이대로 메서드 종료하고 기다리면 되나?
         // TODO 최종적인 결제 실패 응답 로직
@@ -178,7 +178,7 @@ public class SagaOrchestrator {
 
     // saga 완료
     public void completeSaga(SagaInstance instance) {
-        log.warn("[Saga] Saga 완료! 주문 로직 완료됨 Order ID : {}", instance.getSagaId());
+        log.info("[Saga] Saga 완료! 주문 로직 완료됨 Order ID : {}", instance.getSagaId());
         instance.setSagaStatus(SagaStatus.COMPLETED);
     }
 
