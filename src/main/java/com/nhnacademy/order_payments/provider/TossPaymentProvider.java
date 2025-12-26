@@ -55,15 +55,22 @@ public class TossPaymentProvider implements PaymentProvider {
             throw new BusinessException("TOSS_NO_RESPONSE", "토스 API 응답이 비어있습니다. (URL이나 키 설정을 확인하세요)");
         }
 
+        // 간편결제일때 KAKAOPAY/NAVERPAY/TOSSPAY 값이 들어옴
+        String methodDetail = null;
+        if (res.getEasyPay() != null && res.getEasyPay().getProvider() != null) {
+            methodDetail = res.getEasyPay().getProvider();
+        }
+
         // 응답
-        log.info("[TOSS CONFIRM RESPONSE] method={}, approvedAt={}",
-                res.getMethod(), res.getApprovedAt());
+        log.info("[TOSS CONFIRM RESPONSE] method={}, approvedAt={}, easyPayProvider={}",
+                res.getMethod(), res.getApprovedAt(), methodDetail);
 
         // 파사드에 넘겨줄 DTO 변환
         return new ApproveResult(
                 "TOSS",
                 res.getMethod(),
-                res.getApprovedAt()
+                res.getApprovedAt(),
+                methodDetail
         );
     }
 
@@ -111,6 +118,14 @@ public class TossPaymentProvider implements PaymentProvider {
     public static class TossConfirmResponse {
         private String method;
         private String approvedAt;
+        private EasyPay easyPay;
+    }
+
+    @Getter
+    @NoArgsConstructor
+    @AllArgsConstructor
+    public static class EasyPay {
+        private String provider; // "TOSSPAY" / "KAKAOPAY" / "NAVERPAY"
     }
 
     @Getter

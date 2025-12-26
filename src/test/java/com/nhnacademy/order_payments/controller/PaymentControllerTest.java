@@ -27,6 +27,7 @@ import static org.mockito.Mockito.verify;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.*;
 
+// 컨트롤러 연결 테스트
 @WebMvcTest(PaymentController.class)
 @AutoConfigureMockMvc(addFilters = false)   // ✅ 시큐리티 필터 제거
 class PaymentControllerTest {
