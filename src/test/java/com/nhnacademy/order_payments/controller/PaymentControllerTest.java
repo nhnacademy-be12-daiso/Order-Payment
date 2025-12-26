@@ -14,6 +14,7 @@ import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.autoconfigure.web.servlet.AutoConfigureMockMvc;   // 테스트에서 시큐리티 필터 끄기
 import org.springframework.boot.test.autoconfigure.web.servlet.WebMvcTest;
+import org.springframework.data.jpa.mapping.JpaMetamodelMappingContext;
 import org.springframework.http.MediaType;
 import org.springframework.test.context.bean.override.mockito.MockitoBean;
 import org.springframework.test.web.servlet.MockMvc;
@@ -27,8 +28,9 @@ import static org.mockito.Mockito.verify;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.*;
 
+// 컨트롤러 연결 테스트
 @WebMvcTest(PaymentController.class)
-@AutoConfigureMockMvc(addFilters = false)   // ✅ 시큐리티 필터 제거
+@AutoConfigureMockMvc(addFilters = false)
 class PaymentControllerTest {
 
     @Autowired
@@ -36,6 +38,9 @@ class PaymentControllerTest {
 
     @MockitoBean
     PaymentFacade paymentFacade;
+
+    @MockitoBean(name = "jpaMappingContext")
+    JpaMetamodelMappingContext jpaMappingContext;
 
     @Test
     @DisplayName("POST /api/payments/confirm - 정상 요청 시 200 OK + 응답 JSON")

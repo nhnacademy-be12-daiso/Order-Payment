@@ -32,6 +32,7 @@ import static org.junit.jupiter.api.Assertions.*;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.*;
 
+// 결제 로직 테스트 코드
 @ExtendWith(MockitoExtension.class)
 public class PaymentFacadeTest {
 
@@ -82,7 +83,8 @@ public class PaymentFacadeTest {
                 new PaymentProvider.ApproveResult(
                         "TOSS",
                         "CARD",
-                        "2025-12-01T12:00:00+09:00"
+                        "2025-12-01T12:00:00+09:00",
+                        "TOSSPAY"
                 );
         when(paymentProvider.approve(any(PaymentProvider.ApproveCommand.class)))
                 .thenReturn(approveResult);

@@ -7,7 +7,7 @@ import com.nhnacademy.order_payments.dto.request.RefundRequest;
 import com.nhnacademy.order_payments.dto.response.CancelResponse;
 import com.nhnacademy.order_payments.dto.response.ConfirmResponse;
 import com.nhnacademy.order_payments.dto.response.PaymentHistoryResponse;
-import com.nhnacademy.order_payments.dto.response.RefundResponse;   // ✅ 추가
+import com.nhnacademy.order_payments.dto.response.RefundResponse;
 import com.nhnacademy.order_payments.entity.Order;
 import com.nhnacademy.order_payments.entity.Payment;
 import com.nhnacademy.order_payments.entity.PaymentHistory;
@@ -71,11 +71,21 @@ public class PaymentFacade {
                     order.getOrderNumber(), existing.getPaymentKey(),
                     existing.getPaymentMethod(), existing.getApprovedAt());
 
+            String displayMethod = "-";
+            if (existing.getPaymentMethod() != null) {
+                boolean hasDetail = existing.getCardIssuerCode() != null && !existing.getCardIssuerCode().isBlank();
+                if (existing.getPaymentMethod() == PaymentMethod.EASY_PAY && hasDetail) {
+                    displayMethod = existing.getCardIssuerCode(); // 예: "TOSSPAY"
+                } else {
+                    displayMethod = existing.getPaymentMethod().name();
+                }
+            }
+
             return new ConfirmResponse(
                     String.valueOf(order.getOrderNumber()),
                     "PAID",
                     existing.getApprovedAt(),
-                    existing.getPaymentMethod().name()
+                    displayMethod
             );
         }
 
@@ -88,6 +98,16 @@ public class PaymentFacade {
 
         // Toss method → enum 매핑
         PaymentMethod payMethod = PaymentMethod.fromTossMethod(result.method());
+
+        // [MOD] 화면/응답에 보여줄 결제수단 문자열 (간편결제면 provider 우선)
+        String displayMethod;
+        if (payMethod == PaymentMethod.EASY_PAY
+                && result.methodDetail() != null
+                && !result.methodDetail().isBlank()) {
+            displayMethod = result.methodDetail();
+        } else {
+            displayMethod = payMethod.name();
+        }
 
         OffsetDateTime approvedAt = null;
         if (result.approvedAtIso() != null && !result.approvedAtIso().isBlank()) {
@@ -105,7 +125,7 @@ public class PaymentFacade {
                 .paymentKey(req.paymentKey())
                 .paymentMethod(payMethod)
                 .pgProvider(result.provider())
-                .cardIssuerCode(null)
+                .cardIssuerCode(result.methodDetail())
                 .build();
 
         if (approvedAt != null) {
@@ -134,7 +154,7 @@ public class PaymentFacade {
                 String.valueOf(order.getOrderNumber()),
                 "PAID",
                 approvedAt,
-                payMethod.name()
+                displayMethod
         );
 
         log.info("[PAYMENT CONFIRM END] orderNumber={}, status={}", order.getOrderNumber(), response.status());
@@ -268,7 +288,7 @@ public class PaymentFacade {
                 order.getOrderNumber(), PaymentEventType.REFUND, cancelAmount);
 
         // 5. 응답 반환
-        RefundResponse response = new RefundResponse( 
+        RefundResponse response = new RefundResponse(
                 String.valueOf(order.getOrderNumber()),
                 "REFUNDED",
                 result.canceledAtIso(),    // refundedAt 필드에 ISO 문자열
@@ -324,9 +344,6 @@ public class PaymentFacade {
         // 1. 주문 찾기 (001001-타임스탬프 형태도 처리해주는 기존 findOrder 재사용)
         Order order = findOrder(orderIdOrNumber);
 
-        // (옵션) 멤버일 경우, 해당 주문의 소유자인지 체크하는 로직을 나중에 추가할 수 있음
-        // TODO: userId와 order의 사용자 매핑 검사 (팀과 상의해서)
-
         Long orderNumber = order.getOrderNumber();
 
         // 2. 해당 주문의 PaymentHistory 목록 조회
@@ -335,15 +352,29 @@ public class PaymentFacade {
 
         // 3. 엔티티 -> DTO 변환
         return histories.stream()
-                .map(h -> new PaymentHistoryResponse(
-                        h.getEventType(),
-                        h.getAmount(),
-                        h.getReason(),
-                        h.getPaymentTime(),
-                        h.getPayment() != null && h.getPayment().getPaymentMethod() != null
-                                ? h.getPayment().getPaymentMethod().name()
-                                : null
-                ))
+                .map(h -> {
+                    String method = null;
+
+                    if (h.getPayment() != null && h.getPayment().getPaymentMethod() != null) {
+                        PaymentMethod pm = h.getPayment().getPaymentMethod();
+
+                        // 간편결제면 EASY_PAY 대신 TOSSPAY 내려줌
+                        String detail = h.getPayment().getCardIssuerCode();
+                        if (pm == PaymentMethod.EASY_PAY && detail != null && !detail.isBlank()) {
+                            method = detail; //"TOSSPAY"
+                        } else {
+                            method = pm.name();
+                        }
+                    }
+
+                    return new PaymentHistoryResponse(
+                            h.getEventType(),
+                            h.getAmount(),
+                            h.getReason(),
+                            h.getPaymentTime(),
+                            method // [MOD]
+                    );
+                })
                 .toList();
     }
 }
