@@ -83,7 +83,8 @@ public class PaymentFacadeTest {
                 new PaymentProvider.ApproveResult(
                         "TOSS",
                         "CARD",
-                        "2025-12-01T12:00:00+09:00"
+                        "2025-12-01T12:00:00+09:00",
+                        "TOSSPAY"
                 );
         when(paymentProvider.approve(any(PaymentProvider.ApproveCommand.class)))
                 .thenReturn(approveResult);
