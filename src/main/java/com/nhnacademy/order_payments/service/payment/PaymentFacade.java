@@ -1,13 +1,13 @@
 package com.nhnacademy.order_payments.service.payment;
 
-import com.nhnacademy.order_payments.dto.request.CancelRequest;
-import com.nhnacademy.order_payments.dto.request.ConfirmRequest;
-import com.nhnacademy.order_payments.dto.request.FailRequest;
-import com.nhnacademy.order_payments.dto.request.RefundRequest;
-import com.nhnacademy.order_payments.dto.response.CancelResponse;
-import com.nhnacademy.order_payments.dto.response.ConfirmResponse;
-import com.nhnacademy.order_payments.dto.response.PaymentHistoryResponse;
-import com.nhnacademy.order_payments.dto.response.RefundResponse;
+import com.nhnacademy.order_payments.dto.payment.request.CancelRequest;
+import com.nhnacademy.order_payments.dto.payment.request.ConfirmRequest;
+import com.nhnacademy.order_payments.dto.payment.request.FailRequest;
+import com.nhnacademy.order_payments.dto.payment.request.RefundRequest;
+import com.nhnacademy.order_payments.dto.payment.response.CancelResponse;
+import com.nhnacademy.order_payments.dto.payment.response.ConfirmResponse;
+import com.nhnacademy.order_payments.dto.payment.response.PaymentHistoryResponse;
+import com.nhnacademy.order_payments.dto.payment.response.RefundResponse;
 import com.nhnacademy.order_payments.entity.Order;
 import com.nhnacademy.order_payments.entity.Payment;
 import com.nhnacademy.order_payments.entity.PaymentHistory;

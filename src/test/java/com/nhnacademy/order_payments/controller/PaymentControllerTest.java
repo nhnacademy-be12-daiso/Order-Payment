@@ -1,12 +1,12 @@
 package com.nhnacademy.order_payments.controller;
 
-import com.nhnacademy.order_payments.dto.request.CancelRequest;
-import com.nhnacademy.order_payments.dto.request.ConfirmRequest;
-import com.nhnacademy.order_payments.dto.request.FailRequest;
-import com.nhnacademy.order_payments.dto.request.RefundRequest;
-import com.nhnacademy.order_payments.dto.response.CancelResponse;
-import com.nhnacademy.order_payments.dto.response.ConfirmResponse;
-import com.nhnacademy.order_payments.dto.response.RefundResponse;
+import com.nhnacademy.order_payments.dto.payment.request.CancelRequest;
+import com.nhnacademy.order_payments.dto.payment.request.ConfirmRequest;
+import com.nhnacademy.order_payments.dto.payment.request.FailRequest;
+import com.nhnacademy.order_payments.dto.payment.request.RefundRequest;
+import com.nhnacademy.order_payments.dto.payment.response.CancelResponse;
+import com.nhnacademy.order_payments.dto.payment.response.ConfirmResponse;
+import com.nhnacademy.order_payments.dto.payment.response.RefundResponse;
 import com.nhnacademy.order_payments.controller.payment.PaymentController;
 import com.nhnacademy.order_payments.service.payment.PaymentFacade;
 import org.junit.jupiter.api.DisplayName;
@@ -31,7 +31,7 @@ import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.
 // 컨트롤러 연결 테스트
 @WebMvcTest(PaymentController.class)
 @AutoConfigureMockMvc(addFilters = false)
-class PaymentControllerTest {
+public class PaymentControllerTest {
 
     @Autowired
     MockMvc mockMvc;
@@ -156,4 +156,30 @@ class PaymentControllerTest {
 
         verify(paymentFacade).fail(any(FailRequest.class));
     }
+    @Test
+    @DisplayName("POST /api/payments/confirm - BusinessException이면 400 + 에러 바디 내려감")
+    void confirm_businessException_returns400Json() throws Exception {
+        given(paymentFacade.confirm(eq(1L), any(ConfirmRequest.class)))
+                .willThrow(new com.nhnacademy.order_payments.exception.BusinessException(
+                        "AMOUNT_MISMATCH", "결제금액이 총 주문 금액과 다릅니다."
+                ));
+
+        String json = """
+            {
+              "provider": "TOSS",
+              "orderId": "1001",
+              "paymentKey": "pay_123",
+              "amount": 50000
+            }
+            """;
+
+        mockMvc.perform(post("/api/payments/confirm")
+                        .header("X-User-Id", 1L)
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content(json))
+                .andExpect(status().isBadRequest())
+                .andExpect(jsonPath("$.error").value("AMOUNT_MISMATCH"))
+                .andExpect(jsonPath("$.status").value(400));
+    }
+
 }

@@ -1,4 +1,4 @@
-package com.nhnacademy.order_payments.dto.response;
+package com.nhnacademy.order_payments.dto.payment.response;
 
 public record RefundResponse(
         String orderId,
