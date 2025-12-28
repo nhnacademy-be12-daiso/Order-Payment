@@ -12,6 +12,7 @@
 
 package com.nhnacademy.order_payments.controller;
 
+import com.nhnacademy.order_payments.dto.order.FinalPayloadDto;
 import com.nhnacademy.order_payments.dto.order.OrderCreateResponse;
 import com.nhnacademy.order_payments.dto.order.OrderSummaryDto;
 import com.nhnacademy.order_payments.entity.Order;
@@ -20,11 +21,7 @@ import com.nhnacademy.order_payments.service.order.OrderService;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.http.ResponseEntity;
-import org.springframework.web.bind.annotation.PostMapping;
-import org.springframework.web.bind.annotation.RequestBody;
-import org.springframework.web.bind.annotation.RequestHeader;
-import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RestController;
+import org.springframework.web.bind.annotation.*;
 
 @Slf4j
 @RequiredArgsConstructor
@@ -41,13 +38,35 @@ public class OrderController {
      */
     @PostMapping
     public ResponseEntity<OrderCreateResponse> order(@RequestHeader(value = "X-User-Id", required = false) Long userId,
+                                              @RequestBody FinalPayloadDto payload) {
+
+        OrderSummaryDto dto = payload.orderSummaryDto();
+        Long orderId = Long.valueOf(payload.paymentConfirmRequest().getOrderId());
+
+        if (dto == null) {
+            throw new NotFoundOrderException("주문 정보가 없습니다.");
+        }
+
+        orderService.precessOrderPayment(userId, dto, orderId);
+
+        return ResponseEntity.ok().build();
+    }
+
+    @PostMapping("/create")
+    public ResponseEntity<OrderCreateResponse> createOrder(@RequestHeader(value = "X-User-Id", required = false) Long userId,
                                                      @RequestBody OrderSummaryDto dto) {
         if (dto == null) {
             throw new NotFoundOrderException("주문 정보가 없습니다.");
         }
 
-        Order order = orderService.precessOrderPayment(userId, dto);
+        // OrderID를 발급받아서 넘겨주는 역할만 함
+        Order order = orderService.createOrder(userId, dto);
 
         return ResponseEntity.ok(OrderCreateResponse.from(order));
+    }
+
+    @GetMapping("/status/{orderId}")
+    ResponseEntity<String> getOrderStatus(@PathVariable String orderId) {
+
     }
 }

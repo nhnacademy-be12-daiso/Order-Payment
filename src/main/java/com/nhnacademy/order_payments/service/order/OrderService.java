@@ -42,32 +42,25 @@ public class OrderService {
     private final SagaOrchestrator sagaOrchestrator;
 
     @Transactional
-    public Order precessOrderPayment(Long userId, OrderSummaryDto dto) {
+    public void precessOrderPayment(Long userId, OrderSummaryDto dto, Long orderId) {
 
         // TODO 주문 검증 및 Order DB에 임시 주문 정보 저장
-        Order order = createOrder(userId, dto);
+        Order order = orderRepository.getReferenceById(orderId);
         OrderConfirmedEvent event = orderEventFactory.create(userId, order, dto);
 
+        // SagaOrchestrator 주입받아서 saga 시작
+        sagaOrchestrator.start(event);
+    }
+
+
+    @Transactional
+    public Order createOrder(Long userId, OrderSummaryDto dto) {
+
+        // 검증
         if (!orderValidationService.validateOrder(userId, dto)) { // 검증 실패
             throw new RuntimeException("주문 정보에 대한 검증 실패"); // -----> 예외처리 다시 해주기 <<<<<<<<
         }
 
-        // TODO 결제 로직
-
-        // ------- saga 시작 ----------
-
-
-        // SagaOrchestrator 주입받아서 saga 시작
-        sagaOrchestrator.start(event);
-
-
-
-
-        return order; // 임시로 뱉어내는 로직
-    }
-
-
-    public Order createOrder(Long userId, OrderSummaryDto dto) {
         // 1. 주문 객체 생성 (아직 저장 안 함 - 비영속 상태) 및 기본 정보 세팅
         Order order = new Order(dto);
         order.setUserId(userId);    // userId == null일 때 (비회원일 때) 알아서 null 드감
@@ -90,6 +83,8 @@ public class OrderService {
             GuestOrderers guestOrderers = new GuestOrderers(savedOrder, password);
             guestOrdererRepository.save(guestOrderers);
         }
+
+
 
         return savedOrder;
     }
