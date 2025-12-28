@@ -16,7 +16,6 @@ import com.nhnacademy.order_payments.dto.packaging.request.PackagingRequest;
 import com.nhnacademy.order_payments.dto.packaging.response.PackagingResponse;
 import com.nhnacademy.order_payments.service.packaging.PackagingService;
 import io.swagger.v3.oas.annotations.Operation;
-import io.swagger.v3.oas.annotations.responses.ApiResponse;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import jakarta.validation.Valid;
 import java.util.List;
@@ -34,7 +33,7 @@ import org.springframework.web.bind.annotation.RequestHeader;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
-@Tag(name = "포장 정책 API - 관리자 전용")
+@Tag(name = "Packaging", description = "포장 정책 관리 (관리자용)")
 @RestController
 @RequiredArgsConstructor
 @Slf4j
@@ -45,7 +44,7 @@ public class PackagingController {
 
     // POST /api/admin/packagings
     @PostMapping
-    @Operation(summary = "포장 정책 등록")
+    @Operation(summary = "포장 정책 생성", description = "새로운 포장 정책을 생성합니다.")
     public ResponseEntity<Void> createPackaging(@RequestHeader("X-User-Id") Long adminId,
                                                 @Valid @RequestBody PackagingRequest request) {
         packagingService.createPackaging(request);
@@ -56,7 +55,7 @@ public class PackagingController {
 
     // GET /api/admin/packagings
     @GetMapping
-    @Operation(summary = "포장 정책 전체 조회")
+    @Operation(summary = "포장 정책 조회", description = "포장 정책을 모두 조회합니다.")
     public ResponseEntity<List<PackagingResponse>> getPackagings() {
         return ResponseEntity.status(HttpStatus.OK)
                 .body(packagingService.getPackagings());
@@ -64,8 +63,7 @@ public class PackagingController {
 
     // PUT /api/admin/packagings/{packagingId}
     @PutMapping("/{packagingId}")
-    @Operation(summary = "포장 정책 수정")
-    @ApiResponse(responseCode = "404", description = "존재하지 않는 포장 정책")
+    @Operation(summary = "포장 정책 수정", description = "포장 정책을 수정합니다.")
     public ResponseEntity<Void> modifyPackaging(@RequestHeader("X-User-Id") Long adminId,
                                                 @PathVariable Long packagingId,
                                                 @Valid @RequestBody PackagingRequest request) {
@@ -77,8 +75,7 @@ public class PackagingController {
 
     // DELETE /api/admin/packagings/{packagingId}
     @DeleteMapping("/{packagingId}")
-    @Operation(summary = "포장 정책 삭제")
-    @ApiResponse(responseCode = "404", description = "존재하지 않는 포장 정책")
+    @Operation(summary = "포장 정책 삭제", description = "포장 정책을 삭제합니다.")
     public ResponseEntity<Void> deletePackaging(@RequestHeader("X-User-Id") Long adminId,
                                                 @PathVariable Long packagingId) {
         packagingService.deletePackaging(packagingId);
