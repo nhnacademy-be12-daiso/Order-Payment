@@ -13,16 +13,29 @@
 package com.nhnacademy.order_payments.dto.response;
 
 import com.nhnacademy.order_payments.entity.DeliveryPolicy;
+import io.swagger.v3.oas.annotations.media.Schema;
 
 public record DeliveryPolicyResponse(
+        @Schema(description = "배송비 정책 ID", example = "1")
         Long deliveryPolicyId,
+
+        @Schema(description = "정책명", example = "기본 배송비 정책")
         String policyName,
+
+        @Schema(description = "배송비", example = "3000")
         Long deliveryFee,
-        Long freeMinimumAmount) {
+
+        @Schema(description = "무료배송 최소 주문금액", example = "50000")
+        Long freeMinimumAmount
+) {
     // 배송 정책 관련 데이터를 응답할 DTO
 
     public DeliveryPolicyResponse(DeliveryPolicy deliveryPolicy) {
-        this(deliveryPolicy.getDeliveryPolicyId(), deliveryPolicy.getDeliveryPolicyName(),
-                deliveryPolicy.getDeliveryFee(), deliveryPolicy.getFreeMinimumAmount());
+        this(
+                deliveryPolicy.getDeliveryPolicyId(),
+                deliveryPolicy.getDeliveryPolicyName(),
+                deliveryPolicy.getDeliveryFee(),
+                deliveryPolicy.getFreeMinimumAmount()
+        );
     }
 }

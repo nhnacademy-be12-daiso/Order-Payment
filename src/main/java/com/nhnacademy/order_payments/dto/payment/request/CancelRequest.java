@@ -1,4 +1,4 @@
-package com.nhnacademy.order_payments.dto.request;
+package com.nhnacademy.order_payments.dto.payment.request;
 
 import io.swagger.v3.oas.annotations.media.Schema;
 

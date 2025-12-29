@@ -14,7 +14,7 @@ import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
 
-@Tag(name = "배송비 정책 API - 관리자 전용")
+@Tag(name = "Delivery Policy", description = "배송비 정책 관리 (관리자용)")
 @RestController
 @RequiredArgsConstructor
 @Slf4j
@@ -24,7 +24,7 @@ public class DeliveryPolicyController {
     private final DeliveryPolicyService deliveryPolicyService;
 
     @PostMapping
-    @Operation(summary = "배송비 정책 등록")
+    @Operation(summary = "배송비 정책 생성", description = "새로운 배송비 정책을 생성합니다.")
     public ResponseEntity<Void> createPolicy(@RequestHeader("X-User-Id") Long adminId,
                                              @Valid @RequestBody DeliveryPolicyRequest request) {
         deliveryPolicyService.createPolicy(request);
@@ -33,7 +33,7 @@ public class DeliveryPolicyController {
     }
 
     @GetMapping
-    @Operation(summary = "배송비 정책 전체 조회")
+    @Operation(summary = "배송비 정책 조회", description = "배송비 정책을 모두 조회합니다.")
     public ResponseEntity<List<DeliveryPolicyResponse>> getPolicies(@RequestHeader("X-User-Id") Long adminId) {
         List<DeliveryPolicyResponse> responses = deliveryPolicyService.getPolicies();
         log.info("관리자 [{}] - 배송비 정책 목록 조회", adminId);
@@ -41,7 +41,7 @@ public class DeliveryPolicyController {
     }
 
     @PutMapping("/{deliveryPolicyId}")
-    @Operation(summary = "배송비 정책 수정")
+    @Operation(summary = "배송비 정책 수정", description = "배송비 정책을 수정합니다.")
     public ResponseEntity<Void> modifyPolicy(@RequestHeader("X-User-Id") Long adminId,
                                              @PathVariable Long deliveryPolicyId,
                                              @Valid @RequestBody DeliveryPolicyRequest request) {
@@ -51,7 +51,7 @@ public class DeliveryPolicyController {
     }
 
     @DeleteMapping("/{deliveryPolicyId}")
-    @Operation(summary = "배송비 정책 삭제")
+    @Operation(summary = "배송비 정책 삭제", description = "배송비 정책을 삭제합니다.")
     public ResponseEntity<Void> deletePolicy(@RequestHeader("X-User-Id") Long adminId,
                                              @PathVariable Long deliveryPolicyId) {
         deliveryPolicyService.deletePolicy(deliveryPolicyId);
