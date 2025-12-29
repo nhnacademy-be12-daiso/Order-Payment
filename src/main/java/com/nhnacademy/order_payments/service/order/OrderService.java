@@ -42,10 +42,9 @@ public class OrderService {
     private final SagaOrchestrator sagaOrchestrator;
 
     @Transactional
-    public void precessOrderPayment(Long userId, OrderSummaryDto dto, Long orderId) {
+    public void precessOrderPayment(Long userId, OrderSummaryDto dto, Order order) {
 
         // TODO 주문 검증 및 Order DB에 임시 주문 정보 저장
-        Order order = orderRepository.getReferenceById(orderId);
         OrderConfirmedEvent event = orderEventFactory.create(userId, order, dto);
 
         // SagaOrchestrator 주입받아서 saga 시작

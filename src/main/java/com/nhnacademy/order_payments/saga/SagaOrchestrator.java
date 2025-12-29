@@ -11,6 +11,7 @@ import com.nhnacademy.order_payments.saga.common.*;
 import com.nhnacademy.order_payments.saga.event.OrderCompensateEvent;
 import com.nhnacademy.order_payments.saga.event.OrderConfirmedEvent;
 import com.nhnacademy.order_payments.saga.event.OrderOutboxCommittedEvent;
+import com.nhnacademy.order_payments.service.order.SseService;
 import jakarta.transaction.Transactional;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
@@ -28,6 +29,7 @@ public class SagaOrchestrator {
     private final SagaInstanceRepository instanceRepository;
     private final OrderOutboxRepository outboxRepository;
     private final ApplicationEventPublisher publisher;
+    private final SseService sseService;
 
     // 트랜잭션이 붙어야 하나?
     @Transactional
@@ -180,6 +182,7 @@ public class SagaOrchestrator {
     public void completeSaga(SagaInstance instance) {
         log.info("[Saga] Saga 완료! 주문 로직 완료됨 Order ID : {}", instance.getSagaId());
         instance.setSagaStatus(SagaStatus.COMPLETED);
+        sseService.notify(instance.getSagaId(), "COMPLETED");
     }
 
     // 역직렬화 메서드

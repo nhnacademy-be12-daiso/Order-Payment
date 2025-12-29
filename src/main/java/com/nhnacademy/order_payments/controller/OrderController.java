@@ -16,7 +16,10 @@ import com.nhnacademy.order_payments.dto.order.FinalPayloadDto;
 import com.nhnacademy.order_payments.dto.order.OrderCreateResponse;
 import com.nhnacademy.order_payments.dto.order.OrderSummaryDto;
 import com.nhnacademy.order_payments.entity.Order;
+import com.nhnacademy.order_payments.entity.SagaInstance;
 import com.nhnacademy.order_payments.exception.NotFoundOrderException;
+import com.nhnacademy.order_payments.repository.OrderRepository;
+import com.nhnacademy.order_payments.repository.SagaInstanceRepository;
 import com.nhnacademy.order_payments.service.order.OrderService;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
@@ -30,6 +33,8 @@ import org.springframework.web.bind.annotation.*;
 public class OrderController {
 
     private final OrderService orderService;
+    private final SagaInstanceRepository instanceRepository;
+    private final OrderRepository orderRepository;
 
     /**
      * ** 회원과 비회원의 주문 로직을 어떻게 분기할지? **
@@ -41,13 +46,13 @@ public class OrderController {
                                               @RequestBody FinalPayloadDto payload) {
 
         OrderSummaryDto dto = payload.orderSummaryDto();
-        Long orderId = Long.valueOf(payload.paymentConfirmRequest().getOrderId());
+        Order order = orderRepository.findByOrderNumber(Long.valueOf(payload.paymentConfirmRequest().getOrderId())).orElseThrow();
 
         if (dto == null) {
             throw new NotFoundOrderException("주문 정보가 없습니다.");
         }
 
-        orderService.precessOrderPayment(userId, dto, orderId);
+        orderService.precessOrderPayment(userId, dto, order);
 
         return ResponseEntity.ok().build();
     }
@@ -66,7 +71,9 @@ public class OrderController {
     }
 
     @GetMapping("/status/{orderId}")
-    ResponseEntity<String> getOrderStatus(@PathVariable String orderId) {
-
+    public ResponseEntity<String> getOrderStatus(@PathVariable String orderId) {
+        return instanceRepository.findById(orderId)
+                .map(instance -> ResponseEntity.ok(instance.getSagaStatus().toString())) // PROCESSING, COMPLETED, COMPENSATED 등
+                .orElse(ResponseEntity.notFound().build());
     }
 }
