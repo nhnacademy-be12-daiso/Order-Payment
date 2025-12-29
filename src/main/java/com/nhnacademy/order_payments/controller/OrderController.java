@@ -41,39 +41,53 @@ public class OrderController {
      * 회원 여부에 상관 없이 일단 해당 컨트롤러를 타고
      * 서비스 로직 안에서 분기
      */
+
     @PostMapping
     public ResponseEntity<OrderCreateResponse> order(@RequestHeader(value = "X-User-Id", required = false) Long userId,
-                                              @RequestBody FinalPayloadDto payload) {
-
-        OrderSummaryDto dto = payload.orderSummaryDto();
-        Order order = orderRepository.findByOrderNumber(Long.valueOf(payload.paymentConfirmRequest().getOrderId())).orElseThrow();
-
-        if (dto == null) {
-            throw new NotFoundOrderException("주문 정보가 없습니다.");
-        }
-
-        orderService.precessOrderPayment(userId, dto, order);
-
-        return ResponseEntity.ok().build();
-    }
-
-    @PostMapping("/create")
-    public ResponseEntity<OrderCreateResponse> createOrder(@RequestHeader(value = "X-User-Id", required = false) Long userId,
                                                      @RequestBody OrderSummaryDto dto) {
         if (dto == null) {
             throw new NotFoundOrderException("주문 정보가 없습니다.");
         }
 
-        // OrderID를 발급받아서 넘겨주는 역할만 함
-        Order order = orderService.createOrder(userId, dto);
+        Order order = orderService.precessOrderPayment(userId, dto);
 
         return ResponseEntity.ok(OrderCreateResponse.from(order));
     }
-
-    @GetMapping("/status/{orderId}")
-    public ResponseEntity<String> getOrderStatus(@PathVariable String orderId) {
-        return instanceRepository.findById(orderId)
-                .map(instance -> ResponseEntity.ok(instance.getSagaStatus().toString())) // PROCESSING, COMPLETED, COMPENSATED 등
-                .orElse(ResponseEntity.notFound().build());
-    }
+//
+//
+//    @PostMapping
+//    public ResponseEntity<OrderCreateResponse> order(@RequestHeader(value = "X-User-Id", required = false) Long userId,
+//                                              @RequestBody FinalPayloadDto payload) {
+//
+//        OrderSummaryDto dto = payload.orderSummaryDto();
+//        Order order = orderRepository.findByOrderNumber(Long.valueOf(payload.paymentConfirmRequest().getOrderId())).orElseThrow();
+//
+//        if (dto == null) {
+//            throw new NotFoundOrderException("주문 정보가 없습니다.");
+//        }
+//
+//        orderService.precessOrderPayment(userId, dto, order);
+//
+//        return ResponseEntity.ok().build();
+//    }
+//
+////    @PostMapping("/create")
+//    public ResponseEntity<OrderCreateResponse> createOrder(@RequestHeader(value = "X-User-Id", required = false) Long userId,
+//                                                     @RequestBody OrderSummaryDto dto) {
+//        if (dto == null) {
+//            throw new NotFoundOrderException("주문 정보가 없습니다.");
+//        }
+//
+//        // OrderID를 발급받아서 넘겨주는 역할만 함
+//        Order order = orderService.createOrder(userId, dto);
+//
+//        return ResponseEntity.ok(OrderCreateResponse.from(order));
+//    }
+//
+//    @GetMapping("/status/{orderId}")
+//    public ResponseEntity<String> getOrderStatus(@PathVariable String orderId) {
+//        return instanceRepository.findById(orderId)
+//                .map(instance -> ResponseEntity.ok(instance.getSagaStatus().toString())) // PROCESSING, COMPLETED, COMPENSATED 등
+//                .orElse(ResponseEntity.notFound().build());
+//    }
 }

@@ -36,4 +36,12 @@ public class OrderCompensateEvent implements SagaEvent {
         this.usedCouponIds = event.getUsedCouponIds();
         this.failureReason = failureReason;
     }
+
+    public OrderCompensateEvent(OrderRefundEvent event, String failureReason) {
+        this.orderId = event.getOrderId();
+        this.userId = event.getUserId();
+        this.bookList.put(event.getBookId(), Math.toIntExact(event.getQuantity()));
+        this.totalAmount = event.getRefundAmount();
+        this.failureReason = failureReason;
+    }
 }

@@ -16,13 +16,10 @@ import com.nhnacademy.order_payments.dto.order.GuestOrderCheckRequest;
 import com.nhnacademy.order_payments.dto.response.order.OrderListResponse;
 import com.nhnacademy.order_payments.dto.response.order.OrderResponse;
 import com.nhnacademy.order_payments.service.order.OrderResultService;
+import jakarta.ws.rs.Path;
 import lombok.RequiredArgsConstructor;
-import org.springframework.web.bind.annotation.GetMapping;
-import org.springframework.web.bind.annotation.PostMapping;
-import org.springframework.web.bind.annotation.RequestBody;
-import org.springframework.web.bind.annotation.RequestHeader;
-import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RestController;
+import org.springframework.http.ResponseEntity;
+import org.springframework.web.bind.annotation.*;
 
 @RequiredArgsConstructor
 @RestController
@@ -43,4 +40,11 @@ public class OrderResultController {
         return orderResultService.getGuestOrder(request.orderNumber(), request.password());
     }
 
+    @PostMapping("/{orderDetailId}/refund")
+    ResponseEntity<?> refundOrder(@RequestHeader(value = "X-User-Id", required = false) Long userId,
+                                  @PathVariable Long orderDetailId) {
+        orderResultService.refundOrder(orderDetailId);
+
+        return ResponseEntity.ok().build();
+    }
 }
