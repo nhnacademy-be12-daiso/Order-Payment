@@ -40,7 +40,6 @@ public class OrderService {
     private final OrderValidationService orderValidationService;
     private final PasswordEncoder passwordEncoder;
     private final SagaOrchestrator sagaOrchestrator;
-
     @Transactional
     public Order precessOrderPayment(Long userId, OrderSummaryDto dto) {
 
@@ -59,9 +58,6 @@ public class OrderService {
 
         // SagaOrchestrator 주입받아서 saga 시작
         sagaOrchestrator.start(event);
-
-
-
 
         return order; // 임시로 뱉어내는 로직
     }
@@ -93,5 +89,4 @@ public class OrderService {
 
         return savedOrder;
     }
-
 }

@@ -23,14 +23,19 @@ import com.nhnacademy.order_payments.entity.GuestOrderers;
 import com.nhnacademy.order_payments.entity.Order;
 import com.nhnacademy.order_payments.entity.OrderDetail;
 import com.nhnacademy.order_payments.exception.NotFoundOrderException;
+import com.nhnacademy.order_payments.model.OrderDetailStatus;
 import com.nhnacademy.order_payments.repository.GuestOrdererRepository;
+import com.nhnacademy.order_payments.repository.OrderDetailRepository;
 import com.nhnacademy.order_payments.repository.OrderRepository;
+import com.nhnacademy.order_payments.saga.SagaOrchestrator;
+import com.nhnacademy.order_payments.saga.event.OrderRefundEvent;
 import com.nhnacademy.order_payments.service.packaging.PackagingService;
 import java.util.List;
 import java.util.Map;
 import java.util.stream.Collectors;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.aspectj.weaver.ast.Or;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -48,6 +53,9 @@ public class OrderResultService {
     private final BookApiClient bookApiClient;
 
     private final PasswordEncoder passwordEncoder;
+    private final OrderDetailRepository orderDetailRepository;
+
+    private final SagaOrchestrator sagaOrchestrator;
 
     @Transactional(readOnly = true)
     public OrderListResponse getOrderList(Long userId) {
@@ -132,6 +140,21 @@ public class OrderResultService {
                 order.getPhoneNumber(),
                 order.getEmail(),
                 detailResponses);
+    }
+
+    @Transactional
+    public void refundOrder(Long orderDetailId) {
+        OrderDetail orderDetail = orderDetailRepository.findById(orderDetailId).orElseThrow();
+
+        Long refundAmount = orderDetail.getPrice() * orderDetail.getQuantity() - 3000;
+        // ---> 배송비 제외하고 반품 가격 책정 (할인가 문제 해결해야함)
+
+        OrderRefundEvent event = new OrderRefundEvent(orderDetail, refundAmount);
+
+        sagaOrchestrator.start(event);
+
+        orderDetail.setOrderDetailStatus(OrderDetailStatus.RETURNED);
+
     }
 
 }

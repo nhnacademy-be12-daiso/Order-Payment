@@ -12,19 +12,19 @@
 
 package com.nhnacademy.order_payments.controller;
 
+import com.nhnacademy.order_payments.dto.order.FinalPayloadDto;
 import com.nhnacademy.order_payments.dto.order.OrderCreateResponse;
 import com.nhnacademy.order_payments.dto.order.OrderSummaryDto;
 import com.nhnacademy.order_payments.entity.Order;
+import com.nhnacademy.order_payments.entity.SagaInstance;
 import com.nhnacademy.order_payments.exception.NotFoundOrderException;
+import com.nhnacademy.order_payments.repository.OrderRepository;
+import com.nhnacademy.order_payments.repository.SagaInstanceRepository;
 import com.nhnacademy.order_payments.service.order.OrderService;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.http.ResponseEntity;
-import org.springframework.web.bind.annotation.PostMapping;
-import org.springframework.web.bind.annotation.RequestBody;
-import org.springframework.web.bind.annotation.RequestHeader;
-import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RestController;
+import org.springframework.web.bind.annotation.*;
 
 @Slf4j
 @RequiredArgsConstructor
@@ -33,12 +33,15 @@ import org.springframework.web.bind.annotation.RestController;
 public class OrderController {
 
     private final OrderService orderService;
+    private final SagaInstanceRepository instanceRepository;
+    private final OrderRepository orderRepository;
 
     /**
      * ** 회원과 비회원의 주문 로직을 어떻게 분기할지? **
      * 회원 여부에 상관 없이 일단 해당 컨트롤러를 타고
      * 서비스 로직 안에서 분기
      */
+
     @PostMapping
     public ResponseEntity<OrderCreateResponse> order(@RequestHeader(value = "X-User-Id", required = false) Long userId,
                                                      @RequestBody OrderSummaryDto dto) {
@@ -50,4 +53,41 @@ public class OrderController {
 
         return ResponseEntity.ok(OrderCreateResponse.from(order));
     }
+//
+//
+//    @PostMapping
+//    public ResponseEntity<OrderCreateResponse> order(@RequestHeader(value = "X-User-Id", required = false) Long userId,
+//                                              @RequestBody FinalPayloadDto payload) {
+//
+//        OrderSummaryDto dto = payload.orderSummaryDto();
+//        Order order = orderRepository.findByOrderNumber(Long.valueOf(payload.paymentConfirmRequest().getOrderId())).orElseThrow();
+//
+//        if (dto == null) {
+//            throw new NotFoundOrderException("주문 정보가 없습니다.");
+//        }
+//
+//        orderService.precessOrderPayment(userId, dto, order);
+//
+//        return ResponseEntity.ok().build();
+//    }
+//
+////    @PostMapping("/create")
+//    public ResponseEntity<OrderCreateResponse> createOrder(@RequestHeader(value = "X-User-Id", required = false) Long userId,
+//                                                     @RequestBody OrderSummaryDto dto) {
+//        if (dto == null) {
+//            throw new NotFoundOrderException("주문 정보가 없습니다.");
+//        }
+//
+//        // OrderID를 발급받아서 넘겨주는 역할만 함
+//        Order order = orderService.createOrder(userId, dto);
+//
+//        return ResponseEntity.ok(OrderCreateResponse.from(order));
+//    }
+//
+//    @GetMapping("/status/{orderId}")
+//    public ResponseEntity<String> getOrderStatus(@PathVariable String orderId) {
+//        return instanceRepository.findById(orderId)
+//                .map(instance -> ResponseEntity.ok(instance.getSagaStatus().toString())) // PROCESSING, COMPLETED, COMPENSATED 등
+//                .orElse(ResponseEntity.notFound().build());
+//    }
 }
