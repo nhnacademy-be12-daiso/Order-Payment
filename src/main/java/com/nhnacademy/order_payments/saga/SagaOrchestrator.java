@@ -11,6 +11,7 @@ import com.nhnacademy.order_payments.saga.common.*;
 import com.nhnacademy.order_payments.saga.event.OrderCompensateEvent;
 import com.nhnacademy.order_payments.saga.event.OrderConfirmedEvent;
 import com.nhnacademy.order_payments.saga.event.OrderOutboxCommittedEvent;
+import com.nhnacademy.order_payments.service.order.SseService;
 import jakarta.transaction.Transactional;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
@@ -28,10 +29,11 @@ public class SagaOrchestrator {
     private final SagaInstanceRepository instanceRepository;
     private final OrderOutboxRepository outboxRepository;
     private final ApplicationEventPublisher publisher;
+    private final SseService sseService;
 
     // 트랜잭션이 붙어야 하나?
     @Transactional
-    public void start(OrderConfirmedEvent event) {
+    public void start(SagaEvent event) {
 
         /**
          *  instance
@@ -63,7 +65,6 @@ public class SagaOrchestrator {
                     routingKey,
                     objectMapper.writeValueAsString(event)
             );
-
 
             outboxRepository.save(outbox);
 
@@ -112,8 +113,6 @@ public class SagaOrchestrator {
 
         instance.setSagaStatus(SagaStatus.COMPENSATING); // 보상 시작 상태
 
-
-
         /**
          *  보상 트랜잭션 로직
          *  1. 모든 단계 순회
@@ -121,13 +120,13 @@ public class SagaOrchestrator {
          *  3. 상태 변경하고
          *  4. 모든 서비스에 동시에 쏨 (send() 사용)
          */
-        // 1. 보상해야 할 단계 필터링
+        // 보상해야 할 단계 필터링
         var stepsToRollback = Arrays.stream(SagaStep.values())
                 .filter(step -> step.getOrder() < instance.getCurrentStep().getOrder())
                 .filter(step -> step != SagaStep.FINISHED)
                 .toList();
 
-        // ⚠️ 2. 만약 보상할 단계가 없다면? (첫 단계에서 실패한 경우)
+        // 보상할 단계가 없는 경우
         if (stepsToRollback.isEmpty()) {
             log.info("[Saga] 보상할 내부 서비스가 없습니다. 바로 결제 취소 로직으로 넘어갑니다.");
             return;
@@ -180,6 +179,7 @@ public class SagaOrchestrator {
     public void completeSaga(SagaInstance instance) {
         log.info("[Saga] Saga 완료! 주문 로직 완료됨 Order ID : {}", instance.getSagaId());
         instance.setSagaStatus(SagaStatus.COMPLETED);
+        sseService.notify(instance.getSagaId(), "COMPLETED");
     }
 
     // 역직렬화 메서드
