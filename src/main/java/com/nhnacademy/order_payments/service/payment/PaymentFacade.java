@@ -1,13 +1,13 @@
 package com.nhnacademy.order_payments.service.payment;
 
-import com.nhnacademy.order_payments.dto.request.CancelRequest;
-import com.nhnacademy.order_payments.dto.request.ConfirmRequest;
-import com.nhnacademy.order_payments.dto.request.FailRequest;
-import com.nhnacademy.order_payments.dto.request.RefundRequest;
-import com.nhnacademy.order_payments.dto.response.CancelResponse;
-import com.nhnacademy.order_payments.dto.response.ConfirmResponse;
-import com.nhnacademy.order_payments.dto.response.PaymentHistoryResponse;
-import com.nhnacademy.order_payments.dto.response.RefundResponse;
+import com.nhnacademy.order_payments.dto.payment.request.CancelRequest;
+import com.nhnacademy.order_payments.dto.payment.request.ConfirmRequest;
+import com.nhnacademy.order_payments.dto.payment.request.FailRequest;
+import com.nhnacademy.order_payments.dto.payment.request.RefundRequest;
+import com.nhnacademy.order_payments.dto.payment.response.CancelResponse;
+import com.nhnacademy.order_payments.dto.payment.response.ConfirmResponse;
+import com.nhnacademy.order_payments.dto.payment.response.PaymentHistoryResponse;
+import com.nhnacademy.order_payments.dto.payment.response.RefundResponse;
 import com.nhnacademy.order_payments.entity.Order;
 import com.nhnacademy.order_payments.entity.Payment;
 import com.nhnacademy.order_payments.entity.PaymentHistory;
@@ -89,7 +89,7 @@ public class PaymentFacade {
             );
         }
 
-        // 4. 승인 (Toss PG 승인 API 호출)
+        // 4. 승인 (Toss 승인 API 호출)
         var result = provider.approve(new PaymentProvider.ApproveCommand(
                 req.orderId(), req.paymentKey(), req.amount()));
 
@@ -99,7 +99,7 @@ public class PaymentFacade {
         // Toss method → enum 매핑
         PaymentMethod payMethod = PaymentMethod.fromTossMethod(result.method());
 
-        // [MOD] 화면/응답에 보여줄 결제수단 문자열 (간편결제면 provider 우선)
+        // 화면에 보여줄 결제수단 문자열
         String displayMethod;
         if (payMethod == PaymentMethod.EASY_PAY
                 && result.methodDetail() != null
@@ -189,7 +189,7 @@ public class PaymentFacade {
             effectivePaymentKey = payment.getPaymentKey();
         }
 
-        // [\paymentKey가 없으면 예외 처리
+        // [aymentKey가 없으면 예외 처리
         if (effectivePaymentKey == null || effectivePaymentKey.isBlank()) {
             log.warn("[PAYMENT CANCEL NO_PAYMENT_KEY] orderNumber={}, orderId={}", order.getOrderNumber(), req.orderId());
             throw new BusinessException("PAYMENT_KEY_NOT_FOUND", "결제키(paymentKey)를 찾을 수 없습니다.");
@@ -266,9 +266,9 @@ public class PaymentFacade {
             throw new BusinessException("PAYMENT_KEY_NOT_FOUND", "결제키(paymentKey)를 찾을 수 없습니다.");
         }
 
-        // 3. 토스 취소(환불) 호출
+        // 3. 토스 취소 호출
         var result = provider.cancel(new PaymentProvider.CancelCommand(
-                req.orderId(), effectivePaymentKey, cancelAmount, req.reason() // [MOD]
+                req.orderId(), effectivePaymentKey, cancelAmount, req.reason()
         ));
 
         log.info("[PAYMENT REFUND PG_SUCCESS] orderNumber={}, provider={}, method={}, canceledAtIso={}",
@@ -303,7 +303,7 @@ public class PaymentFacade {
     @Transactional
     public void fail(FailRequest req) {
         log.info("[PAYMENT FAIL START] orderId={}, paymentKey={}, amount={}, errorCode={}, errorMessage={}",
-                req.orderId(), req.paymentKey(), req.amount(), req.errorCode(), req.errorMessage()); // ✅ record 스타일
+                req.orderId(), req.paymentKey(), req.amount(), req.errorCode(), req.errorMessage());
 
         // 실패는 실제 Payment 엔티티가 없을 수 있어서 payment=null 로 저장
         paymentHistories.save(PaymentHistory.builder()
@@ -318,7 +318,7 @@ public class PaymentFacade {
         log.info("[PAYMENT FAIL HISTORY SAVED] orderId={}, amount={}", req.orderId(), req.amount());
     }
 
-    /** 주문 조회 유틸 – 토스용 orderId(타임스탬프 붙은 형태)까지 처리 */
+    /** 주문 조회 */
     private Order findOrder(String idOrNo) {
         String normalized = idOrNo;
         int dashIndex = idOrNo.indexOf('-');
@@ -341,12 +341,17 @@ public class PaymentFacade {
     /** 주문에 대한 결제 히스토리를 조회 */
     @Transactional
     public List<PaymentHistoryResponse> getHistory(Long userId, String orderIdOrNumber) {
-        // 1. 주문 찾기 (001001-타임스탬프 형태도 처리해주는 기존 findOrder 재사용)
+        // 1. 주문 찾기
         Order order = findOrder(orderIdOrNumber);
 
         Long orderNumber = order.getOrderNumber();
 
-        // 2. 해당 주문의 PaymentHistory 목록 조회
+        // 회원 요청이면 본인 주문인지 체크(비회원 = userid null이라 통과함)
+        if (userId != null && (order.getUserId() == null || !userId.equals(order.getUserId()))) {
+            throw new BusinessException("FORBIDDEN_ORDER", "해당 주문에 접근할 권한이 없습니다.");
+        }
+
+        // 2. 주문의 PaymentHistory 목록 조회
         List<PaymentHistory> histories =
                 paymentHistories.findByPaymentOrderOrderNumberOrderByPaymentTimeAsc(orderNumber);
 
@@ -372,7 +377,7 @@ public class PaymentFacade {
                             h.getAmount(),
                             h.getReason(),
                             h.getPaymentTime(),
-                            method // [MOD]
+                            method
                     );
                 })
                 .toList();

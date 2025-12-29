@@ -1,11 +1,11 @@
 package com.nhnacademy.order_payments.service;
 
-import com.nhnacademy.order_payments.dto.request.CancelRequest;
-import com.nhnacademy.order_payments.dto.request.ConfirmRequest;
-import com.nhnacademy.order_payments.dto.request.FailRequest;
-import com.nhnacademy.order_payments.dto.request.RefundRequest;
-import com.nhnacademy.order_payments.dto.response.ConfirmResponse;
-import com.nhnacademy.order_payments.dto.response.RefundResponse;
+import com.nhnacademy.order_payments.dto.payment.request.CancelRequest;
+import com.nhnacademy.order_payments.dto.payment.request.ConfirmRequest;
+import com.nhnacademy.order_payments.dto.payment.request.FailRequest;
+import com.nhnacademy.order_payments.dto.payment.request.RefundRequest;
+import com.nhnacademy.order_payments.dto.payment.response.ConfirmResponse;
+import com.nhnacademy.order_payments.dto.payment.response.RefundResponse;
 import com.nhnacademy.order_payments.entity.Order;
 import com.nhnacademy.order_payments.entity.Payment;
 import com.nhnacademy.order_payments.entity.PaymentHistory;
@@ -33,6 +33,7 @@ import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.*;
 
 // 결제 로직 테스트 코드
+// 승인/취소/환불/실패/기록이 잘 수행되는지 검증
 @ExtendWith(MockitoExtension.class)
 public class PaymentFacadeTest {
 
@@ -63,7 +64,6 @@ public class PaymentFacadeTest {
     @Test
     @DisplayName("confirm - 정상 승인 흐름")
     void confirm_success() {
-        // given
         Long userId = 1L;
         String orderIdStr = "1001";
         Long amount = 50_000L;
@@ -96,10 +96,8 @@ public class PaymentFacadeTest {
                 amount
         );
 
-        // when
         ConfirmResponse response = paymentFacade.confirm(userId, request);
 
-        // then
         assertEquals("1001", response.orderId());
         assertEquals("PAID", response.status());
         assertEquals("CARD", response.method());
@@ -111,7 +109,6 @@ public class PaymentFacadeTest {
     @Test
     @DisplayName("confirm - 결제 금액이 주문 금액과 다르면 BusinessException 발생")
     void confirm_amountMismatch_throwsBusinessException() {
-        // given
         Long userId = 1L;
         String orderIdStr = "1001";
 
@@ -123,7 +120,7 @@ public class PaymentFacadeTest {
                 .thenReturn(Optional.of(order));
 
         // 여기서는 금액 불일치에서 바로 예외가 나가므로
-        // paymentRepository.findByOrder(...) stub 은 필요 없음
+        // paymentRepository.findByOrder() stub 은 필요x
 
         ConfirmRequest request = new ConfirmRequest(
                 "TOSS",
@@ -132,13 +129,11 @@ public class PaymentFacadeTest {
                 50_000L // 요청 금액이 다름
         );
 
-        // when
         BusinessException ex = assertThrows(
                 BusinessException.class,
                 () -> paymentFacade.confirm(userId, request)
         );
 
-        // then
         assertEquals("AMOUNT_MISMATCH", ex.getCode());
         verify(paymentProvider, never()).approve(any());
         verify(paymentRepository, never()).save(any());
@@ -147,7 +142,6 @@ public class PaymentFacadeTest {
     @Test
     @DisplayName("confirm - 이미 결제가 존재하면 PG 재호출 없이 기존 결제 정보로 응답")
     void confirm_duplicateRequest_returnsExistingPayment() {
-        // given
         Long userId = 1L;
         String orderIdStr = "1002";
         Long amount = 70_000L;
@@ -181,10 +175,8 @@ public class PaymentFacadeTest {
                 amount
         );
 
-        // when
         ConfirmResponse response = paymentFacade.confirm(userId, request);
 
-        // then
         assertEquals("1002", response.orderId());
         assertEquals("PAID", response.status());
         assertEquals("CARD", response.method());
@@ -197,7 +189,6 @@ public class PaymentFacadeTest {
     @Test
     @DisplayName("cancel - 전액 취소 시 CANCEL 이력 남김")
     void cancel_fullAmount_success() {
-        // given
         Long userId = 1L;
         String orderIdStr = "2001";
         Long paidAmount = 40_000L;
@@ -205,7 +196,6 @@ public class PaymentFacadeTest {
 
         Order order = mock(Order.class);
         when(order.getOrderNumber()).thenReturn(2001L);
-        // cancel()에서는 order.getTotalPrice()를 사용하지 않으므로 stub 불필요
 
         when(orderRepository.findById(2001L))
                 .thenReturn(Optional.of(order));
@@ -234,10 +224,8 @@ public class PaymentFacadeTest {
                 null   // null 이면 전액 취소
         );
 
-        // when
         var response = paymentFacade.cancel(userId, request);
 
-        // then
         assertEquals("2001", response.orderId());
         assertEquals("CANCELED", response.status());
         assertEquals("CARD", response.method());
@@ -251,9 +239,44 @@ public class PaymentFacadeTest {
     }
 
     @Test
+    @DisplayName("cancel - 부분 취소 시 PARTIAL_CANCEL 이력 남김")
+    void cancel_partialAmount_savesPartialCancelHistory() {
+        Long userId = 1L;
+        String orderIdStr = "2001";
+        Long paidAmount = 40_000L;
+
+        Order order = mock(Order.class);
+        when(order.getOrderNumber()).thenReturn(2001L);
+        when(orderRepository.findById(2001L)).thenReturn(Optional.of(order));
+
+        Payment payment = Payment.builder()
+                .order(order)
+                .paymentCost(paidAmount)
+                .paymentKey("db_payment_key")
+                .paymentMethod(PaymentMethod.CARD)
+                .pgProvider("TOSS")
+                .cardIssuerCode(null)
+                .build();
+
+        when(paymentRepository.findByOrder(order)).thenReturn(Optional.of(payment));
+        when(paymentProvider.cancel(any(PaymentProvider.CancelCommand.class)))
+                .thenReturn(new PaymentProvider.CancelResult("TOSS", "CARD", "2025-12-02T10:00:00+09:00"));
+
+        CancelRequest request = new CancelRequest(orderIdStr, "db_payment_key", "부분취소", 10_000L);
+
+        paymentFacade.cancel(userId, request);
+
+        ArgumentCaptor<PaymentHistory> captor = ArgumentCaptor.forClass(PaymentHistory.class);
+        verify(paymentHistoryRepository).save(captor.capture());
+
+        assertEquals(PaymentEventType.PARTIAL_CANCEL, captor.getValue().getEventType());
+        assertEquals(10_000L, captor.getValue().getAmount());
+    }
+
+
+    @Test
     @DisplayName("refund - 환불 시 REFUND 이력 남김")
     void refund_success() {
-        // given
         Long userId = 1L;
         String orderIdStr = "3001";
         Long paidAmount = 60_000L;
@@ -261,7 +284,6 @@ public class PaymentFacadeTest {
 
         Order order = mock(Order.class);
         when(order.getOrderNumber()).thenReturn(3001L);
-        // refund()에서도 order.getTotalPrice()는 사용하지 않음
 
         when(orderRepository.findById(3001L))
                 .thenReturn(Optional.of(order));
@@ -290,10 +312,8 @@ public class PaymentFacadeTest {
                 30_000L   // 부분 환불
         );
 
-        // when
         RefundResponse response = paymentFacade.refund(userId, request);
 
-        // then
         assertEquals("3001", response.orderId());
         assertEquals("REFUNDED", response.status());
         assertEquals("CARD", response.method());
@@ -310,7 +330,6 @@ public class PaymentFacadeTest {
     @Test
     @DisplayName("fail - 결제 실패 정보가 FAIL 이력으로 저장됨")
     void fail_savesHistory() {
-        // given
         FailRequest request = new FailRequest(
                 "4001",
                 10_000L,
@@ -319,10 +338,8 @@ public class PaymentFacadeTest {
                 "에러 메시지"
         );
 
-        // when
         paymentFacade.fail(request);
 
-        // then
         ArgumentCaptor<PaymentHistory> captor = ArgumentCaptor.forClass(PaymentHistory.class);
         verify(paymentHistoryRepository).save(captor.capture());
 
@@ -331,4 +348,58 @@ public class PaymentFacadeTest {
         assertEquals(10_000, history.getAmount());
         assertTrue(history.getReason().contains("ERROR_CODE"));
     }
+
+    @Test
+    @DisplayName("confirm - EASY_PAY + methodDetail 있으면 응답이 TOSSPAY 같은 detail로 내려감")
+    void confirm_easyPay_usesMethodDetail() {
+        Long userId = 1L;
+        String orderIdStr = "1001";
+        Long amount = 50_000L;
+
+        Order order = mock(Order.class);
+        when(order.getOrderNumber()).thenReturn(1001L);
+        when(order.getTotalPrice()).thenReturn(amount);
+        when(orderRepository.findById(1001L)).thenReturn(Optional.of(order));
+        when(paymentRepository.findByOrder(order)).thenReturn(Optional.empty());
+
+        when(paymentProvider.approve(any(PaymentProvider.ApproveCommand.class)))
+                .thenReturn(new PaymentProvider.ApproveResult(
+                        "TOSS",
+                        "EASY_PAY",
+                        "2025-12-01T12:00:00+09:00",
+                        "TOSSPAY"
+                ));
+
+        ConfirmRequest request = new ConfirmRequest("TOSS", orderIdStr, "payKey", amount);
+
+        ConfirmResponse response = paymentFacade.confirm(userId, request);
+
+        assertEquals("PAID", response.status());
+        assertEquals("TOSSPAY", response.method());
+    }
+
+    @Test
+    @DisplayName("confirm - orderId에 -timestamp가 붙어도 앞 숫자로 주문 조회됨")
+    void confirm_orderIdWithDash_normalized() {
+        Long userId = 1L;
+        String orderIdStr = "1001-20251226T120000";
+        Long amount = 50_000L;
+
+        Order order = mock(Order.class);
+        when(order.getOrderNumber()).thenReturn(1001L);
+        when(order.getTotalPrice()).thenReturn(amount);
+
+        when(orderRepository.findById(1001L)).thenReturn(Optional.of(order));
+        when(paymentRepository.findByOrder(order)).thenReturn(Optional.empty());
+        when(paymentProvider.approve(any())).thenReturn(
+                new PaymentProvider.ApproveResult("TOSS", "CARD", "2025-12-01T12:00:00+09:00", null)
+        );
+
+        ConfirmRequest request = new ConfirmRequest("TOSS", orderIdStr, "payKey", amount);
+
+        ConfirmResponse response = paymentFacade.confirm(userId, request);
+
+        assertEquals("1001", response.orderId()); // orderNumber 기반 응답
+    }
+
 }

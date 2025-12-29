@@ -1,4 +1,4 @@
-package com.nhnacademy.order_payments.dto.response;
+package com.nhnacademy.order_payments.dto.payment.response;
 
 import com.nhnacademy.order_payments.model.PaymentEventType;
 import io.swagger.v3.oas.annotations.media.Schema;
