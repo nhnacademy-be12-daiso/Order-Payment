@@ -95,7 +95,7 @@ public class PackagingServiceImplTest {
 
         List<PackagingResponse> res = service.getEnabledPackagings();
         assertEquals(1, res.size());
-        assertTrue(res.get(0).enabled());
+        assertTrue(res.getFirst().enabled());
     }
 
     @Test
