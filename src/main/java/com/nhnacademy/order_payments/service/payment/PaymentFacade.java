@@ -89,7 +89,7 @@ public class PaymentFacade {
             );
         }
 
-        // 4. 승인 (Toss PG 승인 API 호출)
+        // 4. 승인 (Toss 승인 API 호출)
         var result = provider.approve(new PaymentProvider.ApproveCommand(
                 req.orderId(), req.paymentKey(), req.amount()));
 
@@ -99,7 +99,7 @@ public class PaymentFacade {
         // Toss method → enum 매핑
         PaymentMethod payMethod = PaymentMethod.fromTossMethod(result.method());
 
-        // [MOD] 화면/응답에 보여줄 결제수단 문자열 (간편결제면 provider 우선)
+        // 화면/응답에 보여줄 결제수단 문자열
         String displayMethod;
         if (payMethod == PaymentMethod.EASY_PAY
                 && result.methodDetail() != null
@@ -189,7 +189,7 @@ public class PaymentFacade {
             effectivePaymentKey = payment.getPaymentKey();
         }
 
-        // [\paymentKey가 없으면 예외 처리
+        // [paymentKey가 없으면 예외 처리
         if (effectivePaymentKey == null || effectivePaymentKey.isBlank()) {
             log.warn("[PAYMENT CANCEL NO_PAYMENT_KEY] orderNumber={}, orderId={}", order.getOrderNumber(), req.orderId());
             throw new BusinessException("PAYMENT_KEY_NOT_FOUND", "결제키(paymentKey)를 찾을 수 없습니다.");
@@ -318,7 +318,7 @@ public class PaymentFacade {
         log.info("[PAYMENT FAIL HISTORY SAVED] orderId={}, amount={}", req.orderId(), req.amount());
     }
 
-    /** 주문 조회 유틸 – 토스용 orderId(타임스탬프 붙은 형태)까지 처리 */
+    /** 주문 조회 – 토스용 orderId(타임스탬프 붙은 형태)까지 처리 */
     private Order findOrder(String idOrNo) {
         String normalized = idOrNo;
         int dashIndex = idOrNo.indexOf('-');
@@ -338,10 +338,10 @@ public class PaymentFacade {
                 .orElseThrow(() -> new BusinessException("ORDER_NOT_FOUND", "주문 없음"));
     }
 
-    /** 주문에 대한 결제 히스토리를 조회 */
+    /** 주문에 대한 결제 히스토리 조회 */
     @Transactional
     public List<PaymentHistoryResponse> getHistory(Long userId, String orderIdOrNumber) {
-        // 1. 주문 찾기 (001001-타임스탬프 형태도 처리해주는 기존 findOrder 재사용)
+        // 1. 주문 찾기
         Order order = findOrder(orderIdOrNumber);
 
         Long orderNumber = order.getOrderNumber();
@@ -372,7 +372,7 @@ public class PaymentFacade {
                             h.getAmount(),
                             h.getReason(),
                             h.getPaymentTime(),
-                            method // [MOD]
+                            method
                     );
                 })
                 .toList();

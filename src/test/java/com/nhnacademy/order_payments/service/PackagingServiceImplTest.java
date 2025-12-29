@@ -19,8 +19,10 @@ import java.util.Optional;
 import static org.junit.jupiter.api.Assertions.*;
 import static org.mockito.Mockito.*;
 
+// 포장 정책 서비스 로직 테스트
+// 생성/조회/수정/삭제가 잘 동작하는지 확인
 @ExtendWith(MockitoExtension.class)
-class PackagingServiceImplTest {
+public class PackagingServiceImplTest {
 
     @Mock
     PackagingRepository packagingRepository;

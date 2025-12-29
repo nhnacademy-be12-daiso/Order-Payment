@@ -33,9 +33,11 @@ import static org.mockito.Mockito.verify;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.*;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.*;
 
+// 비회원 결제 api 컨트롤러 연결 테스트
+// 회원과 동일한 기능을 x-user-id 없이 수행되는지 확인
 @WebMvcTest(GuestPaymentController.class)
 @AutoConfigureMockMvc(addFilters = false)
-class GuestPaymentControllerTest {
+public class GuestPaymentControllerTest {
 
     @Autowired
     MockMvc mockMvc;

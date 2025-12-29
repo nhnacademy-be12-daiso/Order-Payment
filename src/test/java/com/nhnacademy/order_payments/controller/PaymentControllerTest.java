@@ -28,7 +28,8 @@ import static org.mockito.Mockito.verify;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.*;
 
-// 컨트롤러 연결 테스트
+// 회원 결제 api 컨트롤러 연결 테스트
+// paymentFacade를 mock으로 두고 테스트
 @WebMvcTest(PaymentController.class)
 @AutoConfigureMockMvc(addFilters = false)
 public class PaymentControllerTest {

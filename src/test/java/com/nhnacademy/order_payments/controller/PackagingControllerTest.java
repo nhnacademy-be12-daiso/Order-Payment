@@ -21,9 +21,11 @@ import static org.mockito.Mockito.verify;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.*;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.*;
 
+// 포장 정책 컨트롤러 연결 테스트
+// packagingService를 mock으로 두고 테스트
 @WebMvcTest(PackagingController.class)
 @AutoConfigureMockMvc(addFilters = false)
-class PackagingControllerTest {
+public class PackagingControllerTest {
 
     @Autowired
     MockMvc mockMvc;

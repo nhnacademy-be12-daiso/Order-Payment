@@ -21,9 +21,11 @@ import static org.mockito.Mockito.verify;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.*;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.*;
 
+// 배송 정책 컨트롤러 연결 테스트
+// deliveryPolicyService를 mock으로 두고 테스트
 @WebMvcTest(DeliveryPolicyController.class)
 @AutoConfigureMockMvc(addFilters = false)
-class DeliveryPolicyControllerTest {
+public class DeliveryPolicyControllerTest {
 
     @Autowired
     MockMvc mockMvc;
