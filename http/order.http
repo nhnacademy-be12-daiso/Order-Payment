@@ -16,12 +16,12 @@ Content-Type: application/json
 
 POST http://localhost:8080/api/orders
 Content-Type: application/json
-X-User-Id: 1014
+X-User-Id: 407131
 
 {
   "bookList": [
     {
-      "bookId": 101,
+      "bookId": 6372512,
       "couponId": 5001,
       "price": 25000,
       "discountPercentage": 0.1,
@@ -30,7 +30,7 @@ X-User-Id: 1014
       "packagingId": 1
     },
     {
-      "bookId": 102,
+      "bookId": 117017,
       "couponId": null,
       "price": 18000,
       "discountPercentage": 0.0,
@@ -52,7 +52,7 @@ X-User-Id: 1014
     "receiverPhoneNumber": "010-9876-5432",
     "deliveryFee": 3000
   },
-  "usedPoint": 1500,
-  "savedPoint": 300,
+  "usedPoint": 0,
+  "savedPoint": 2000,
   "totalPrice": 46000
 }
