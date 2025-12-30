@@ -20,6 +20,7 @@ public record DeliverySummaryDto(
         String deliveryAddress, // 도로명 주소
         String deliveryAddressDetail, // 상세 주소
         String deliveryRequest, // 배송 요청사항
+        String deliveryDate, // 희망 배송 날짜
         Long DeliveryFee // 배송비
 ) {
 }

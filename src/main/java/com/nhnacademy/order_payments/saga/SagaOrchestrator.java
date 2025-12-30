@@ -101,13 +101,14 @@ public class SagaOrchestrator {
         } else { // 다음 단계가 남았음
             instance.setCurrentStep(nextStep); // 상태 업데이트
 
-            OrderConfirmedEvent event = convertToEvent(instance.getPayload());
+            // TODO SagaEvent 추상화하기
+            SagaEvent event = convertToEvent(instance.getPayload());
             nextStep.execute(this, event); // <<<<<<<<<<<<<<<<<<<<<<<<< 이 부분 공부 필요
         }
     }
 
     public void startCompensation(SagaInstance instance, String reason) {
-        log.info("[Saga] 보상 트랜잭션 개시 - OrderID: {}", instance.getSagaId());
+        log.warn("[Saga] 보상 트랜잭션 개시 - OrderID: {}", instance.getSagaId());
 
         OrderCompensateEvent rollbackEvent = new OrderCompensateEvent(convertToEvent(instance.getPayload()), reason);
 
@@ -135,20 +136,6 @@ public class SagaOrchestrator {
             step.updateStatus(instance, ServiceStatus.COMPENSATING);
             this.send(step.getRollbackKey(), rollbackEvent);
         });
-        /*
-        Arrays.stream(SagaStep.values())
-                // 2. 현재 실패한 단계보다 '작은' 순서(이미 성공했을 가능성이 있는 단계)만 필터링
-                .filter(step -> step.getOrder() < instance.getCurrentStep().getOrder())
-                .filter(step -> step != SagaStep.FINISHED) // FINISHED는 제외
-                .forEach(step -> { // 서비스 각각 실행됨
-                    log.info("[Saga Rollback] 서비스: {}, OrderID: {}", step.name(), instance.getSagaId());
-                    step.updateStatus(instance, ServiceStatus.COMPENSATING);
-
-                    this.send(step.getRollbackKey(), rollbackEvent);
-                    // ----> 각각 메세지를 쏴줌
-                });
-
-         */
     }
 
     @Transactional
@@ -183,9 +170,9 @@ public class SagaOrchestrator {
     }
 
     // 역직렬화 메서드
-    private OrderConfirmedEvent convertToEvent(String payload) {
+    private SagaEvent convertToEvent(String payload) {
         try {
-            return objectMapper.readValue(payload, OrderConfirmedEvent.class);
+            return objectMapper.readValue(payload, SagaEvent.class); // ---> 인터페이스에 어노테이션 달아놨기 때문에 알잘딱 변환해줌
         } catch (JsonProcessingException e) {
             throw new RuntimeException("페이로드 복원 실패", e);
         }

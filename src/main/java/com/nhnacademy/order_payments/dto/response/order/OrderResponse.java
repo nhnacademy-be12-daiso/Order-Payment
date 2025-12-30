@@ -12,6 +12,7 @@
 
 package com.nhnacademy.order_payments.dto.response.order;
 
+import com.nhnacademy.order_payments.entity.Order;
 import com.nhnacademy.order_payments.model.OrderStatus;
 import java.time.LocalDateTime;
 import java.util.List;
