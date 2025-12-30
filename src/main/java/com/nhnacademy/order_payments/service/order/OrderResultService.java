@@ -13,6 +13,9 @@
 package com.nhnacademy.order_payments.service.order;
 
 import com.nhnacademy.order_payments.client.BookApiClient;
+import com.nhnacademy.order_payments.dto.cart.BookApiRequest; // ✅ [추가]
+import com.nhnacademy.order_payments.dto.order.InternalBookInfoResponse; // ✅ [추가]
+import com.nhnacademy.order_payments.dto.order.InternalBooksInfoResponse; // ✅ [추가]
 import com.nhnacademy.order_payments.dto.response.order.OrderDetailResponse;
 import com.nhnacademy.order_payments.dto.response.order.OrderListResponse;
 import com.nhnacademy.order_payments.dto.response.order.OrderResponse;
@@ -94,6 +97,63 @@ public class OrderResultService {
 
     private OrderResponse createOrderResponse(Order order) {
         List<OrderDetail> orderDetailList = order.getOrderDetailList();
+
+        // ✅ [핵심 최소 수정] 비회원(userId == null)은 리뷰조회 API(getBookReviewList)를 타면 안 됨
+        // - book-review API는 userId 필요 -> 비회원이면 null이라 Book 서비스에서 NPE 발생
+        // - 비회원은 책 정보만 /books/info 로 붙이고 reviewId는 null 처리
+        if (order.getUserId() == null) {
+            List<Long> bookIds = orderDetailList.stream()
+                    .map(OrderDetail::getBookId)
+                    .distinct()
+                    .toList();
+
+            InternalBooksInfoResponse booksInfoResponse = bookApiClient.getBookInfos(new BookApiRequest(bookIds));
+
+            Map<Long, InternalBookInfoResponse> bookInfoMap =
+                    (booksInfoResponse == null || booksInfoResponse.orderBookInfoRespDTOList() == null)
+                            ? Map.of()
+                            : booksInfoResponse.orderBookInfoRespDTOList().stream()
+                            .collect(Collectors.toMap(
+                                    b -> b.bookId(),   // long -> Long auto boxing
+                                    b -> b,
+                                    (a, b) -> a
+                            ));
+
+            List<OrderDetailResponse> detailResponses = orderDetailList.stream()
+                    .map(od -> {
+                        InternalBookInfoResponse bookInfo = bookInfoMap.get(od.getBookId());
+
+                        String title = "정보 없음";
+                        String imgUrl = null;
+
+                        if (bookInfo != null) {
+                            if (bookInfo.title() != null) title = bookInfo.title();
+                            imgUrl = bookInfo.coverImage();
+                        }
+
+                        return new OrderDetailResponse(od.getId(),
+                                od.getBookId(), title, imgUrl, od.getPrice(), od.getQuantity(),
+                                packagingService.getPackagingName(od.getPackagingId()), od.getOrderDetailStatus(),
+                                null // ✅ 비회원은 reviewId 없음
+                        );
+                    }).toList();
+
+            return new OrderResponse(
+                    order.getId(),
+                    order.getOrderNumber(),
+                    order.getOrderStatus(),
+                    order.getOrderDate(),
+                    order.getOrdererName(),
+                    order.getTotalPrice(),
+                    order.getPhoneNumber(),
+                    order.getEmail(),
+                    detailResponses
+            );
+        }
+
+        // -------------------------
+        // ✅ 기존 회원 로직 그대로 (리뷰조회 포함)
+        // -------------------------
 
         // 도서 정보 및 리뷰 정보 조회
         // 한 번의 주문에 포함된 모든 책 ID를 수집하여 일괄 조회
