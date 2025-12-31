@@ -129,6 +129,7 @@ public class OrderResultService {
         );
     }
 
+
     @Transactional(readOnly = true)
     public DeliveryAddressResponse getMemberDelivery(Long userId, Long orderNumber) {
         Order order = orderRepository.findByOrderNumber(orderNumber)
