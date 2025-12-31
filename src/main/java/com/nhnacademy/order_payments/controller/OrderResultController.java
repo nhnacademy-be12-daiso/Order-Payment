@@ -46,11 +46,9 @@ public class OrderResultController {
                                   @PathVariable Long orderDetailId) {
         try {
             orderResultService.refundOrder(orderDetailId);
-            return ResponseEntity.ok("반품 신청이 접수되었습니다.");
+            return ResponseEntity.ok().build();
         } catch (IllegalReturnStateException e) {
             return ResponseEntity.badRequest().body(e.getMessage());
         }
-
-
     }
 }

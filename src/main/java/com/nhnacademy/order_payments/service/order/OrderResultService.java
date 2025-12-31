@@ -31,6 +31,9 @@ import com.nhnacademy.order_payments.repository.OrderRepository;
 import com.nhnacademy.order_payments.saga.SagaOrchestrator;
 import com.nhnacademy.order_payments.saga.event.OrderRefundEvent;
 import com.nhnacademy.order_payments.service.packaging.PackagingService;
+
+import java.time.LocalDate;
+import java.time.LocalDateTime;
 import java.util.List;
 import java.util.Map;
 import java.util.stream.Collectors;
@@ -147,27 +150,23 @@ public class OrderResultService {
     @Transactional
     public void refundOrder(Long orderDetailId) {
         /**
-         *      SHIPPED,    // 배송 중
          *     DELIVERED,  // 배송 완료
-         *     이 두개에 대해서만 반품 가능
+         *     이 상태에 대해서만 반품 가능
          */
         OrderDetail orderDetail = orderDetailRepository.findById(orderDetailId).orElseThrow();
 
-        if(orderDetail.getOrderDetailStatus() != OrderDetailStatus.DELIVERED &&
-        orderDetail.getOrderDetailStatus() != OrderDetailStatus.SHIPPED) {
-            throw new IllegalReturnStateException("배송 중 또는 배송 완료 상태에서만 반품 신청이 가능합니다.");
+        if(orderDetail.getOrderDetailStatus() != OrderDetailStatus.DELIVERED) {
+            throw new IllegalReturnStateException("배송 완료 상태에서만 반품 신청이 가능합니다.");
         }
 
+        LocalDate releaseDate = orderDetail.getShippedAt().toLocalDate(); // 시간 말고 날짜만 비교
+        LocalDate tenDasAfterRelease = releaseDate.plusDays(10); // 출고일 기준 10일 지남
 
-        Long refundAmount = orderDetail.getPrice() * orderDetail.getQuantity() - 3000;
-        // ---> 배송비 제외하고 반품 가격 책정 (할인가 문제 해결해야함)
-        OrderRefundEvent event = new OrderRefundEvent(orderDetail, refundAmount);
+        if(!LocalDate.now().isBefore(tenDasAfterRelease)) {
+            throw new IllegalReturnStateException("출고일 기준 10일 이내에만 미사용 반품을 신청할 수 있습니다.");
+        }
 
-
-        sagaOrchestrator.start(event);
-
-        orderDetail.setOrderDetailStatus(OrderDetailStatus.RETURNED);
-
+        orderDetail.setOrderDetailStatus(OrderDetailStatus.RETURN_REQUESTED);
+        log.info("[반품] 반품 신청 완료됨 - OrderID : {}", orderDetail.getOrder().getId());
     }
-
 }

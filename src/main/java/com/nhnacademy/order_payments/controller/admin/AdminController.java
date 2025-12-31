@@ -2,6 +2,8 @@ package com.nhnacademy.order_payments.controller.admin;
 
 import com.nhnacademy.order_payments.dto.order.AdminOrderDto;
 import com.nhnacademy.order_payments.entity.Order;
+import com.nhnacademy.order_payments.entity.OrderDetail;
+import com.nhnacademy.order_payments.model.AdminRefundOrderDto;
 import com.nhnacademy.order_payments.service.admin.AdminService;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
@@ -27,10 +29,28 @@ public class AdminController {
         return orderResponses;
     }
 
+    @GetMapping("/refunds")
+    List<AdminRefundOrderDto> getRefundOrders(@RequestHeader("X-User-Id") Long adminId) {
+        List<OrderDetail> orderDetails = adminService.getRefundOrders();
+
+        List<AdminRefundOrderDto> refundOrders = orderDetails.stream()
+                .map(AdminRefundOrderDto::new).toList();
+
+        return refundOrders;
+    }
+
     @PatchMapping("/{orderId}/status")
     void setTransit(@RequestHeader("X-User-Id") Long adminId,
                     @PathVariable Long orderId) {
         adminService.startDelivery(orderId);
-        log.info("배송이 시작되었습니다. Order ID : {}", orderId);
+        log.info("상품이 출고되었습니다. Order ID : {}", orderId);
     }
+
+    @PatchMapping("/{orderDetailId}/refund/approve")
+    void approveRefund(@RequestHeader("X-User-Id") Long adminId,
+                       @PathVariable Long orderDetailId) {
+        adminService.approveRefund(orderDetailId);
+        log.info("상품의 반품이 승인되었습니다. OrderDetail ID : {}", orderDetailId);
+    }
+
 }

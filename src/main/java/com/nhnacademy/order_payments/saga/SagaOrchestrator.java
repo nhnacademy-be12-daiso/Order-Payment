@@ -164,7 +164,7 @@ public class SagaOrchestrator {
 
     // saga 완료
     public void completeSaga(SagaInstance instance) {
-        log.info("[Saga] Saga 완료! 주문 로직 완료됨 Order ID : {}", instance.getSagaId());
+        log.info("[Saga] Saga 완료됨 Order ID : {}", instance.getSagaId());
         instance.setSagaStatus(SagaStatus.COMPLETED);
         sseService.notify(instance.getSagaId(), "COMPLETED");
     }
