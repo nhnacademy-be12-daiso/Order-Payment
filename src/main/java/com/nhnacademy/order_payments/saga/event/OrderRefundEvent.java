@@ -1,6 +1,7 @@
 package com.nhnacademy.order_payments.saga.event;
 
 
+import com.fasterxml.jackson.annotation.JsonProperty;
 import com.nhnacademy.order_payments.entity.Order;
 import com.nhnacademy.order_payments.entity.OrderDetail;
 import com.nhnacademy.order_payments.saga.common.SagaEvent;
@@ -9,12 +10,14 @@ import lombok.Getter;
 import lombok.NoArgsConstructor;
 
 import java.util.Map;
+import java.util.UUID;
 
 @Getter
 @NoArgsConstructor
 @AllArgsConstructor
 public class OrderRefundEvent implements SagaEvent {
-
+    @JsonProperty("eventId")
+    private String eventId;
     private Long orderId; // orderDetail이여도 됨
     private Long userId;
     private Long outboxId;
@@ -28,11 +31,17 @@ public class OrderRefundEvent implements SagaEvent {
      */
 
     public OrderRefundEvent(OrderDetail orderDetail, Long refundAmount) {
+        this.eventId = UUID.randomUUID().toString();
         this.orderId = orderDetail.getId();
         this.userId = orderDetail.getOrder().getUserId();
 
         this.bookId = orderDetail.getBookId();
         this.quantity = Long.valueOf(orderDetail.getQuantity());
         this.refundAmount = refundAmount;
+    }
+
+    @Override
+    public String getEventId() {
+        return eventId;
     }
 }

@@ -18,6 +18,8 @@ import org.springframework.amqp.rabbit.annotation.RabbitListener;
 import org.springframework.context.ApplicationEventPublisher;
 import org.springframework.stereotype.Service;
 
+import java.util.UUID;
+
 @Slf4j
 @RequiredArgsConstructor
 @Service
@@ -81,7 +83,7 @@ public class PaymentEventListener {
             log.error("[Payment API] 결제 실패 : {}", e.getMessage());
             log.error("[Payment API] ===== 결제 실패로 인한 보상 트랜잭션 시작 Order ID : {} =====", event.getOrderId());
 
-            OrderCompensateEvent orderCompensateEvent = new OrderCompensateEvent(event, "PAYMENT_FAILED");
+            OrderCompensateEvent orderCompensateEvent = new OrderCompensateEvent(UUID.randomUUID().toString(), event, "PAYMENT_FAILED");
 
             compensationOutboxService.saveCompensationEvent(
                     event.getOrderId(),

@@ -19,5 +19,6 @@ public enum OrderDetailStatus {
     SHIPPED,    // 배송 중
     DELIVERED,  // 배송 완료
     CANCELLED,  // 취소
-    RETURNED    // 반품
+    RETURNED,   // 반품 승인 상태
+    RETURN_REQUESTED // 반품 신청 상태
 }

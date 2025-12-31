@@ -21,8 +21,8 @@ X-User-Id: 407131
 {
   "bookList": [
     {
-      "bookId": 6372512,
-      "couponId": 5001,
+      "bookId": 116975,
+      "couponId": null,
       "price": 25000,
       "discountPercentage": 0.1,
       "discountPrice": 2500,
