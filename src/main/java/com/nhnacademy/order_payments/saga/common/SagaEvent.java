@@ -20,6 +20,7 @@ import com.nhnacademy.order_payments.saga.event.OrderRefundEvent;
 })
 public interface SagaEvent {
 
+    String getEventId();
     Long getOrderId();
 
 }

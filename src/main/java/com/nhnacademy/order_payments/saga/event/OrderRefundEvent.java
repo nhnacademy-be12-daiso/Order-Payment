@@ -15,6 +15,7 @@ import java.util.Map;
 @AllArgsConstructor
 public class OrderRefundEvent implements SagaEvent {
 
+    private String eventId;
     private Long orderId; // orderDetail이여도 됨
     private Long userId;
     private Long outboxId;
@@ -34,5 +35,10 @@ public class OrderRefundEvent implements SagaEvent {
         this.bookId = orderDetail.getBookId();
         this.quantity = Long.valueOf(orderDetail.getQuantity());
         this.refundAmount = refundAmount;
+    }
+
+    @Override
+    public String getEventId() {
+        return eventId;
     }
 }

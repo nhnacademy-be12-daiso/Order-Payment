@@ -4,6 +4,7 @@ import com.nhnacademy.order_payments.entity.OrderDeduplicationLog;
 import com.nhnacademy.order_payments.repository.OrderDeduplicationRepository;
 import com.nhnacademy.order_payments.saga.common.SagaReply;
 import com.nhnacademy.order_payments.saga.common.SagaTopic;
+import jakarta.transaction.Transactional;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.amqp.rabbit.annotation.RabbitListener;
@@ -26,13 +27,14 @@ public class OrderReplyListener {
     private final OrderDeduplicationRepository deduplicationRepository;
 
     // 성공 트랜잭션에 대한 답변을 받는 리스너
+    @Transactional
     @RabbitListener(queues = SagaTopic.ORDER_QUEUE)
     public void onReply(SagaReply reply) {
 
-        String dedupeKey = reply.getOrderId() + "_" + reply.getServiceName();
+        String dedupeKey = reply.getEventId() + "_" + reply.getServiceName();
 
         if(deduplicationRepository.existsByMessageId(dedupeKey)) { // 이미 존재한다면?
-            log.info("[Saga] 중복된 응답 무시 - Order ID : {}, Service : {}", reply.getOrderId(), reply.getServiceName());
+            log.info("[Saga] 중복된 응답 무시 - Event ID : {}, Service : {}", reply.getEventId(), reply.getServiceName());
             return;
         }
 
@@ -47,15 +49,16 @@ public class OrderReplyListener {
 
     }
 
+    @Transactional
     @RabbitListener(queues = SagaTopic.ORDER_COMPENSATION_QUEUE)
     public void onCompensatedReply(SagaReply reply) {
 
         // 주문ID + 서비스 + 상태
-        String dedupeKey = reply.getOrderId() + "_" + reply.getServiceName() + "_COMP";
+        String dedupeKey = reply.getEventId() + "_" + reply.getServiceName() + "_COMP";
 
         // 중복 검사
         if(deduplicationRepository.existsByMessageId(dedupeKey)) { // 이미 존재한다면?
-            log.info("[Saga] 중복된 보상 응답 무시 - Order ID : {}, Service : {}", reply.getOrderId(), reply.getServiceName());
+            log.info("[Saga] 중복된 보상 응답 무시 - Event ID : {}, Service : {}", reply.getEventId(), reply.getServiceName());
             return;
         }
 
