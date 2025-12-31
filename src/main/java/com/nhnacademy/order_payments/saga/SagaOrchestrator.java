@@ -19,6 +19,7 @@ import org.springframework.context.ApplicationEventPublisher;
 import org.springframework.stereotype.Service;
 
 import java.util.Arrays;
+import java.util.UUID;
 
 @Service
 @Slf4j
@@ -110,7 +111,7 @@ public class SagaOrchestrator {
     public void startCompensation(SagaInstance instance, String reason) {
         log.warn("[Saga] 보상 트랜잭션 개시 - OrderID: {}", instance.getSagaId());
 
-        OrderCompensateEvent rollbackEvent = new OrderCompensateEvent(convertToEvent(instance.getPayload()), reason);
+        OrderCompensateEvent rollbackEvent = new OrderCompensateEvent(UUID.randomUUID().toString(), convertToEvent(instance.getPayload()), reason);
 
         instance.setSagaStatus(SagaStatus.COMPENSATING); // 보상 시작 상태
 
@@ -164,7 +165,7 @@ public class SagaOrchestrator {
 
     // saga 완료
     public void completeSaga(SagaInstance instance) {
-        log.info("[Saga] Saga 완료! 주문 로직 완료됨 Order ID : {}", instance.getSagaId());
+        log.info("[Saga] Saga 완료됨 Order ID : {}", instance.getSagaId());
         instance.setSagaStatus(SagaStatus.COMPLETED);
         sseService.notify(instance.getSagaId(), "COMPLETED");
     }

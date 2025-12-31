@@ -1,5 +1,6 @@
 package com.nhnacademy.order_payments.saga.event;
 
+import com.fasterxml.jackson.annotation.JsonProperty;
 import com.nhnacademy.order_payments.saga.common.SagaEvent;
 import lombok.AllArgsConstructor;
 import lombok.Getter;
@@ -12,9 +13,15 @@ import java.util.Map;
 @NoArgsConstructor
 @AllArgsConstructor
 public class OrderCompensateEvent implements SagaEvent {
-
+    @JsonProperty("eventId")
+    private String eventId;
     private SagaEvent originalEvent; // ----> 이렇게 해야 어떤 이벤트든 담을 수 있음
     private String failureReason; // 실패 사유
+
+    @Override
+    public String getEventId() {
+        return eventId;
+    }
 
     @Override
     public Long getOrderId() {

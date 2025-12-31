@@ -1,6 +1,7 @@
 package com.nhnacademy.order_payments.saga.common;
 
 
+import com.fasterxml.jackson.annotation.JsonProperty;
 import com.fasterxml.jackson.annotation.JsonSubTypes;
 import com.fasterxml.jackson.annotation.JsonTypeInfo;
 import com.nhnacademy.order_payments.saga.SagaOrchestrator;
@@ -20,6 +21,8 @@ import com.nhnacademy.order_payments.saga.event.OrderRefundEvent;
 })
 public interface SagaEvent {
 
+    @JsonProperty("eventId")
+    String getEventId();
     Long getOrderId();
 
 }
