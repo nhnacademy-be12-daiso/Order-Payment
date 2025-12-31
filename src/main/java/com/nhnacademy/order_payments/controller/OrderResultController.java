@@ -13,6 +13,7 @@
 package com.nhnacademy.order_payments.controller;
 
 import com.nhnacademy.order_payments.dto.order.GuestOrderCheckRequest;
+import com.nhnacademy.order_payments.dto.response.order.DeliveryAddressResponse;
 import com.nhnacademy.order_payments.dto.response.order.OrderListResponse;
 import com.nhnacademy.order_payments.dto.response.order.OrderResponse;
 import com.nhnacademy.order_payments.exception.IllegalReturnStateException;
@@ -51,4 +52,16 @@ public class OrderResultController {
             return ResponseEntity.badRequest().body(e.getMessage());
         }
     }
+
+    @PostMapping("/guest/delivery")
+    public DeliveryAddressResponse getGuestDelivery(@RequestBody GuestOrderCheckRequest request) {
+        return orderResultService.getGuestDelivery(request.orderNumber(), request.password());
+    }
+
+    @GetMapping("/{orderNumber}/delivery")
+    public DeliveryAddressResponse getMemberDelivery(@RequestHeader("X-User-Id") Long userId,
+                                                     @PathVariable Long orderNumber) {
+        return orderResultService.getMemberDelivery(userId, orderNumber);
+    }
+
 }

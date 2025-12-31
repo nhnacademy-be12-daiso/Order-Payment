@@ -13,10 +13,13 @@
 package com.nhnacademy.order_payments.service.order;
 
 import com.nhnacademy.order_payments.dto.order.BookSummaryDto;
+import com.nhnacademy.order_payments.dto.order.DeliverySummaryDto;
 import com.nhnacademy.order_payments.dto.order.OrderSummaryDto;
+import com.nhnacademy.order_payments.entity.Delivery;
 import com.nhnacademy.order_payments.entity.GuestOrderers;
 import com.nhnacademy.order_payments.entity.Order;
 import com.nhnacademy.order_payments.entity.OrderDetail;
+import com.nhnacademy.order_payments.repository.DeliveryRepository;
 import com.nhnacademy.order_payments.repository.GuestOrdererRepository;
 import com.nhnacademy.order_payments.repository.OrderRepository;
 import com.nhnacademy.order_payments.saga.SagaOrchestrator;
@@ -35,6 +38,7 @@ public class OrderService {
 
     private final OrderRepository orderRepository;
     private final GuestOrdererRepository guestOrdererRepository;
+    private final DeliveryRepository deliveryRepository;
     private final OrderEventFactory orderEventFactory;
     private final OrderValidationService orderValidationService;
     private final PasswordEncoder passwordEncoder;
@@ -72,6 +76,29 @@ public class OrderService {
 
         // 3. 일단 주문부터 DB에 저장 (order_number 확정)
         Order savedOrder = orderRepository.save(order);
+
+        // 3-1. 배송지 저장 (주문 당시 배송지)
+        DeliverySummaryDto deliveryDto = dto.deliverySummaryDto();
+        if (deliveryDto != null) {
+            String address = (deliveryDto.deliveryAddress() == null) ? "" : deliveryDto.deliveryAddress();
+            String detail = (deliveryDto.deliveryAddressDetail() == null) ? "" : deliveryDto.deliveryAddressDetail();
+
+            Delivery delivery = new Delivery(
+                    address,
+                    deliveryDto.postalCode(),
+                    deliveryDto.receiverName(),
+                    deliveryDto.receiverPhoneNumber(),
+                    deliveryDto.DeliveryFee()
+            );
+
+            delivery.setAddressDetail(detail);
+            delivery.setOrder(savedOrder);
+
+            // 양방향 세팅
+            savedOrder.setDelivery(delivery);
+
+            deliveryRepository.save(delivery);
+        }
 
         // 4. 비회원일 경우 인증 정보(비밀번호) 저장
         if (userId == null) {
