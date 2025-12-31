@@ -105,7 +105,6 @@ public class OrderService {
             // Delivery 먼저 저장
             deliveryRepository.save(delivery);
 
-            // ✅ 추가: 주문서에서 선택한 "도착예정일(배송일 선택)"을 DeliveryDetail.estimatedAt 으로 저장
             String deliveryDate = deliveryDto.deliveryDate(); // 프론트에서 yyyy-MM-dd 형태로 넘어온다고 가정
             LocalDate estimatedAt = parseEstimatedAt(deliveryDate);
 
