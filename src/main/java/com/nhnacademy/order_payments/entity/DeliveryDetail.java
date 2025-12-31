@@ -58,7 +58,7 @@ public class DeliveryDetail {
     private LocalDate estimatedAt; //배성 예정일이기에 일까지만
 
     @Setter
-    @CreationTimestamp
+//    @CreationTimestamp -> 주문 생성 시점에 도착 완료 시간이 찍힘
     @Column(name = "complete_at")
     private LocalDateTime completeAt; //실제 도착한것이기에 시간까지
 
