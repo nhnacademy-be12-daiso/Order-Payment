@@ -50,6 +50,18 @@ public class AdminService {
     }
 
     @Transactional
+    public void setDeliveryComplete(Long orderId) {
+
+        Order order = orderRepository.findById(orderId).orElseThrow(() -> new NotFoundOrderException("해당 주문이 존재하지 않습니다."));
+        List<OrderDetail> orderDetails = order.getOrderDetailList();
+
+        order.setOrderStatus(OrderStatus.COMPLETED); // Order의 상태를 이렇게 만듬
+        orderDetails.forEach(detail -> {
+            detail.setOrderDetailStatus(OrderDetailStatus.DELIVERED);
+        });
+    }
+
+    @Transactional
     public void approveRefund(Long orderDetailId) {
 
 
