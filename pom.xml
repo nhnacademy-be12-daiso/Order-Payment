@@ -35,6 +35,9 @@
 
         <!-- Spring Cloud 2025.0.x 는 Spring Boot 3.5.x 와 호환 -->
         <spring-cloud.version>2025.0.0</spring-cloud.version>
+
+        <!-- ✅ coverage -->
+        <jacoco.version>0.8.12</jacoco.version>
     </properties>
 
     <!-- Spring Cloud BOM (Eureka 등 버전 관리용) -->
@@ -148,10 +151,38 @@
             <groupId>org.springframework.security</groupId>
             <artifactId>spring-security-crypto</artifactId>
         </dependency>
+
     </dependencies>
 
     <build>
         <plugins>
+            <!-- JaCoCo code coverage -->
+            <plugin>
+                <groupId>org.jacoco</groupId>
+                <artifactId>jacoco-maven-plugin</artifactId>
+                <version>${jacoco.version}</version>
+                <executions>
+                    <execution>
+                        <id>prepare-agent</id>
+                        <goals>
+                            <goal>prepare-agent</goal>
+                        </goals>
+                    </execution>
+                    <execution>
+                        <id>report</id>
+                        <phase>verify</phase>
+                        <goals>
+                            <goal>report</goal>
+                        </goals>
+                    </execution>
+                </executions>
+            </plugin>
+            <plugin>
+                <groupId>org.sonarsource.scanner.maven</groupId>
+                <artifactId>sonar-maven-plugin</artifactId>
+                <version>5.4.0.6343</version>
+            </plugin>
+
             <!-- Lombok annotation processor 등록 -->
             <plugin>
                 <groupId>org.apache.maven.plugins</groupId>
