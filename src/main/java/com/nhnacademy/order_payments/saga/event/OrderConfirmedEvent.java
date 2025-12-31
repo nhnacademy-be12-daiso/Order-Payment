@@ -1,5 +1,6 @@
 package com.nhnacademy.order_payments.saga.event;
 
+import com.fasterxml.jackson.annotation.JsonProperty;
 import com.nhnacademy.order_payments.saga.common.SagaEvent;
 import lombok.AllArgsConstructor;
 import lombok.Getter;
@@ -16,7 +17,7 @@ import java.util.Map;
 @NoArgsConstructor
 @AllArgsConstructor
 public class OrderConfirmedEvent implements SagaEvent {
-
+    @JsonProperty("eventId")
     private String eventId;
     private Long orderId;
     private Long userId;

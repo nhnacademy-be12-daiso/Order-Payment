@@ -29,7 +29,7 @@ public class OrderEventFactory {
                 ));
 
         return new OrderConfirmedEvent(
-                UUID.randomUUID().toString(),
+                UUID.randomUUID().toString(), // 생성과 동시에 UUID 박아줌
                 order.getId(),
                 userId,
                 null,
