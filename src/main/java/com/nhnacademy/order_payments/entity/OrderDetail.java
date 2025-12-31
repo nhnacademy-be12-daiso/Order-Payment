@@ -26,10 +26,14 @@ import jakarta.persistence.JoinColumn;
 import jakarta.persistence.ManyToOne;
 import jakarta.persistence.OneToMany;
 import jakarta.persistence.Table;
+
+import java.time.LocalDate;
+import java.time.LocalDateTime;
 import java.util.List;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.Setter;
+import org.springframework.stereotype.Component;
 
 @NoArgsConstructor
 @Getter
@@ -64,6 +68,10 @@ public class OrderDetail {
     @Enumerated(EnumType.STRING)
     @Column(name = "order_detail_status")
     private OrderDetailStatus orderDetailStatus;
+
+    @Setter
+    @Column(name = "shipped_at")
+    private LocalDateTime shippedAt;
 
     public OrderDetail(Long bookId, Long price, Integer quantity, Long packagingId) {
         this.bookId = bookId;

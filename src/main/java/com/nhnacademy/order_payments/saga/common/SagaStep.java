@@ -24,7 +24,7 @@ public enum SagaStep {
             instance.setBookStatus(status); // 자기가 알아서 Book 필드를 수정
         }
         @Override
-        public void execute(SagaOrchestrator orchestrator, OrderConfirmedEvent event) {
+        public void execute(SagaOrchestrator orchestrator, SagaEvent event) {
             orchestrator.send(SagaTopic.BOOK_RK,  event);
         }
         @Override
@@ -39,7 +39,7 @@ public enum SagaStep {
             instance.setUserStatus(status);
         }
         @Override
-        public void execute(SagaOrchestrator orchestrator, OrderConfirmedEvent event) {
+        public void execute(SagaOrchestrator orchestrator, SagaEvent event) {
             orchestrator.send(SagaTopic.USER_RK, event);
         }
         @Override
@@ -55,7 +55,7 @@ public enum SagaStep {
             instance.setCouponStatus(status);
         }
         @Override
-        public void execute(SagaOrchestrator orchestrator, OrderConfirmedEvent event) {
+        public void execute(SagaOrchestrator orchestrator, SagaEvent event) {
             orchestrator.send(SagaTopic.COUPON_RK,  event);
         }
         @Override
@@ -69,16 +69,16 @@ public enum SagaStep {
         public void updateStatus(SagaInstance instance, ServiceStatus status) {
             instance.setBookStatus(status); // 자기가 알아서 Book 필드를 수정
         }
-        @Override public void execute(SagaOrchestrator orchestrator, OrderConfirmedEvent ev) {}
+        @Override public void execute(SagaOrchestrator orchestrator, SagaEvent ev) {}
         @Override
         public ServiceStatus getStatus(SagaInstance instance) {
             return null; // 얘는 굳이 반환할 필요가 없잖..? 아?
         }
     };
 
-
+    // 추상 메서드 ---> 시그니처 이거 기준으로 바꾸기
     public abstract void updateStatus(SagaInstance instance, ServiceStatus status);
-    public abstract void execute(SagaOrchestrator orchestrator, OrderConfirmedEvent event);
+    public abstract void execute(SagaOrchestrator orchestrator, SagaEvent event);
     public abstract ServiceStatus getStatus(SagaInstance instance);
 
     @Getter

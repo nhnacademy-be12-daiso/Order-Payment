@@ -36,7 +36,6 @@ import org.springframework.stereotype.Service;
 @Service
 public class OrderService {
 
-
     private final OrderRepository orderRepository;
     private final GuestOrdererRepository guestOrdererRepository;
     private final DeliveryRepository deliveryRepository;
@@ -54,11 +53,6 @@ public class OrderService {
         if (!orderValidationService.validateOrder(userId, dto)) { // 검증 실패
             throw new RuntimeException("주문 정보에 대한 검증 실패"); // -----> 예외처리 다시 해주기 <<<<<<<<
         }
-
-        // TODO 결제 로직
-
-        // ------- saga 시작 ----------
-
 
         // SagaOrchestrator 주입받아서 saga 시작
         sagaOrchestrator.start(event);

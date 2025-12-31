@@ -16,6 +16,7 @@ import com.nhnacademy.order_payments.dto.order.GuestOrderCheckRequest;
 import com.nhnacademy.order_payments.dto.response.order.DeliveryAddressResponse;
 import com.nhnacademy.order_payments.dto.response.order.OrderListResponse;
 import com.nhnacademy.order_payments.dto.response.order.OrderResponse;
+import com.nhnacademy.order_payments.exception.IllegalReturnStateException;
 import com.nhnacademy.order_payments.service.order.OrderResultService;
 import jakarta.ws.rs.Path;
 import lombok.RequiredArgsConstructor;
@@ -44,9 +45,14 @@ public class OrderResultController {
     @PostMapping("/{orderDetailId}/refund")
     ResponseEntity<?> refundOrder(@RequestHeader(value = "X-User-Id", required = false) Long userId,
                                   @PathVariable Long orderDetailId) {
-        orderResultService.refundOrder(orderDetailId);
+        try {
+            orderResultService.refundOrder(orderDetailId);
+            return ResponseEntity.ok("반품 신청이 접수되었습니다.");
+        } catch (IllegalReturnStateException e) {
+            return ResponseEntity.badRequest().body(e.getMessage());
+        }
 
-        return ResponseEntity.ok().build();
+
     }
 
     @PostMapping("/guest/delivery")

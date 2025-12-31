@@ -27,6 +27,7 @@ import com.nhnacademy.order_payments.entity.Delivery;
 import com.nhnacademy.order_payments.entity.GuestOrderers;
 import com.nhnacademy.order_payments.entity.Order;
 import com.nhnacademy.order_payments.entity.OrderDetail;
+import com.nhnacademy.order_payments.exception.IllegalReturnStateException;
 import com.nhnacademy.order_payments.exception.NotFoundOrderException;
 import com.nhnacademy.order_payments.model.OrderDetailStatus;
 import com.nhnacademy.order_payments.repository.GuestOrdererRepository;
@@ -40,6 +41,8 @@ import java.util.Map;
 import java.util.stream.Collectors;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.aspectj.weaver.ast.Or;
+import org.springframework.http.ResponseEntity;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -245,12 +248,23 @@ public class OrderResultService {
 
     @Transactional
     public void refundOrder(Long orderDetailId) {
+        /**
+         *      SHIPPED,    // 배송 중
+         *     DELIVERED,  // 배송 완료
+         *     이 두개에 대해서만 반품 가능
+         */
         OrderDetail orderDetail = orderDetailRepository.findById(orderDetailId).orElseThrow();
+
+        if(orderDetail.getOrderDetailStatus() != OrderDetailStatus.DELIVERED &&
+        orderDetail.getOrderDetailStatus() != OrderDetailStatus.SHIPPED) {
+            throw new IllegalReturnStateException("배송 중 또는 배송 완료 상태에서만 반품 신청이 가능합니다.");
+        }
+
 
         Long refundAmount = orderDetail.getPrice() * orderDetail.getQuantity() - 3000;
         // ---> 배송비 제외하고 반품 가격 책정 (할인가 문제 해결해야함)
-
         OrderRefundEvent event = new OrderRefundEvent(orderDetail, refundAmount);
+
 
         sagaOrchestrator.start(event);
 
