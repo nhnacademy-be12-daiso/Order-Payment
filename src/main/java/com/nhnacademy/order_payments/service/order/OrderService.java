@@ -16,9 +16,11 @@ import com.nhnacademy.order_payments.dto.order.BookSummaryDto;
 import com.nhnacademy.order_payments.dto.order.DeliverySummaryDto;
 import com.nhnacademy.order_payments.dto.order.OrderSummaryDto;
 import com.nhnacademy.order_payments.entity.Delivery;
+import com.nhnacademy.order_payments.entity.DeliveryDetail;
 import com.nhnacademy.order_payments.entity.GuestOrderers;
 import com.nhnacademy.order_payments.entity.Order;
 import com.nhnacademy.order_payments.entity.OrderDetail;
+import com.nhnacademy.order_payments.repository.DeliveryDetailRepository;
 import com.nhnacademy.order_payments.repository.DeliveryRepository;
 import com.nhnacademy.order_payments.repository.GuestOrdererRepository;
 import com.nhnacademy.order_payments.repository.OrderRepository;
@@ -26,6 +28,7 @@ import com.nhnacademy.order_payments.saga.SagaOrchestrator;
 import com.nhnacademy.order_payments.saga.event.OrderConfirmedEvent;
 import com.nhnacademy.order_payments.saga.order.OrderEventFactory;
 import jakarta.transaction.Transactional;
+import java.time.LocalDate;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.security.crypto.password.PasswordEncoder;
@@ -39,10 +42,13 @@ public class OrderService {
     private final OrderRepository orderRepository;
     private final GuestOrdererRepository guestOrdererRepository;
     private final DeliveryRepository deliveryRepository;
+    private final DeliveryDetailRepository deliveryDetailRepository;
+
     private final OrderEventFactory orderEventFactory;
     private final OrderValidationService orderValidationService;
     private final PasswordEncoder passwordEncoder;
     private final SagaOrchestrator sagaOrchestrator;
+
     @Transactional
     public Order precessOrderPayment(Long userId, OrderSummaryDto dto) {
 
@@ -59,7 +65,6 @@ public class OrderService {
 
         return order; // 임시로 뱉어내는 로직
     }
-
 
     public Order createOrder(Long userId, OrderSummaryDto dto) {
         // 1. 주문 객체 생성 (아직 저장 안 함 - 비영속 상태) 및 기본 정보 세팅
@@ -97,7 +102,21 @@ public class OrderService {
             // 양방향 세팅
             savedOrder.setDelivery(delivery);
 
+            // Delivery 먼저 저장
             deliveryRepository.save(delivery);
+
+            // ✅ 추가: 주문서에서 선택한 "도착예정일(배송일 선택)"을 DeliveryDetail.estimatedAt 으로 저장
+            String deliveryDate = deliveryDto.deliveryDate(); // 프론트에서 yyyy-MM-dd 형태로 넘어온다고 가정
+            LocalDate estimatedAt = parseEstimatedAt(deliveryDate);
+
+            if (estimatedAt != null) {
+                DeliveryDetail deliveryDetail = new DeliveryDetail();
+                deliveryDetail.setDelivery(delivery);
+                deliveryDetail.setEstimatedAt(estimatedAt);
+
+                // (배송사/배송기사/상태/완료시간은 아직 없으니 미세팅)
+                deliveryDetailRepository.save(deliveryDetail);
+            }
         }
 
         // 4. 비회원일 경우 인증 정보(비밀번호) 저장
@@ -109,5 +128,28 @@ public class OrderService {
         }
 
         return savedOrder;
+    }
+
+    /**
+     * deliveryDate(String)를 LocalDate로 파싱
+     * - 기본 기대 포맷: yyyy-MM-dd
+     * - 혹시라도 "yyyy-MM-ddTHH:mm:ss" 같은 값이 들어오면 앞 10자리만 사용
+     */
+    private LocalDate parseEstimatedAt(String deliveryDate) {
+        if (deliveryDate == null || deliveryDate.isBlank()) {
+            return null;
+        }
+
+        String value = deliveryDate.trim();
+        try {
+            // "2025-01-03T00:00:00" 같은 경우 대비
+            if (value.length() >= 10) {
+                value = value.substring(0, 10);
+            }
+            return LocalDate.parse(value);
+        } catch (Exception e) {
+            log.warn("[주문생성] deliveryDate 파싱 실패. value={}", deliveryDate, e);
+            return null;
+        }
     }
 }

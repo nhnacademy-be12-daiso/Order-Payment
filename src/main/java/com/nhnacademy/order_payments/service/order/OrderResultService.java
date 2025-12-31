@@ -24,6 +24,7 @@ import com.nhnacademy.order_payments.dto.review.BookOrderDetailRequest;
 import com.nhnacademy.order_payments.dto.review.BookReviewRequest;
 import com.nhnacademy.order_payments.dto.review.BookReviewResponse;
 import com.nhnacademy.order_payments.entity.Delivery;
+import com.nhnacademy.order_payments.entity.DeliveryDetail;
 import com.nhnacademy.order_payments.entity.GuestOrderers;
 import com.nhnacademy.order_payments.entity.Order;
 import com.nhnacademy.order_payments.entity.OrderDetail;
@@ -36,13 +37,13 @@ import com.nhnacademy.order_payments.repository.OrderRepository;
 import com.nhnacademy.order_payments.saga.SagaOrchestrator;
 import com.nhnacademy.order_payments.saga.event.OrderRefundEvent;
 import com.nhnacademy.order_payments.service.packaging.PackagingService;
+import java.time.LocalDate;
 import java.util.List;
 import java.util.Map;
+import java.util.Objects;
 import java.util.stream.Collectors;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
-import org.aspectj.weaver.ast.Or;
-import org.springframework.http.ResponseEntity;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -97,7 +98,6 @@ public class OrderResultService {
         return createOrderResponse(guestInfo.getOrder());
     }
 
-
     // 배송지만 따로 DTO로 조회
     @Transactional(readOnly = true)
     public DeliveryAddressResponse getGuestDelivery(Long orderNumber, String password) {
@@ -113,13 +113,16 @@ public class OrderResultService {
 
         Delivery delivery = guestInfo.getOrder().getDelivery();
         if (delivery == null) {
-            return new DeliveryAddressResponse(null, null, null);
+            return new DeliveryAddressResponse(null, null, null, null);
         }
+
+        LocalDate estimatedAt = extractEstimatedAt(delivery);
 
         return new DeliveryAddressResponse(
                 delivery.getAddress(),
                 delivery.getAddressDetail(),
-                delivery.getPostalCode()
+                delivery.getPostalCode(),
+                estimatedAt
         );
     }
 
@@ -135,14 +138,34 @@ public class OrderResultService {
 
         Delivery delivery = order.getDelivery();
         if (delivery == null) {
-            return new DeliveryAddressResponse(null, null, null);
+            return new DeliveryAddressResponse(null, null, null, null);
         }
+
+        LocalDate estimatedAt = extractEstimatedAt(delivery);
 
         return new DeliveryAddressResponse(
                 delivery.getAddress(),
                 delivery.getAddressDetail(),
-                delivery.getPostalCode()
+                delivery.getPostalCode(),
+                estimatedAt
         );
+    }
+
+    /**
+     * Delivery에 매핑된 DeliveryDetailList에서 estimatedAt 최대값을 뽑아 반환
+     * - 도착예정일이 여러 개(분리배송 등)일 수 있으니 "가장 늦은 날짜"를 대표값으로 사용
+     */
+    private LocalDate extractEstimatedAt(Delivery delivery) {
+        if (delivery.getDeliveryDetailList() == null || delivery.getDeliveryDetailList().isEmpty()) {
+            return null;
+        }
+
+        return delivery.getDeliveryDetailList().stream()
+                .filter(Objects::nonNull)
+                .map(DeliveryDetail::getEstimatedAt)
+                .filter(Objects::nonNull)
+                .max(LocalDate::compareTo)
+                .orElse(null);
     }
 
     private OrderResponse createOrderResponse(Order order) {
@@ -256,15 +279,13 @@ public class OrderResultService {
         OrderDetail orderDetail = orderDetailRepository.findById(orderDetailId).orElseThrow();
 
         if(orderDetail.getOrderDetailStatus() != OrderDetailStatus.DELIVERED &&
-        orderDetail.getOrderDetailStatus() != OrderDetailStatus.SHIPPED) {
+                orderDetail.getOrderDetailStatus() != OrderDetailStatus.SHIPPED) {
             throw new IllegalReturnStateException("배송 중 또는 배송 완료 상태에서만 반품 신청이 가능합니다.");
         }
-
 
         Long refundAmount = orderDetail.getPrice() * orderDetail.getQuantity() - 3000;
         // ---> 배송비 제외하고 반품 가격 책정 (할인가 문제 해결해야함)
         OrderRefundEvent event = new OrderRefundEvent(orderDetail, refundAmount);
-
 
         sagaOrchestrator.start(event);
 
