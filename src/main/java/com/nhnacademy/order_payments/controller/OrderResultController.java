@@ -42,6 +42,7 @@ public class OrderResultController {
         return orderResultService.getGuestOrder(request.orderNumber(), request.password());
     }
 
+    // 반품 요청
     @PostMapping("/{orderDetailId}/refund")
     ResponseEntity<?> refundOrder(@RequestHeader(value = "X-User-Id", required = false) Long userId,
                                   @PathVariable Long orderDetailId) {
@@ -51,6 +52,19 @@ public class OrderResultController {
         } catch (IllegalReturnStateException e) {
             return ResponseEntity.badRequest().body(e.getMessage());
         }
+    }
+
+    // 취소
+    @PostMapping("/{orderDetailId}/cancel")
+    ResponseEntity<?> cancelOrder(@RequestHeader(value = "X-User-Id", required = false) Long userId,
+                                       @PathVariable Long orderDetailId) {
+        try {
+            orderResultService.cancelOrder(userId, orderDetailId);
+            return ResponseEntity.ok().build();
+        } catch(IllegalReturnStateException e) {
+            return ResponseEntity.badRequest().body(e.getMessage());
+        }
+
     }
 
     @PostMapping("/guest/delivery")

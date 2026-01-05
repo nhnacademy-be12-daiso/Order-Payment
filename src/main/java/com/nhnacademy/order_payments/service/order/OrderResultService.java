@@ -16,6 +16,8 @@ import com.nhnacademy.order_payments.client.BookApiClient;
 import com.nhnacademy.order_payments.dto.cart.BookApiRequest;
 import com.nhnacademy.order_payments.dto.order.InternalBookInfoResponse;
 import com.nhnacademy.order_payments.dto.order.InternalBooksInfoResponse;
+import com.nhnacademy.order_payments.dto.order.OrderCancelRequest;
+import com.nhnacademy.order_payments.dto.payment.request.CancelRequest;
 import com.nhnacademy.order_payments.dto.response.order.DeliveryAddressResponse;
 import com.nhnacademy.order_payments.dto.response.order.OrderDetailResponse;
 import com.nhnacademy.order_payments.dto.response.order.OrderListResponse;
@@ -41,8 +43,11 @@ import java.util.List;
 import java.util.Map;
 import java.util.Objects;
 import java.util.stream.Collectors;
+
+import com.nhnacademy.order_payments.service.payment.PaymentFacade;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.http.ResponseEntity;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -63,6 +68,9 @@ public class OrderResultService {
     private final OrderDetailRepository orderDetailRepository;
 
     private final SagaOrchestrator sagaOrchestrator;
+
+    private final PaymentFacade paymentFacade;
+
 
     @Transactional(readOnly = true)
     public OrderListResponse getOrderList(Long userId) {
@@ -291,5 +299,34 @@ public class OrderResultService {
 
         orderDetail.setOrderDetailStatus(OrderDetailStatus.RETURN_REQUESTED);
         log.info("[반품] 반품 신청 완료됨 - OrderID : {}", orderDetail.getOrder().getId());
+    }
+
+    // 주문 취소 로직
+    @Transactional
+    public void cancelOrder(Long userId, Long orderDetailId) {
+        OrderDetail orderDetail = orderDetailRepository.findById(orderDetailId).orElseThrow(() -> new NotFoundOrderException("주문을 찾을 수 없습니다."));
+        if(orderDetail.getOrderDetailStatus() != OrderDetailStatus.PENDING) {
+            throw new IllegalReturnStateException("상품 출고 이전에만 주문 취소가 가능합니다.");
+        }
+
+        Long amount = orderDetail.getPrice() * orderDetail.getQuantity();
+
+        CancelRequest request = new CancelRequest(
+                orderDetail.getOrder().getId().toString(),
+                null, // 알아서 조회해줌
+                "CANCEL",
+                amount
+        );
+
+        // 결제 취소
+        paymentFacade.cancel(userId, request);
+
+        OrderCancelRequest cancelRequest = new OrderCancelRequest(
+            orderDetail.getBookId(), orderDetail.getQuantity()
+        );
+
+        bookApiClient.orderCancel(cancelRequest); // 재고 차감
+
+        orderDetail.setOrderDetailStatus(OrderDetailStatus.CANCELLED);
     }
 }

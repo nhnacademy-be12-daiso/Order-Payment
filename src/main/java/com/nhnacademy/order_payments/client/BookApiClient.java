@@ -16,10 +16,12 @@ package com.nhnacademy.order_payments.client;
 import com.nhnacademy.order_payments.dto.cart.BookApiRequest;
 import com.nhnacademy.order_payments.dto.cart.BookApiResponse;
 import com.nhnacademy.order_payments.dto.order.InternalBooksInfoResponse;
+import com.nhnacademy.order_payments.dto.order.OrderCancelRequest;
 import com.nhnacademy.order_payments.dto.review.BookReviewRequest;
 import com.nhnacademy.order_payments.dto.review.BookReviewResponse;
 import java.util.List;
 import org.springframework.cloud.openfeign.FeignClient;
+import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 
@@ -55,5 +57,10 @@ public interface BookApiClient {
     // 주문 내역 조회 페이지에서 보는 리뷰
     @PostMapping("/list/book-review")
     List<BookReviewResponse> getBookReviewList(@RequestBody BookReviewRequest bookReviewRequest);
+
+    // 취소에 대한 도서 재고 원복
+    @PostMapping("/order-cancel")
+    ResponseEntity<Void> orderCancel(@RequestBody OrderCancelRequest orderCancelRequest);
+
 
 }
