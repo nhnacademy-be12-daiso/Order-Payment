@@ -45,6 +45,7 @@
 - Choreography 방식과 Orchestration 방식 중 어떤 방식을 도입할지 고민하게 됨
 
 ### 1. Choreography 방식
+![saga_choreography.png](img/saga_choreography.png)
 - **성공 메커니즘**
   1. `Order API`가 주문 이벤트 발생시키고 다음 서비스(`Book API`) 로 전송함 (Saga 시작)
   2. 이벤트를 수신받은 서비스(`Book API`)는 각자의 로직(재고 차감)을 수행하고 다음 서비스(`User API`)에 이벤트를 전송함
@@ -66,6 +67,7 @@
   - 순환 참조의 문제가 발생할 수 있음
 
 ### 2. Orchestration 방식
+![saga_orchestration.png](img/saga_orchestration.png)
 - **성공 매커니즘**
   - `Order API` 가 Orchestrator가 되어 주문 Saga의 모든 흐름과 상태를 관리함
   - 각 서비스에 이벤트를 전송하고, 응답을 받음
@@ -91,6 +93,8 @@
   - 각 서비스에서 실행되는 비즈니스 로직(ex. 재고 차감 후 DB 저장)과 응답 이벤트 전송 로직은 같은 트랜잭션으로 묶일 수 없음
   - 만약 비즈니스 로직은 성공했지만, 메세지 전송에 실패할 경우, 각 서비스의 **데이터 정합성**이 깨잘 가능성이 있음 
   - 데이터 정합성을 보장하기 위해 적어도 한번 (`At-least-once delivery`) 전송됨을 보장해야함
+
+![outbox.png](img/outbox.png)
 - **Outbox 메커니즘**
   1. 비즈니스 로직 이후 바로 전송되는 것이 아니라 Outbox 테이블에 저장(save)됨 
      - 비즈니스 로직과 Outbox에 저장되는 로직은 한 트랜잭션으로 묶이게 됨
@@ -102,7 +106,7 @@
   - 요청이 두번 전송되게 되면 로직이 두번 수행되는 **멱등성 위반**이 발생함
   - 이것을 방지하기 위해 각 서비스별로 `Deduplication Log` 테이블을 두고, 요청마다 Log를 기록하여 중복 요청시 무시하도록 함 
 
-
+![saga_flow.png](img/saga_flow.png)
 
 
 ---
