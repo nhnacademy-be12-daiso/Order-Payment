@@ -5,6 +5,7 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 import com.nhnacademy.order_payments.entity.OrderOutbox;
 import com.nhnacademy.order_payments.entity.SagaInstance;
 import com.nhnacademy.order_payments.exception.FailedSerializationException;
+import com.nhnacademy.order_payments.exception.NotFoundOrderException;
 import com.nhnacademy.order_payments.repository.OrderOutboxRepository;
 import com.nhnacademy.order_payments.repository.SagaInstanceRepository;
 import com.nhnacademy.order_payments.saga.common.*;
@@ -32,24 +33,16 @@ public class SagaOrchestrator {
     private final ApplicationEventPublisher publisher;
     private final SseService sseService;
 
-    // 트랜잭션이 붙어야 하나?
     @Transactional
     public void start(SagaEvent event) {
-
-        /**
-         *  instance
-         *  ---> saga를 관리하는 상태판과 같음
-         */
         try {
             SagaInstance instance = new SagaInstance(
                     event.getOrderId().toString(),
-                    objectMapper.writeValueAsString(event) // 직렬화 때려버림
+                    objectMapper.writeValueAsString(event)
             );
-            // 저장
-            instanceRepository.save(instance);
-            send(SagaTopic.BOOK_RK, event); // book 부터 saga 시작
-            instance.setSagaStatus(SagaStatus.PROCESSING); // Saga 상태 변경
-
+            instance.setSagaStatus(SagaStatus.PROCESSING); // 상태 설정 후
+            instanceRepository.save(instance);             // 저장
+            send(SagaTopic.BOOK_RK, event);
         } catch (JsonProcessingException e) {
             log.warn("객체 직렬화 실패");
             throw new FailedSerializationException("객체 직렬화 실패", e);
@@ -81,30 +74,29 @@ public class SagaOrchestrator {
 
     @Transactional
     public void handleReply(SagaReply reply) {
-        // 진행중인 상태판 가져옴
         SagaInstance instance = instanceRepository.findById(reply.getOrderId().toString())
-                .orElseThrow(() -> new RuntimeException("여기에 커스텀 예외 꽂아넣어야함 !!!!!"));
+                .orElseThrow(() -> new NotFoundOrderException("SagaInstance를 찾을 수 없습니다. OrderID: " + reply.getOrderId()));
 
-        SagaStep currentStep = instance.getCurrentStep(); // 지금 단계
+        SagaStep currentStep = instance.getCurrentStep();
 
-        if(!reply.isSuccess()) { // 실패한 경우 바로 보상
+        if(!reply.isSuccess()) {
             log.warn("[Saga] {} 단계 실패! 보상 트랜잭션 시작 사유 : {}", reply.getServiceName(), reply.getReason());
-            currentStep.updateStatus(instance, ServiceStatus.FAILED); // 서비스의 상태 변경
+            currentStep.updateStatus(instance, ServiceStatus.FAILED);
+            instanceRepository.save(instance); // 실패 상태 DB 반영
             startCompensation(instance, reply.getReason());
             return;
         }
 
-        currentStep.updateStatus(instance, ServiceStatus.SUCCESS); // 서비스의 상태 변경
+        currentStep.updateStatus(instance, ServiceStatus.SUCCESS);
         SagaStep nextStep = currentStep.next();
 
-        if(nextStep == SagaStep.FINISHED) { // 모든 단계가 끝남
+        if(nextStep == SagaStep.FINISHED) {
             completeSaga(instance);
-        } else { // 다음 단계가 남았음
-            instance.setCurrentStep(nextStep); // 상태 업데이트
-
-            // TODO SagaEvent 추상화하기
+        } else {
+            instance.setCurrentStep(nextStep);
+            instanceRepository.save(instance); // 다음 단계 상태 DB 반영
             SagaEvent event = convertToEvent(instance.getPayload());
-            nextStep.execute(this, event); // <<<<<<<<<<<<<<<<<<<<<<<<< 이 부분 공부 필요
+            nextStep.execute(this, event);
         }
     }
 
@@ -113,26 +105,23 @@ public class SagaOrchestrator {
 
         OrderCompensateEvent rollbackEvent = new OrderCompensateEvent(UUID.randomUUID().toString(), convertToEvent(instance.getPayload()), reason);
 
-        instance.setSagaStatus(SagaStatus.COMPENSATING); // 보상 시작 상태
+        instance.setSagaStatus(SagaStatus.COMPENSATING);
 
-        /**
-         *  보상 트랜잭션 로직
-         *  1. 모든 단계 순회
-         *  2. 실패 단계보다 이전 순서인 단계만 모아서
-         *  3. 상태 변경하고
-         *  4. 모든 서비스에 동시에 쏨 (send() 사용)
-         */
-        // 보상해야 할 단계 필터링
         var stepsToRollback = Arrays.stream(SagaStep.values())
                 .filter(step -> step.getOrder() < instance.getCurrentStep().getOrder())
                 .filter(step -> step != SagaStep.FINISHED)
                 .toList();
 
-        // 보상할 단계가 없는 경우
         if (stepsToRollback.isEmpty()) {
-            log.info("[Saga] 보상할 내부 서비스가 없습니다. 바로 결제 취소 로직으로 넘어갑니다.");
+            // 보상할 서비스가 없으면 즉시 완료 처리 (좀비 상태 방지)
+            log.info("[Saga] 보상할 내부 서비스가 없습니다. 즉시 COMPENSATED 처리 - OrderID: {}", instance.getSagaId());
+            instance.setSagaStatus(SagaStatus.COMPENSATED);
+            instanceRepository.save(instance);
+            sseService.notify(instance.getSagaId(), "COMPENSATED");
             return;
         }
+
+        instanceRepository.save(instance); // COMPENSATING 상태 DB 반영
         stepsToRollback.forEach(step -> {
             step.updateStatus(instance, ServiceStatus.COMPENSATING);
             this.send(step.getRollbackKey(), rollbackEvent);
@@ -147,7 +136,7 @@ public class SagaOrchestrator {
         }
 
         SagaInstance instance = instanceRepository.findById(reply.getOrderId().toString())
-                .orElseThrow(() -> new RuntimeException("여기에 커스텀 예외 꽂아넣어야함 !!!!!"));
+                .orElseThrow(() -> new NotFoundOrderException("SagaInstance를 찾을 수 없습니다. OrderID: " + reply.getOrderId()));
 
         // 방금 답장 보낸 서비스 상태 변경
         SagaStep responseStep = SagaStep.fromServiceName(reply.getServiceName());

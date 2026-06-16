@@ -82,9 +82,9 @@ public class DlqConfig {
     }
 
     @Bean
-    public Binding OrderDlxToDlqBinding() {
+    public Binding orderDlxToDlqBinding() {
         return BindingBuilder.bind(sagaFailureDlq())
-                .to(paymentDlx())
+                .to(orderDlx())
                 .with("fail.order");
     }
 }

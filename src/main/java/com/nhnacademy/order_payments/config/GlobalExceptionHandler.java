@@ -49,7 +49,7 @@ public class GlobalExceptionHandler {
                 "timestamp", Instant.now().toString(),
                 "status", 500,
                 "error", "INTERNAL_SERVER_ERROR",
-                "message", e.toString()
+                "message", "내부 서버 오류가 발생했습니다."
         ));
     }
 }

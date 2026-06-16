@@ -17,6 +17,7 @@ import java.util.List;
 import java.util.Optional;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.Query;
+import org.springframework.data.repository.query.Param;
 
 public interface OrderRepository extends JpaRepository<Order, Long> {
 
@@ -25,5 +26,9 @@ public interface OrderRepository extends JpaRepository<Order, Long> {
     Optional<Order> findByOrderNumber(Long orderNumber);
 
     List<Order> findOrderByUserId(Long userId);
+
+    // orderDetailList를 한 번의 쿼리로 함께 로딩 (N+1 방지)
+    @Query("SELECT DISTINCT o FROM Order o LEFT JOIN FETCH o.orderDetailList WHERE o.userId = :userId")
+    List<Order> findOrderByUserIdWithDetails(@Param("userId") Long userId);
 
 }

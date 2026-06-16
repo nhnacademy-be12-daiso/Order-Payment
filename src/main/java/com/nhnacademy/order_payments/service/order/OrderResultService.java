@@ -25,6 +25,7 @@ import com.nhnacademy.order_payments.dto.response.order.OrderResponse;
 import com.nhnacademy.order_payments.dto.review.BookOrderDetailRequest;
 import com.nhnacademy.order_payments.dto.review.BookReviewRequest;
 import com.nhnacademy.order_payments.dto.review.BookReviewResponse;
+import java.util.Map;
 import com.nhnacademy.order_payments.entity.Delivery;
 import com.nhnacademy.order_payments.entity.DeliveryDetail;
 import com.nhnacademy.order_payments.entity.GuestOrderers;
@@ -74,18 +75,67 @@ public class OrderResultService {
 
     @Transactional(readOnly = true)
     public OrderListResponse getOrderList(Long userId) {
-        // 주문 목록 조회 (회원)
-        List<Order> orderList = orderRepository.findOrderByUserId(userId);  // 최신순 정렬 고려
+        // fetch join으로 orderDetailList를 한 번의 쿼리로 로딩 (N+1 방지)
+        List<Order> orderList = orderRepository.findOrderByUserIdWithDetails(userId);
 
         if (orderList == null || orderList.isEmpty()) {
             return new OrderListResponse(List.of());
         }
 
+        // 모든 주문의 (bookId, orderDetailId) 쌍을 모아 Book API 1회 일괄 호출
+        List<BookOrderDetailRequest> allBookRequests = orderList.stream()
+                .flatMap(o -> o.getOrderDetailList().stream())
+                .map(od -> new BookOrderDetailRequest(od.getBookId(), od.getId()))
+                .toList();
+
+        Map<Long, BookReviewResponse> globalBookReviewMap = allBookRequests.isEmpty() ? Map.of()
+                : bookApiClient.getBookReviewList(new BookReviewRequest(userId, allBookRequests))
+                .stream()
+                .collect(Collectors.toMap(BookReviewResponse::orderDetailId, b -> b, (a, b) -> a));
+
         List<OrderResponse> responseList = orderList.stream()
-                .map(this::createOrderResponse)
+                .map(order -> createMemberOrderResponse(order, globalBookReviewMap))
                 .toList();
 
         return new OrderListResponse(responseList);
+    }
+
+    // getOrderList 전용: 이미 패칭된 Book 정보 맵을 받아 API 재호출 없이 응답 생성
+    private OrderResponse createMemberOrderResponse(Order order, Map<Long, BookReviewResponse> bookReviewMap) {
+        List<OrderDetail> orderDetailList = order.getOrderDetailList();
+
+        List<OrderDetailResponse> detailResponses = orderDetailList.stream()
+                .map(od -> {
+                    BookReviewResponse bookInfo = bookReviewMap.get(od.getId());
+
+                    String title = "정보 없음";
+                    String imgUrl = null;
+                    Long reviewId = null;
+
+                    if (bookInfo != null && bookInfo.book() != null) {
+                        title = bookInfo.book().title();
+                        if (bookInfo.book().imageList() != null && !bookInfo.book().imageList().isEmpty()) {
+                            imgUrl = bookInfo.book().imageList().getFirst().path();
+                        }
+                        reviewId = bookInfo.reviewId();
+                    }
+
+                    return new OrderDetailResponse(od.getId(),
+                            od.getBookId(), title, imgUrl, od.getPrice(), od.getQuantity(),
+                            packagingService.getPackagingName(od.getPackagingId()), od.getOrderDetailStatus(),
+                            reviewId);
+                }).toList();
+
+        return new OrderResponse(
+                order.getId(),
+                order.getOrderNumber(),
+                order.getOrderStatus(),
+                order.getOrderDate(),
+                order.getOrdererName(),
+                order.getTotalPrice(),
+                order.getPhoneNumber(),
+                order.getEmail(),
+                detailResponses);
     }
 
     @Transactional(readOnly = true)

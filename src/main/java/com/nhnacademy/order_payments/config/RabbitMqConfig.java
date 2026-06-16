@@ -10,7 +10,6 @@ import org.springframework.amqp.rabbit.core.RabbitTemplate;
 import org.springframework.amqp.support.converter.Jackson2JavaTypeMapper;
 import org.springframework.amqp.support.converter.Jackson2JsonMessageConverter;
 import org.springframework.amqp.support.converter.MessageConverter;
-import org.springframework.amqp.support.converter.SimpleMessageConverter;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
@@ -128,13 +127,6 @@ public class RabbitMqConfig {
         return converter;
     }
 
-    // 발신용 컨버터
-    @Bean
-    public MessageConverter simpleMessageConverter() {
-        // String, byte[], Serializable 객체를 처리하는 기본 컨버터
-        return new SimpleMessageConverter();
-    }
-
     /**
      * 3. RabbitTemplate 설정
      * 위에서 만든 JSON 변환기를 템플릿에 끼워줍니다.
@@ -142,8 +134,7 @@ public class RabbitMqConfig {
     @Bean
     public RabbitTemplate rabbitTemplate(ConnectionFactory connectionFactory) {
         RabbitTemplate rabbitTemplate = new RabbitTemplate(connectionFactory);
-//        rabbitTemplate.setMessageConverter(jsonMessageConverter());
-        rabbitTemplate.setMessageConverter(simpleMessageConverter());
+        rabbitTemplate.setMessageConverter(jsonMessageConverter());
 
         return rabbitTemplate;
     }

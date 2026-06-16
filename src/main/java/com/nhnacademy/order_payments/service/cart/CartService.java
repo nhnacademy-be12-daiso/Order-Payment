@@ -21,6 +21,8 @@ import com.nhnacademy.order_payments.entity.CartDetail;
 import com.nhnacademy.order_payments.repository.CartRepository;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Map;
+import java.util.stream.Collectors;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
@@ -62,15 +64,15 @@ public class CartService { // 네이밍이 썩 맘에 들지 않음;
         // Book API에 책에 대한 정보 요청
         List<BookApiResponse> books = bookApiClient.getBookList(bookApiRequest);
 
-        // 다시 매칭해서 응답 DTO 만들어주기
+        // bookId → BookApiResponse 맵으로 변환하여 O(1) 조회 (기존 이중 루프 O(n²) 제거)
+        Map<Long, BookApiResponse> bookMap = books.stream()
+                .collect(Collectors.toMap(BookApiResponse::bookId, b -> b));
+
         List<BookItem> bookItemList = new ArrayList<>();
         for (CartDetail cartDetail : cartDetails) {
-            for (BookApiResponse book : books) {
-                if (cartDetail.getBookId() == book.bookId()) {
-                    BookItem bookItem =
-                            new BookItem(book.bookId(), book.title(), book.price(), cartDetail.getQuantity());
-                    bookItemList.add(bookItem);
-                }
+            BookApiResponse book = bookMap.get(cartDetail.getBookId());
+            if (book != null) {
+                bookItemList.add(new BookItem(book.bookId(), book.title(), book.price(), cartDetail.getQuantity()));
             }
         }
 

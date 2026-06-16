@@ -1,20 +1,19 @@
 package com.nhnacademy.order_payments.entity;
 
 import com.nhnacademy.order_payments.saga.common.*;
-import jakarta.persistence.Column;
-import jakarta.persistence.Entity;
-import jakarta.persistence.Id;
-import jakarta.persistence.Table;
+import jakarta.persistence.*;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.Setter;
 import org.springframework.data.annotation.CreatedDate;
 import org.springframework.data.annotation.LastModifiedDate;
+import org.springframework.data.jpa.domain.support.AuditingEntityListener;
 
 import java.time.LocalDateTime;
 
 @Entity
 @Table(name = "saga_instance")
+@EntityListeners(AuditingEntityListener.class)
 @NoArgsConstructor
 @Getter
 public class SagaInstance {
@@ -22,6 +21,9 @@ public class SagaInstance {
     @Id
     @Column(name = "saga_id")
     private String sagaId;
+
+    @Version
+    private Long version;
 
     @Setter
     private SagaStatus sagaStatus = SagaStatus.STARTED;

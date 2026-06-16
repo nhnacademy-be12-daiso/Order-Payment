@@ -37,17 +37,16 @@ public class OrderOutboxRelayProcessor {
             orderOutboxRepository.save(outbox);
 
         } catch(ExternalServiceException e) {
-            // 전송 실패시 재시도 횟수 확인 + 처리
-
+            // REQUIRES_NEW 트랜잭션 안에서 save() 후 throw 하지 않아야 재시도 카운터가 보존됨
             if(outbox.getRetryCount() < 3) {
                 outbox.incrementRetryCount();
-                orderOutboxRepository.save(outbox); // DB에 업데이트
+                orderOutboxRepository.save(outbox);
+                log.warn("[Orchestrator] Outbox 발행 실패, 재시도 예약 OutboxID : {}, 시도 횟수: {}", outboxId, outbox.getRetryCount());
             } else {
                 outbox.markAsFailed();
-                orderOutboxRepository.save(outbox); // DB에 업데이트
+                orderOutboxRepository.save(outbox);
                 log.error("[Orchestrator] Outbox 메세지 최종 발행 실패 OutboxID : {}", outboxId);
             }
-            throw e; // 예외 던져서 롤백 유도
         }
     }
 }

@@ -31,6 +31,8 @@ import com.nhnacademy.order_payments.repository.DeliveryPolicyRepository;
 import com.nhnacademy.order_payments.repository.PackagingRepository;
 import feign.FeignException;
 import java.util.List;
+import java.util.concurrent.CompletableFuture;
+import java.util.concurrent.CompletionException;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
@@ -77,103 +79,89 @@ public class PrepareOrderService {
     // @Transactional
     // ----> 읽기 작업 뿐이기 때문에 트랜잭션 굳이 안해도 됨
     public PrepareOrderDto prepareOrderInfo(Long userId, List<PrepareOrderRequest> requestList) {
-        // 공통 데이터
-        InternalBooksInfoResponse booksInfoResponse = null;
-        List<PackagingDto> packagingList = null;
-        DeliveryPolicyResponse deliveryPolicyResponse = null;
-
-        // 회원 관련 데이터
-        // 회원 정보, 쿠폰 정보
-        UserInfoResponse userInfoResponse = null;
-        List<CouponResponse> couponResponseList = null;
+        // 5개 외부 호출을 병렬 실행 (기존 순차 호출 대비 응답 시간 최대 5× 단축)
+        CompletableFuture<InternalBooksInfoResponse> booksFuture =
+                CompletableFuture.supplyAsync(() -> getBooks(requestList));
+        CompletableFuture<List<PackagingDto>> packagingFuture =
+                CompletableFuture.supplyAsync(this::getPackagings);
+        CompletableFuture<DeliveryPolicyResponse> deliveryFuture =
+                CompletableFuture.supplyAsync(this::getDeliveryPolicy);
+        CompletableFuture<UserInfoResponse> userFuture =
+                CompletableFuture.supplyAsync(() -> userApiClient.getUserInfo(userId).getBody());
+        CompletableFuture<List<CouponResponse>> couponFuture =
+                CompletableFuture.supplyAsync(() -> couponApiClient.getAvailableCoupons(userId).getBody());
 
         try {
-            // 도서 정보
-            booksInfoResponse = getBooks(requestList);
-
-            // 포장지 정보
-            packagingList = getPackagings();
-            // 받아온 도서 정보에 수량과 합계 주입
-            List<InternalBookInfoResponse> updateBookInfos = booksInfoResponse.orderBookInfoRespDTOList().stream()
-                    .map(book -> new InternalBookInfoResponse(
-                            book.bookId(),
-                            book.title(),
-                            book.price(),
-                            book.stock(),
-                            book.staus(),
-                            book.discountPercentage(),
-                            book.discountPrice(),
-                            book.coverImage(),
-                            book.volumeNo(),
-                            book.isPackaging()
-                    )).toList();
-
-            // 배송비 정책 정보
-            deliveryPolicyResponse = getDeliveryPolicy();
-            // 여기 있는게 맞는지는 모르겠음
-
-            // 회원 정보
-            userInfoResponse = userApiClient.getUserInfo(userId).getBody();
-
-            // 쿠폰 정보
-            couponResponseList = couponApiClient.getAvailableCoupons(userId).getBody();
-
-        } catch (FeignException e) {
-            log.error("[PrepareOrderService] 회원 - 외부 API 통신 간 오류 발생: {}", e.getMessage());
-            throw new ExternalServiceException("[PrepareOrderService] 회원 - 외부 API 통신 간 오류 발생");
+            CompletableFuture.allOf(booksFuture, packagingFuture, deliveryFuture, userFuture, couponFuture).join();
+        } catch (CompletionException e) {
+            Throwable cause = e.getCause();
+            if (cause instanceof FeignException) {
+                log.error("[PrepareOrderService] 회원 - 외부 API 통신 간 오류 발생: {}", cause.getMessage());
+                throw new ExternalServiceException("[PrepareOrderService] 회원 - 외부 API 통신 간 오류 발생");
+            }
+            if (cause instanceof NotFoundOrderException nfe) {
+                throw nfe;
+            }
+            throw new ExternalServiceException("[PrepareOrderService] 회원 - 예상치 못한 오류: " + cause.getMessage());
         }
 
-        // null이 반환된 경우 ---> 이럴 경우가 있나?
+        InternalBooksInfoResponse booksInfoResponse = booksFuture.join();
+        List<PackagingDto> packagingList = packagingFuture.join();
+        DeliveryPolicyResponse deliveryPolicyResponse = deliveryFuture.join();
+        UserInfoResponse userInfoResponse = userFuture.join();
+        List<CouponResponse> couponResponseList = couponFuture.join();
+
         if (booksInfoResponse == null || deliveryPolicyResponse == null ||
                 userInfoResponse == null || couponResponseList == null) {
             throw new NotFoundOrderException("[PrepareOrderService] 회원 - 외부 API에서 null값 넘어옴");
         }
-        // -----> 포장 정책은 진짜 비어있을 수 있어서 null체크 안함
 
-        // 모든 데이터 수합한 dto
         return new PrepareOrderDto(
-                booksInfoResponse,      // 도서 정보
-                userInfoResponse,       // 회원 정보
-                couponResponseList,     // 쿠폰 정보
-                packagingList,          // 포장지 정보
-                deliveryPolicyResponse  // 배송비 정책 정보
+                booksInfoResponse,
+                userInfoResponse,
+                couponResponseList,
+                packagingList,
+                deliveryPolicyResponse
         );
     }
 
 
     // 비회원 주문시 필요한 최소 정보
     public PrepareOrderDto prepareGuestOrderInfo(List<PrepareOrderRequest> requestList) {
-        // 공통 테이터
-        InternalBooksInfoResponse booksInfoResponse = null;
-        List<PackagingDto> packagingList = null;
-        DeliveryPolicyResponse deliveryPolicyResponse = null;
+        // 3개 호출 병렬 실행
+        CompletableFuture<InternalBooksInfoResponse> booksFuture =
+                CompletableFuture.supplyAsync(() -> getBooks(requestList));
+        CompletableFuture<List<PackagingDto>> packagingFuture =
+                CompletableFuture.supplyAsync(this::getPackagings);
+        CompletableFuture<DeliveryPolicyResponse> deliveryFuture =
+                CompletableFuture.supplyAsync(this::getDeliveryPolicy);
 
         try {
-            // 도서 정보
-            booksInfoResponse = getBooks(requestList);
-
-            // 포장지 정보
-            packagingList = getPackagings();
-
-            // 배송비 정책 정보
-            deliveryPolicyResponse = getDeliveryPolicy();
-            // 여기 있는게 맞는지는 모르겠음
-
-        } catch (FeignException e) {
-            log.error("[PrepareOrderService] 비회원 - 외부 API 통신 간 오류 발생: {}", e.getMessage());
-            throw new ExternalServiceException("[PrepareOrderService] 비회원 - 외부 API 통신 간 오류 발생");
+            CompletableFuture.allOf(booksFuture, packagingFuture, deliveryFuture).join();
+        } catch (CompletionException e) {
+            Throwable cause = e.getCause();
+            if (cause instanceof FeignException) {
+                log.error("[PrepareOrderService] 비회원 - 외부 API 통신 간 오류 발생: {}", cause.getMessage());
+                throw new ExternalServiceException("[PrepareOrderService] 비회원 - 외부 API 통신 간 오류 발생");
+            }
+            if (cause instanceof NotFoundOrderException nfe) {
+                throw nfe;
+            }
+            throw new ExternalServiceException("[PrepareOrderService] 비회원 - 예상치 못한 오류: " + cause.getMessage());
         }
 
-        // null이 반환된 경우 ---> 이럴 경우가 있나?
+        InternalBooksInfoResponse booksInfoResponse = booksFuture.join();
+        List<PackagingDto> packagingList = packagingFuture.join();
+        DeliveryPolicyResponse deliveryPolicyResponse = deliveryFuture.join();
+
         if (booksInfoResponse == null || deliveryPolicyResponse == null) {
             throw new NotFoundOrderException("[PrepareOrderService] 비회원 - 외부 API에서 null값 넘어옴");
         }
-        // -----> 포장 정책은 진짜 비어있을 수 있어서 null체크 안함
 
         return new PrepareOrderDto(
-                booksInfoResponse,      // 도서 정보
-                packagingList,          // 포장지 정보
-                deliveryPolicyResponse  // 배송비 정책 정보
+                booksInfoResponse,
+                packagingList,
+                deliveryPolicyResponse
         );
     }
 

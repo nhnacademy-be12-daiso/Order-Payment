@@ -12,12 +12,13 @@ import java.time.LocalDateTime;
 @Entity
 @Getter
 @NoArgsConstructor(access = AccessLevel.PROTECTED)
-@Table(name = "order_deduplication_log")
-@EntityListeners(AuditingEntityListener.class) // 생성일자 자동 기록을 위해 사용
+@Table(name = "order_deduplication_log",
+        uniqueConstraints = @UniqueConstraint(name = "uk_order_dedup_message_id", columnNames = "message_id"))
+@EntityListeners(AuditingEntityListener.class)
 public class OrderDeduplicationLog {
 
     @Id
-    @Column(name = "message_id", length = 128) // RabbitMQ 메시지 ID 또는 이벤트 ID를 가정
+    @Column(name = "message_id", length = 128)
     private String messageId;
 
     @CreatedDate
