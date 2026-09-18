@@ -14,6 +14,7 @@ import org.springframework.stereotype.Service;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
+import java.util.Objects;
 import java.util.stream.Collectors;
 
 @Slf4j
@@ -33,12 +34,11 @@ public class SyncService {
                 .collect(Collectors.groupingBy(SyncInfo::userId));
         // ----> userId 별로 sync 내용을 묶음
 
-        List<CartDetail> cartDetailsToSave = new ArrayList<>();
-
         // ---> 회원 별로 sync가 진행됨
         for (Map.Entry<Long, List<SyncInfo>> entry : syncInfosByUserId.entrySet()) {
             Long userId = entry.getKey();
             List<SyncInfo> syncInfos = entry.getValue();
+            List<CartDetail> cartDetailsToSave = new ArrayList<>(); // 사용자 단위로 초기화 (이전 사용자 항목 재저장 방지)
 
             // 장바구니 있는지 확인하고 없으면 하나 생성
             Cart userCart = cartRepository.findFirstByUserId(userId).orElseGet(
@@ -97,7 +97,9 @@ public class SyncService {
                 for (SyncInfo syncInfo : syncInfosToUpdateOrInsert) {
                     CartDetail existingDetail = existingDetailsByBookId.get(syncInfo.bookId());
                     if (existingDetail != null) { // 이미 DB에 데이터가 존재 ---> UPDATE 로직
-                        if (existingDetail.getQuantity() != syncInfo.quantity()) { // 기존 수량이랑 다름
+                        // Integer는 != 비교 시 -128~127 범위 밖에서 항상 다르다고 판단하므로 equals로 비교
+                        if (!Objects.equals(existingDetail.getQuantity(), syncInfo.quantity())) { // 기존 수량이랑 다름
+                            existingDetail.setQuantity(syncInfo.quantity()); // 변경된 수량 반영
                             cartDetailsToSave.add(existingDetail);  // ---> 목록에 추가
                             log.info("[{}] 장바구니에 담겨있는 {} 도서의 수량이 {}로 변경되었습니다.", userId, syncInfo.bookId(), syncInfo.quantity());
                         } else {
