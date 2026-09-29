@@ -27,10 +27,10 @@
 
 ### Redis를 이용한 캐싱 처리 (Write-Back 방식)
 - 우선적으로 Redis에 장바구니 데이터를 저장하고, 이후 한꺼번에 DB 동기화
-- Dirty Flag 전략을 사용해서 변경 사항에 대해서만 DB 동기화 실행 
-  - 장바구니에 변경 사항 발생 시 해당 항목에 Dirty Flag 세움
-  - 스케줄러가 주기적으로 `dirty:true`가 붙은 장바구니 키만 조회해서 DB에 일괄 저장
-  - Redis 전체를 확인하지 않고 변경 사항에 대해서만 Sync함
+- ZSet 기반 만료 인덱스를 사용해 비활성 장바구니만 선별 동기화
+  - 장바구니에 접근할 때마다 `ZADD dirty_sync_list (now + TTL) cartKey`로 만료 시각 갱신
+  - 스케줄러가 `ZRANGEBYSCORE`로 일정 시간 이상 접근이 없던 키만 조회해서 DB에 일괄 저장
+  - `KEYS`/`SCAN`으로 Redis 전체를 훑지 않으며, 활성 사용자의 장바구니는 DB를 거치지 않음
 
 ---
 ## 주문
